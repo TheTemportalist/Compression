@@ -18,6 +18,7 @@ class TECompressed extends TEWrapper("Compressed") {
 	def setBlock(state: IBlockState): Unit = {
 		this.blockState = state
 		this.markDirty()
+		this.markforUpdate()
 	}
 
 	def getBlockState(): IBlockState = this.blockState

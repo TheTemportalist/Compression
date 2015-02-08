@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.item
 
-import com.temportalist.compression.common.lib.Langauge
+import com.temportalist.compression.common.lib.Tuple
 import net.minecraft.item.{ItemStack, ItemBlock}
 import net.minecraft.block.Block
 
@@ -15,7 +15,7 @@ class ItemBlockCompressed(block: Block) extends ItemBlock(block) {
 
 	override def getItemStackDisplayName(stack: ItemStack): String = {
 		if (stack.hasTagCompound) {
-			Langauge.tiers(stack.getTagCompound.getInteger("tier")) + " Compressed " +
+			Tuple.tiers(stack.getTagCompound.getInteger("tier")) + " Compressed " +
 					stack.getTagCompound.getString("blockDisplay")
 		}
 		else super.getItemStackDisplayName(stack)

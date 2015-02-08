@@ -1,7 +1,6 @@
 package com.temportalist.compression.client.model
 
 import java.util
-import java.util.Collections
 
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.origin.library.client.utility.Rendering
@@ -20,18 +19,18 @@ import net.minecraftforge.common.property.IExtendedBlockState
  *
  * @author TheTemportalist 2/7/15
  */
-class ModelCompressed extends IBakedModel with ISmartBlockModel with ISmartItemModel {
+class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 
 	private def getModel(innerBlock: IBlockState, tier: Int): IBakedModel = {
 		if (innerBlock == null) return Rendering.blockShapes.getModelManager.getMissingModel
 		val model: IBakedModel = Rendering.blockShapes.getModelForState(innerBlock)
 		val originalTex: TextureAtlasSprite = Rendering.blockShapes.getTexture(innerBlock)
-		val newTex: TextureAtlasSprite = originalTex // todo
+		val newTex: TextureAtlasSprite = originalTex // todo, this is the overlay texture
 		new SimpleBakedModel.Builder(model, newTex).makeBakedModel()
 	}
 
 	override def handleBlockState(state: IBlockState): IBakedModel = {
-		println (state)
+		println ("block")
 		state match {
 			case extended: IExtendedBlockState =>
 				val tier: Int = extended.getValue(CBlocks.INT)
@@ -39,11 +38,13 @@ class ModelCompressed extends IBakedModel with ISmartBlockModel with ISmartItemM
 				println (this.getModel(innerBlock, tier))
 				this.getModel(innerBlock, tier)
 			case _ =>
+				println ("missing")
 				Rendering.blockShapes.getModelManager.getMissingModel
 		}
 	}
 
 	override def handleItemState(itemStack: ItemStack): IBakedModel = {
+		//println ("item")
 		if (itemStack.hasTagCompound) {
 			val tier: Int = itemStack.getTagCompound.getInteger("tier")
 			val innerBlock: IBlockState = NameParser.getState(
@@ -54,10 +55,9 @@ class ModelCompressed extends IBakedModel with ISmartBlockModel with ISmartItemM
 		else Rendering.blockShapes.getModelManager.getMissingModel
 	}
 
-	override def getFaceQuads(enumFacing: EnumFacing): util.List[BakedQuad] =
-		Collections.emptyList[BakedQuad]()
+	override def getFaceQuads(enumFacing: EnumFacing): util.List[BakedQuad] = null
 
-	override def getGeneralQuads: util.List[BakedQuad] = new util.ArrayList[BakedQuad]()
+	override def getGeneralQuads: util.List[BakedQuad] = null
 
 	override def getTexture: TextureAtlasSprite = null
 

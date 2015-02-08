@@ -28,7 +28,7 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWrapperTE(
 	Material.ground, Compression.MODID, name, classOf[ItemBlockCompressed], te) {
 
-	override def initRendering(): Unit = {}
+	//override def initRendering(): Unit = {}
 
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {
