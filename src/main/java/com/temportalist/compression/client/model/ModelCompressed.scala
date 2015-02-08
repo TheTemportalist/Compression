@@ -35,7 +35,7 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 			if (this.getLayer() == EnumWorldBlockLayer.SOLID)
 				baked
 			else
-				new SimpleBakedModel.Builder(model, Tupla.getSprite(size)).makeBakedModel()
+				new SimpleBakedModel.Builder(baked, Tupla.getSprite(size)).makeBakedModel()
 		}
 	}
 
