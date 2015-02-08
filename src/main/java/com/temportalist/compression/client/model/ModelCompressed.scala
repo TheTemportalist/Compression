@@ -8,9 +8,10 @@ import com.temportalist.origin.library.common.lib.NameParser
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.{BakedQuad, ItemCameraTransforms}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
-import net.minecraft.client.resources.model.{IBakedModel, SimpleBakedModel}
+import net.minecraft.client.resources.model.{SimpleBakedModel, IBakedModel}
 import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
+import net.minecraft.util.{EnumFacing, EnumWorldBlockLayer}
+import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.client.model.{ISmartBlockModel, ISmartItemModel}
 import net.minecraftforge.common.property.IExtendedBlockState
 
@@ -23,15 +24,19 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 
 	var currentSprite: TextureAtlasSprite = null
 
+	private def getLayer(): EnumWorldBlockLayer = MinecraftForgeClient.getRenderLayer
+
 	private def getModel(inner: ItemStack, size: Long): IBakedModel = {
 		var baked: IBakedModel = Rendering.blockShapes.getModelManager.getMissingModel
-		if (inner != null) {
-			val model = Tupla.getModel(inner)
-			val newTex: TextureAtlasSprite = Tupla.getSprite(size)
-			baked = new SimpleBakedModel.Builder(model, model.getTexture).makeBakedModel()
+		if (inner == null) baked
+		else {
+			baked = Tupla.getModel(inner)
+			this.currentSprite = baked.getTexture
+			if (this.getLayer() == EnumWorldBlockLayer.SOLID)
+				baked
+			else
+				new SimpleBakedModel.Builder(model, Tupla.getSprite(size)).makeBakedModel()
 		}
-		this.currentSprite = baked.getTexture
-		baked
 	}
 
 	override def handleBlockState(state: IBlockState): IBakedModel = {

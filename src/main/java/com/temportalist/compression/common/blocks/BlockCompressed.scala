@@ -16,7 +16,7 @@ import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.BlockPos
+import net.minecraft.util.{EnumWorldBlockLayer, BlockPos}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.common.property.{ExtendedBlockState, IExtendedBlockState, IUnlistedProperty}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
@@ -73,5 +73,8 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 			}
 		}
 	}
+
+	override def canRenderInLayer(layer: EnumWorldBlockLayer): Boolean =
+		layer == EnumWorldBlockLayer.SOLID || layer == EnumWorldBlockLayer.TRANSLUCENT
 
 }
