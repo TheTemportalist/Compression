@@ -4,6 +4,7 @@ import java.util
 
 import com.temportalist.compression.common.blocks.BlockCompressed
 import com.temportalist.compression.common.init.CBlocks
+import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.origin.library.common.helpers.RegisterHelper
 import com.temportalist.origin.library.common.lib.NameParser
 import com.temportalist.origin.wrapper.common.{ModWrapper, ProxyWrapper}
@@ -30,7 +31,7 @@ import scala.collection.JavaConversions
 )
 object Compression extends ModWrapper {
 
-	final val MODID = "@MODID@"
+	final val MODID = "compression"//"@MODID@"
 	final val MODNAME = "@MODNAME@"
 	final val clientProxy = "com.temportalist.compression.client.ProxyClient"
 	final val serverProxy = "com.temportalist.compression.server.ProxyServer"
@@ -67,7 +68,7 @@ object Compression extends ModWrapper {
 					block.isVisuallyOpaque && Item.getItemFromBlock(block) != null) {
 				val stack: ItemStack = new ItemStack(CBlocks.compressed)
 				val tag: NBTTagCompound = new NBTTagCompound
-				tag.setLong("stackSize", 1)
+				tag.setLong("stackSize", Tupla.caps(1))
 				/*
 				println (block)
 				println (GameData.getBlockRegistry.getNameForObject(block))
@@ -78,11 +79,10 @@ object Compression extends ModWrapper {
 				println ("")
 				*/
 				val blockStack: ItemStack = new ItemStack(block)
-				tag.setString("blockName", NameParser.getName(
+				tag.setString("inner", NameParser.getName(
 					blockStack, hasID = true, hasMeta = true
 				))
-				tag.setString("blockDisplay", blockStack.getDisplayName)
-				tag.setInteger("tier", 1)
+				tag.setString("display", blockStack.getDisplayName)
 				stack.setTagCompound(tag)
 				this.compressables.add(stack)
 				return

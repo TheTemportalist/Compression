@@ -3,6 +3,7 @@ package com.temportalist.compression.common.tile
 import com.temportalist.origin.library.common.lib.NameParser
 import com.temportalist.origin.wrapper.common.tile.TEWrapper
 import net.minecraft.block.state.IBlockState
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
 /**
@@ -12,37 +13,44 @@ import net.minecraft.nbt.NBTTagCompound
  */
 class TECompressed extends TEWrapper("Compressed") {
 
-	var blockState: IBlockState = null
-	var tier: Int = 1
+	private var innerState: ItemStack = null
+	private var size: Long = 0
 
-	def setBlock(state: IBlockState): Unit = {
-		this.blockState = state
-		this.markDirty()
+	override def markDirty(): Unit = {
+		super.markDirty()
 		this.markforUpdate()
 	}
 
-	def getBlockState(): IBlockState = this.blockState
+	def setState(state: IBlockState): Unit = {
+		this.setState(new ItemStack(state.getBlock, 1, state.getBlock.getMetaFromState(state)))
+	}
 
-	def setTier(t: Int): Unit = {
-		this.tier = t
+	def setState(state: ItemStack): Unit = {
+		this.innerState = state
 		this.markDirty()
 	}
 
-	def getTier(): Int = this.tier
+	def getState(): ItemStack = this.innerState
+
+	def setSize(size: Long): Unit = {
+		this.size = size
+		this.markDirty()
+	}
+
+	def getSize(): Long = this.size
 
 	override def writeToNBT(tagCom: NBTTagCompound): Unit = {
 		super.writeToNBT(tagCom)
-		if (this.blockState != null)
-			tagCom.setString("blockName",
-				NameParser.getName(this.blockState, hasID = true, hasMeta = true)
-			)
-		tagCom.setInteger("tier", this.tier)
+		if (this.innerState != null) tagCom.setString("inner",
+			NameParser.getName(this.innerState, hasID = true, hasMeta = true)
+		)
+		tagCom.setLong("stackSize", this.size)
 	}
 
 	override def readFromNBT(tagCom: NBTTagCompound): Unit = {
 		super.readFromNBT(tagCom)
-		this.blockState = NameParser.getState(tagCom.getString("blockName"))
-		this.tier = tagCom.getInteger("tier")
+		this.innerState = NameParser.getItemStack(tagCom.getString("inner"))
+		this.size = tagCom.getLong("stackSize")
 	}
 
 }

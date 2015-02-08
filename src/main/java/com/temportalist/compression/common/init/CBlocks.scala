@@ -23,6 +23,16 @@ object CBlocks extends BlockRegister {
 		override def isValid(v: Int): Boolean = true
 	}
 
+	val LONG: IUnlistedProperty[Long] = new IUnlistedProperty[Long] {
+		override def getType: Class[Long] = classOf[Long]
+
+		override def getName: String = "Long"
+
+		override def valueToString(v: Long): String = v.toString
+
+		override def isValid(v: Long): Boolean = true
+	}
+
 	var compressed: BlockCompressed = null
 
 	override def registerTileEntities(): Unit = {

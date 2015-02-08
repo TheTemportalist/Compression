@@ -5,8 +5,9 @@ import java.util
 import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.ItemBlockCompressed
+import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.tile.TECompressed
-import com.temportalist.origin.library.common.lib.{BlockProps, NameParser}
+import com.temportalist.origin.library.common.lib.NameParser
 import com.temportalist.origin.wrapper.common.block.BlockWrapperTE
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.IProperty
@@ -28,8 +29,6 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWrapperTE(
 	Material.ground, Compression.MODID, name, classOf[ItemBlockCompressed], te) {
 
-	//override def initRendering(): Unit = {}
-
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {
 		list.asInstanceOf[util.List[ItemStack]].addAll(Compression.compressables)
@@ -37,22 +36,20 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 
 	override def createBlockState(): BlockState = {
 		new ExtendedBlockState(
-			this, Array[IProperty](), Array[IUnlistedProperty[_]](BlockProps.STATE, CBlocks.INT)
+			this, Array[IProperty](), Array[IUnlistedProperty[_]](Tupla.ITEMSTACK, CBlocks.LONG)
 		)
 	}
 
-	override def getActualState(
-			state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState = {
+	override def getExtendedState(
+			state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState = {
 		state match {
 			case extended: IExtendedBlockState =>
-				worldIn.getTileEntity(pos) match {
+				world.getTileEntity(pos) match {
 					case compressed: TECompressed =>
-						//println (compressed.blockState)
-						//println (compressed.tier)
 						extended.withProperty(
-							BlockProps.STATE, compressed.getBlockState()
+							Tupla.ITEMSTACK, compressed.getState()
 						).withProperty(
-							CBlocks.INT, compressed.getTier()
+							CBlocks.LONG, compressed.getSize()
 						)
 					case _ =>
 						extended
@@ -65,12 +62,12 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 	override def onBlockPlacedBy(worldIn: World, pos: BlockPos, state: IBlockState,
 			placer: EntityLivingBase, stack: ItemStack): Unit = {
 		if (stack.hasTagCompound) {
-			val blockName: String = stack.getTagCompound.getString("blockName")
-			if (!blockName.isEmpty) {
+			val innerName: String = stack.getTagCompound.getString("inner")
+			if (!innerName.isEmpty) {
 				worldIn.getTileEntity(pos) match {
 					case compressed: TECompressed =>
-						compressed.setBlock(NameParser.getState(blockName))
-						compressed.setTier(stack.getTagCompound.getInteger("tier"))
+						compressed.setState(NameParser.getItemStack(innerName))
+						compressed.setSize(stack.getTagCompound.getLong("stackSize"))
 					case _ =>
 				}
 			}
