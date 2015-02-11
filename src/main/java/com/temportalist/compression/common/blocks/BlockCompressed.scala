@@ -4,19 +4,22 @@ import java.util
 
 import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.item.ItemBlockCompressed
+import com.temportalist.compression.common.item.ItemCompressed
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.tile.TECompressed
-import com.temportalist.origin.library.common.lib.NameParser
+import com.temportalist.origin.library.common.lib.{BlockProps, NameParser}
+import com.temportalist.origin.library.common.utility.States
 import com.temportalist.origin.wrapper.common.block.BlockWrapperTE
+import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.block.properties.IProperty
 import net.minecraft.block.state.{BlockState, IBlockState}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{EnumWorldBlockLayer, BlockPos}
+import net.minecraft.util.{MovingObjectPosition, BlockPos, EnumWorldBlockLayer}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.common.property.{ExtendedBlockState, IExtendedBlockState, IUnlistedProperty}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
@@ -27,7 +30,7 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
  * @author TheTemportalist 2/7/15
  */
 class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWrapperTE(
-	Material.ground, Compression.MODID, name, classOf[ItemBlockCompressed], te) {
+	Material.ground, Compression.MODID, name, classOf[ItemCompressed], te) {
 
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {
@@ -36,7 +39,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 
 	override def createBlockState(): BlockState = {
 		new ExtendedBlockState(
-			this, Array[IProperty](), Array[IUnlistedProperty[_]](Tupla.ITEMSTACK, CBlocks.LONG)
+			this, Array[IProperty](), Array[IUnlistedProperty[_]](BlockProps.ITEMSTACK, CBlocks.LONG)
 		)
 	}
 
@@ -47,10 +50,11 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 				world.getTileEntity(pos) match {
 					case compressed: TECompressed =>
 						extended.withProperty(
-							Tupla.ITEMSTACK, compressed.getState()
+							BlockProps.ITEMSTACK, compressed.getState()
 						).withProperty(
-							CBlocks.LONG, compressed.getSize()
-						)
+						            CBlocks.LONG,
+						            compressed.getSize() //Long.box(compressed.getSize())
+								)
 					case _ =>
 						extended
 				}
@@ -68,13 +72,80 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 					case compressed: TECompressed =>
 						compressed.setState(NameParser.getItemStack(innerName))
 						compressed.setSize(stack.getTagCompound.getLong("stackSize"))
+
+						val mult: Int = Tupla.getTierFromSize(compressed.getSize())
+						val innerStack: ItemStack = compressed.getState()
+						val innerState: IBlockState = States.getState(innerStack)
+						val block: Block = Block.getBlockFromItem(innerStack.getItem)
+						this.setHarvestLevel(
+							block.getHarvestTool(innerState), block.getHarvestLevel(innerState)
+						)
+						this.blockHardness = block.getBlockHardness(worldIn, pos) * mult
+						this.blockResistance = block.getExplosionResistance(null) * 5 * mult
+						this.lightValue = block.getLightValue
+						this.lightOpacity = block.getLightOpacity
+						this.slipperiness = block.slipperiness
+
+						compressed.markDirty()
 					case _ =>
 				}
 			}
 		}
 	}
 
-	override def canRenderInLayer(layer: EnumWorldBlockLayer): Boolean =
-		layer == EnumWorldBlockLayer.SOLID || layer == EnumWorldBlockLayer.TRANSLUCENT
+	override def canRenderInLayer(layer: EnumWorldBlockLayer): Boolean = {
+		true//CBlocks.validRenderLayers.contains(layer)
+	}
+
+	override def getRenderColor(state: IBlockState): Int = {
+		state match {
+			case extended: IExtendedBlockState =>
+				println (extended.getValue(BlockProps.ITEMSTACK))
+			case _ =>
+		}
+		super.getRenderColor(state)
+	}
+
+	override def onBlockHarvested(
+			worldIn: World, pos: BlockPos, state: IBlockState, player: EntityPlayer): Unit = {
+		if (player.capabilities.isCreativeMode) return
+		worldIn.getTileEntity(pos) match {
+			case compressed: TECompressed =>
+				if (compressed.getState() != null) {
+					Block.spawnAsEntity(worldIn, pos, Compression.constructCompressed(
+						compressed.getState()
+					))
+				}
+			case _ =>
+		}
+	}
+
+	override def getPickBlock(
+			target: MovingObjectPosition, world: World, pos: BlockPos): ItemStack = {
+		world.getTileEntity(pos) match {
+			case compressed: TECompressed =>
+				if (compressed.getState() != null)
+					return Compression.constructCompressed(compressed.getState())
+			case _ =>
+		}
+		super.getPickBlock(target, world, pos)
+	}
+
+	override def getDrops(
+			world: IBlockAccess, pos: BlockPos, state: IBlockState, fortune: Int
+			): util.List[ItemStack] = new util.ArrayList[ItemStack]()
+
+	override def colorMultiplier(worldIn: IBlockAccess, pos: BlockPos, renderPass: Int): Int = {
+		worldIn.getTileEntity(pos) match {
+			case compressed: TECompressed =>
+				if (compressed.getState() != null) {
+					return States.getState(compressed.getState()).getBlock.colorMultiplier(
+						worldIn, pos, renderPass
+					)
+				}
+			case _ =>
+		}
+		super.colorMultiplier(worldIn, pos, renderPass)
+	}
 
 }

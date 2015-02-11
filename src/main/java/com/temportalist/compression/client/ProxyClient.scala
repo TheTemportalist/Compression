@@ -1,5 +1,6 @@
 package com.temportalist.compression.client
 
+import com.temportalist.compression.client.gui.GuiCompressed
 import com.temportalist.compression.client.model.ModelCompressed
 import com.temportalist.compression.common.{Compression, ProxyCommon}
 import com.temportalist.compression.common.init.CBlocks
@@ -24,7 +25,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 class ProxyClient extends ProxyCommon {
 
 	override def getClientElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int,
-			z: Int, tileEntity: TileEntity): AnyRef = null
+			z: Int, tileEntity: TileEntity): AnyRef = {
+		if (ID == 0) {
+			return new GuiCompressed(player)
+		}
+		null
+	}
 
 	def compressedBlock: ModelResourceLocation = new ModelResourceLocation(CBlocks.compressed.getCompoundName(), "normal")
 	def compressedItem: ModelResourceLocation = new ModelResourceLocation(CBlocks.compressed.getCompoundName(), "inventory")

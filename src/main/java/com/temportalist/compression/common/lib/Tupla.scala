@@ -1,12 +1,8 @@
 package com.temportalist.compression.common.lib
 
 import com.temportalist.origin.library.client.utility.Rendering
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
-import net.minecraft.client.resources.model.IBakedModel
-import net.minecraft.item.{Item, ItemStack}
-import net.minecraftforge.common.property.IUnlistedProperty
+import net.minecraft.item.ItemStack
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 /**
@@ -15,35 +11,6 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
  * @author TheTemportalist 2/7/15
  */
 object Tupla {
-
-	// todo to origin
-	val ITEMSTACK: IUnlistedProperty[ItemStack] = new IUnlistedProperty[ItemStack] {
-		override def getType: Class[ItemStack] = classOf[ItemStack]
-
-		override def getName: String = "ItemStack"
-
-		override def valueToString(value: ItemStack): String = value.getDisplayName
-
-		override def isValid(value: ItemStack): Boolean = true
-	}
-
-	// todo to origin
-	def isBlock(item: Item): Boolean = Block.getBlockFromItem(item) != null
-
-	// todo to origin
-	def toState(stack: ItemStack): IBlockState = {
-		if (this.isBlock(stack.getItem))
-			Block.getBlockFromItem(stack.getItem).getStateFromMeta(stack.getMetadata)
-		else null
-	}
-
-	// todo to origin
-	def getModel(stack: ItemStack): IBakedModel = {
-		if (this.isBlock(stack.getItem))
-			Rendering.blockShapes.getModelForState(this.toState(stack))
-		else
-			Rendering.itemMesher.getItemModel(stack)
-	}
 
 	/* http://blogs.transparent.com/latin/latin-numbers-1-100/ */
 	val tiers: Array[String] = Array[String](
@@ -67,8 +34,14 @@ object Tupla {
 	}
 	*/
 
+	def getMaxTier(): Int = this.caps.length - 1
+
+	def getMaxCap(tier: Int): Long = this.caps(tier)
+
+	def getMaxCap(): Long = this.getMaxCap(this.getMaxTier())
+
 	def getTierFromSize(size: Long): Int = {
-		if (size <= 1 || size > this.caps(this.caps.length - 1)) return -1
+		if (size <= 1 || size > this.getMaxCap()) return -1
 		var tier: Int = 0
 		while (size > this.caps(tier)) {
 			tier += 1
@@ -88,6 +61,17 @@ object Tupla {
 		Rendering.mc.getTextureMapBlocks.getAtlasSprite(
 			"compression:blocks/overlay_" + this.getTierFromSize(size)
 		)
+	}
+
+	def canHold(compressed: ItemStack, size: Long): Boolean = {
+		compressed.getTagCompound.getLong("stackSize") + size <= Tupla.getMaxCap()
+	}
+
+	def absorb(compressed: ItemStack, toAbsorb: ItemStack): Unit = {
+		compressed.getTagCompound.setLong("stackSize",
+			compressed.getTagCompound.getLong("stackSize") + toAbsorb.stackSize
+		)
+		toAbsorb.stackSize = 0
 	}
 
 }

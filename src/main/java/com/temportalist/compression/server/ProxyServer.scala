@@ -1,6 +1,7 @@
 package com.temportalist.compression.server
 
 import com.temportalist.compression.common.ProxyCommon
+import com.temportalist.compression.common.container.ContainerCompressed
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
@@ -13,6 +14,11 @@ import net.minecraft.world.World
 class ProxyServer extends ProxyCommon {
 
 	override def getServerElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int,
-			z: Int, tileEntity: TileEntity): AnyRef = null
+			z: Int, tileEntity: TileEntity): AnyRef = {
+		if (ID == 0) {
+			return new ContainerCompressed(player)
+		}
+		null
+	}
 
 }
