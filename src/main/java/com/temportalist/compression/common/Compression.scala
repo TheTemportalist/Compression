@@ -182,6 +182,7 @@ object Compression extends ModWrapper {
 			for (i <- 0 until player.inventory.getSizeInventory) {
 				val invStack: ItemStack = player.inventory.getStackInSlot(i)
 				if (invStack != null && invStack.getItem == CBlocks.compressedItem) {
+					if (!invStack.hasTagCompound) return
 					val innerStack: ItemStack = NameParser.getItemStack(
 						invStack.getTagCompound.getString("inner")
 					)

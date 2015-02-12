@@ -26,8 +26,6 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 
 	// todo there is no alpha in the overlay texture for either block or item model, or is there?
 
-	var currentSprite: TextureAtlasSprite = null
-
 	private def getLayer(): EnumWorldBlockLayer = MinecraftForgeClient.getRenderLayer
 
 	private def getModel(inner: ItemStack, size: Long, layer: EnumWorldBlockLayer,
@@ -36,7 +34,6 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 			Rendering.blockShapes.getModelManager.getMissingModel
 		else {
 			val baked: IBakedModel = Rendering.getModel(inner, isItem)
-			this.currentSprite = baked.getTexture
 			if (layer == EnumWorldBlockLayer.SOLID) {
 				baked
 			}
@@ -107,7 +104,7 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 
 	override def getGeneralQuads: util.List[BakedQuad] = new util.ArrayList[BakedQuad]()
 
-	override def getTexture: TextureAtlasSprite = this.currentSprite
+	override def getTexture: TextureAtlasSprite = null
 
 	override def isAmbientOcclusion: Boolean = true
 

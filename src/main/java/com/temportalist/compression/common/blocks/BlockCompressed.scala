@@ -19,7 +19,7 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{MovingObjectPosition, BlockPos, EnumWorldBlockLayer}
+import net.minecraft.util.{BlockPos, EnumWorldBlockLayer, MovingObjectPosition}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.common.property.{ExtendedBlockState, IExtendedBlockState, IUnlistedProperty}
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
@@ -39,7 +39,8 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 
 	override def createBlockState(): BlockState = {
 		new ExtendedBlockState(
-			this, Array[IProperty](), Array[IUnlistedProperty[_]](BlockProps.ITEMSTACK, CBlocks.LONG)
+			this, Array[IProperty](),
+			Array[IUnlistedProperty[_]](BlockProps.ITEMSTACK, CBlocks.LONG)
 		)
 	}
 
@@ -94,13 +95,13 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 	}
 
 	override def canRenderInLayer(layer: EnumWorldBlockLayer): Boolean = {
-		true//CBlocks.validRenderLayers.contains(layer)
+		true //CBlocks.validRenderLayers.contains(layer)
 	}
 
 	override def getRenderColor(state: IBlockState): Int = {
 		state match {
 			case extended: IExtendedBlockState =>
-				println (extended.getValue(BlockProps.ITEMSTACK))
+				println(extended.getValue(BlockProps.ITEMSTACK))
 			case _ =>
 		}
 		super.getRenderColor(state)
@@ -120,20 +121,33 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 		}
 	}
 
-	override def getPickBlock(
-			target: MovingObjectPosition, world: World, pos: BlockPos): ItemStack = {
+	def getCompressedBlock(world: World, pos: BlockPos): ItemStack = {
 		world.getTileEntity(pos) match {
 			case compressed: TECompressed =>
 				if (compressed.getState() != null)
 					return Compression.constructCompressed(compressed.getState())
 			case _ =>
 		}
-		super.getPickBlock(target, world, pos)
+		null
 	}
 
-	override def getDrops(
-			world: IBlockAccess, pos: BlockPos, state: IBlockState, fortune: Int
-			): util.List[ItemStack] = new util.ArrayList[ItemStack]()
+	override def getPickBlock(
+			target: MovingObjectPosition, world: World, pos: BlockPos): ItemStack = {
+		val stack: ItemStack = this.getCompressedBlock(world, pos)
+		if (stack != null)
+			stack
+		else
+			super.getPickBlock(target, world, pos)
+	}
+
+	override def getDrops_Pre(world: World, pos: BlockPos, state: IBlockState,
+			tile: TileEntity): util.List[ItemStack] = {
+		val list: util.List[ItemStack] = new util.ArrayList[ItemStack]()
+		val stack: ItemStack = this.getCompressedBlock(world, pos)
+		if (stack != null)
+			list.add(stack)
+		list
+	}
 
 	override def colorMultiplier(worldIn: IBlockAccess, pos: BlockPos, renderPass: Int): Int = {
 		worldIn.getTileEntity(pos) match {
