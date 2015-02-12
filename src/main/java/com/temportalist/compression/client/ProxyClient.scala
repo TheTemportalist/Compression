@@ -32,14 +32,18 @@ class ProxyClient extends ProxyCommon {
 		null
 	}
 
+	// todo these are temportary and should be automated somehow by origin
 	def compressedBlock: ModelResourceLocation = new ModelResourceLocation(CBlocks.compressed.getCompoundName(), "normal")
 	def compressedItem: ModelResourceLocation = new ModelResourceLocation(CBlocks.compressed.getCompoundName(), "inventory")
 
 	override def registerRender(): Unit = {
 
+		// Register the item & metadata to a model location
+		// same effect of IRenderingObject.registerRendering
 		ModelLoader.setCustomModelResourceLocation(
 			Item.getItemFromBlock(CBlocks.compressed), 0, this.compressedItem
 		)
+		// Register a custom state for a block (which redirects to the model location)
 		ModelLoader.setCustomStateMapper(CBlocks.compressed, new StateMapperBase {
 			override def getModelResourceLocation(
 					iBlockState: IBlockState): ModelResourceLocation = compressedBlock
@@ -49,6 +53,7 @@ class ProxyClient extends ProxyCommon {
 
 	@SubscribeEvent
 	def bake(event: ModelBakeEvent): Unit = {
+		// make the model to both the block and item forms
 		val model = new ModelCompressed()
 		event.modelRegistry.putObject(this.compressedBlock, model)
 		event.modelRegistry.putObject(this.compressedItem, model)
@@ -56,6 +61,7 @@ class ProxyClient extends ProxyCommon {
 
 	@SubscribeEvent
 	def pre_Sprites(event: TextureStitchEvent.Pre): Unit = {
+		// register custom sprites which are not mapped to a specific block
 		if (event.map == Rendering.mc.getTextureMapBlocks)
 			for (i <- 1 to 18)
 				event.map.registerSprite(new ResourceLocation(Compression.MODID, "blocks/overlay_" + i))

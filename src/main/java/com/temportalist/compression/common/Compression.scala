@@ -4,18 +4,17 @@ import java.util
 
 import scala.collection.JavaConversions
 
-import com.temportalist.compression.common.blocks.BlockCompressed
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.IFood
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.network.PacketUpdateCompressed
-import com.temportalist.compression.common.recipe.{RecipeDynamic, RecipeCompress, RecipeDeCompress}
+import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDeCompress, RecipeDynamic}
 import com.temportalist.origin.library.common.helpers.RegisterHelper
 import com.temportalist.origin.library.common.lib.NameParser
 import com.temportalist.origin.library.common.utility.States
 import com.temportalist.origin.wrapper.common.{ModWrapper, ProxyWrapper}
+import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
-import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
@@ -49,14 +48,19 @@ object Compression extends ModWrapper {
 	@SidedProxy(clientSide = this.clientProxy, serverSide = this.serverProxy)
 	var proxy: ProxyWrapper = null
 
-	val tab: CreativeTabs = new CreativeTabs(Compression.MODNAME) {
+	/**
+	 * The tab for all the Compressed blocks
+	 * Entries are added based on a selector and fetches all
+	 * possible entries from the registered blocks/items
+	 */
+	val tab: CreativeTabs = new CreativeTabs(Compression.MODID) {
 		override def getTabIconItem: Item = Items.stick
 	}
 
 	@Mod.EventHandler
 	def pre(event: FMLPreInitializationEvent): Unit = {
 		super.preInitialize(this.MODID, this.MODNAME, event, this.proxy, CBlocks, Options)
-		RegisterHelper.registerHandler(this.proxy)
+		// register this mod's packets
 		RegisterHelper.registerPacketHandler(this.MODID, classOf[PacketUpdateCompressed])
 
 	}
@@ -67,29 +71,44 @@ object Compression extends ModWrapper {
 	@Mod.EventHandler
 	def post(event: FMLPostInitializationEvent): Unit = {
 		super.postInitialize(event)
+		// construct blocks & items compressed
 		this.constructCompressables(true)
 		this.constructCompressables(false)
 	}
 
+	/**
+	 * A list of ALL compressed blocks & items that were registered to minecraft
+	 */
 	val compressables: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
 
+	def isValidStack(stack: ItemStack, bvi: Boolean): Boolean = {
+		if (bvi) { // blocks
+			val state: IBlockState = States.getState(stack)
+			val block: Block = state.getBlock
+			for (clazz <- Options.blackList_Block_Class) {
+				if (block.getClass.isAssignableFrom(clazz)) return false
+			}
+			block.isSolidFullCube && block.isVisuallyOpaque && block.isOpaqueCube &&
+					Item.getItemFromBlock(block) != null && !block.hasTileEntity(state)
+		}
+		else { // items
+			val item: Item = stack.getItem
+			for (clazz <- Options.blackList_Item_Class) {
+				if (item.getClass.isAssignableFrom(clazz)) return false
+			}
+			item.getItemStackLimit(stack) > 1
+		}
+	}
+
 	private def constructCompressables(bvi: Boolean): Unit = {
-		if (bvi) {
+		if (bvi) { // blocks
 			val blocks: java.lang.Iterable[Block] = GameData.getBlockRegistry.typeSafeIterable()
 			for (block: Block <- JavaConversions.asScalaIterator(blocks.iterator())) {
-				if (
-					!block.isInstanceOf[BlockCompressed] &&
-							block.isSolidFullCube &&
-							block.isVisuallyOpaque &&
-							block.isOpaqueCube &&
-							Item.getItemFromBlock(block) != null &&
-							!block.isInstanceOf[ITileEntityProvider]
-				) {
+				if (this.isValidStack(new ItemStack(block), bvi)) {
 					val subBlocks: util.List[ItemStack] = new util.ArrayList[ItemStack]()
-					// todo should this be on a per tab basis?
 					block.getSubBlocks(Item.getItemFromBlock(block), null, subBlocks)
 					for (i <- 0 until subBlocks.size()) {
-						if (!block.hasTileEntity(States.getState(subBlocks.get(i)))) {
+						if (this.isValidStack(subBlocks.get(i), bvi)) {
 							val stack: ItemStack = this.constructCompressed(subBlocks.get(i))
 							this.compressables.add(stack)
 							this.makeRecipe(subBlocks.get(i), stack)
@@ -98,15 +117,14 @@ object Compression extends ModWrapper {
 				}
 			}
 		}
-		else {
+		else { // items
 			val items: java.lang.Iterable[Item] = GameData.getItemRegistry.typeSafeIterable()
 			for (item: Item <- JavaConversions.asScalaIterator(items.iterator())) {
-				if (!item.isInstanceOf[ItemBlock]) {
+				if (this.isValidStack(new ItemStack(item), bvi)) {
 					val subItems: util.List[ItemStack] = new util.ArrayList[ItemStack]()
-					if (item.getHasSubtypes) item.getSubItems(item, null, subItems)
-					else subItems.add(new ItemStack(item))
+					item.getSubItems(item, null, subItems)
 					for (i <- 0 until subItems.size()) {
-						if (item.getItemStackLimit(subItems.get(i)) > 1) {
+						if (this.isValidStack(subItems.get(i), bvi)) {
 							val stack: ItemStack = this.constructCompressed(subItems.get(i))
 							this.compressables.add(stack)
 							this.makeRecipe(subItems.get(i), stack)

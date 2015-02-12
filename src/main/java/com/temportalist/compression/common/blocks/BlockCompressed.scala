@@ -34,6 +34,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {
+		// return a list of ALL compressable blocks
 		list.asInstanceOf[util.List[ItemStack]].addAll(Compression.compressables)
 	}
 

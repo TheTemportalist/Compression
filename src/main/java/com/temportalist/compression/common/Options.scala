@@ -1,6 +1,8 @@
 package com.temportalist.compression.common
 
+import com.temportalist.compression.common.blocks.BlockCompressed
 import com.temportalist.origin.library.common.register.OptionRegister
+import net.minecraft.item.ItemBlock
 
 /**
  *
@@ -10,6 +12,14 @@ import com.temportalist.origin.library.common.register.OptionRegister
 object Options extends OptionRegister {
 
 	var hasTraditionalRecipes: Boolean = true
+
+	val blackList_Block_Class: List[Class[_]] = List[Class[_]](
+		classOf[BlockCompressed]
+	)
+	val blackList_Item_Class: List[Class[_]] = List[Class[_]](
+		classOf[ItemBlock]
+	)
+
 
 	override def register(): Unit = {
 
