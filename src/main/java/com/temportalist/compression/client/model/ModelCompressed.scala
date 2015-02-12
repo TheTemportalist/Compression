@@ -37,8 +37,31 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 			if (layer == EnumWorldBlockLayer.SOLID) {
 				baked
 			}
-			else
-				new SimpleBakedModel.Builder(baked, Tupla.getSprite(size)).makeBakedModel()
+			else {
+				new SimpleBakedModel.Builder(
+					new IBakedModel {
+						override def isBuiltInRenderer: Boolean = baked.isBuiltInRenderer
+						override def getItemCameraTransforms: ItemCameraTransforms =
+							baked.getItemCameraTransforms
+						override def getTexture: TextureAtlasSprite = {
+							if (baked.getTexture == null)
+								Rendering.mc.getTextureMapBlocks.getAtlasSprite("minecraft:blocks/slime")
+							else baked.getTexture
+						}
+						override def isAmbientOcclusion: Boolean = baked.isAmbientOcclusion
+						override def getGeneralQuads: util.List[_] = {
+							if (baked.getGeneralQuads == null)
+								new util.ArrayList[BakedQuad]()
+							else baked.getGeneralQuads
+						}
+						override def isGui3d: Boolean = baked.isGui3d
+						override def getFaceQuads(face : EnumFacing): util.List[_] = {
+							if (baked.getFaceQuads(face) == null)
+								new util.ArrayList[BakedQuad]()
+							else baked.getFaceQuads(face)
+						}
+					}, Tupla.getSprite(size)).makeBakedModel()
+			}
 		}
 	}
 
@@ -76,7 +99,7 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 				}
 				if (model.getGeneralQuads != null)
 					fullQuadList.addAll(model.getGeneralQuads.asInstanceOf[util.List[BakedQuad]])
-				for (face <- EnumFacing.values())
+				for (face <- EnumFacing.values()) if (model.getFaceQuads(face) != null)
 					fullQuadList.addAll(model.getFaceQuads(face).asInstanceOf[util.List[BakedQuad]])
 			}
 			new IBakedModel {
@@ -104,7 +127,8 @@ class ModelCompressed extends ISmartBlockModel with ISmartItemModel {
 
 	override def getGeneralQuads: util.List[BakedQuad] = new util.ArrayList[BakedQuad]()
 
-	override def getTexture: TextureAtlasSprite = null
+	override def getTexture: TextureAtlasSprite =
+	Rendering.mc.getTextureMapBlocks.getAtlasSprite("compression:blocks/overlay_18")
 
 	override def isAmbientOcclusion: Boolean = true
 
