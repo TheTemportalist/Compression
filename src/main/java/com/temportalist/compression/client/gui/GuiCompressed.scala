@@ -23,6 +23,9 @@ class GuiCompressed(p: EntityPlayer) extends GuiContainerWrapper(new ContainerCo
 	val currentStackIndex: Int = p.inventory.currentItem
 	var tierSlider: GuiSlider = null
 	var quantitySlider: GuiSlider = null
+	this.setupGui("", Compression.getResource("gui", "stack_" +
+			(if (p.capabilities.isCreativeMode) "creative.png" else "survival.png")
+	))
 
 	override def initGui(): Unit = {
 		super.initGui()
@@ -86,12 +89,5 @@ class GuiCompressed(p: EntityPlayer) extends GuiContainerWrapper(new ContainerCo
 			this.currentStackIndex, this.quantitySlider.getRealValue().toLong
 		))
 	}
-
-
-	// todo to origin
-	def getCenterX(): Int = (this.getX() + this.width) / 2
-
-	// todo to origin
-	def getCenterY(): Int = (this.getY() + this.height) / 2
 
 }

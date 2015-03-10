@@ -1,17 +1,18 @@
 package com.temportalist.compression.common.tile
 
+import com.temportalist.origin.api.tile.ITileSaver
 import com.temportalist.origin.library.common.lib.NameParser
-import com.temportalist.origin.wrapper.common.tile.TEWrapper
 import net.minecraft.block.state.IBlockState
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.tileentity.TileEntity
 
 /**
  *
  *
  * @author TheTemportalist 2/7/15
  */
-class TECompressed extends TEWrapper("Compressed") {
+class TECompressed extends TileEntity with ITileSaver {
 
 	private var innerState: ItemStack = null
 	private var size: Long = 0
@@ -22,14 +23,14 @@ class TECompressed extends TEWrapper("Compressed") {
 
 	def setState(state: ItemStack): Unit = {
 		this.innerState = state
-		//this.markDirty()
+		this.markDirty()
 	}
 
 	def getState(): ItemStack = this.innerState
 
 	def setSize(size: Long): Unit = {
 		this.size = size
-		//this.markDirty()
+		this.markDirty()
 	}
 
 	def getSize(): Long = this.size
@@ -46,7 +47,7 @@ class TECompressed extends TEWrapper("Compressed") {
 
 	override def readFromNBT(tagCom: NBTTagCompound): Unit = {
 		super.readFromNBT(tagCom)
-		println ("reading " + tagCom.toString)
+		//println ("reading " + tagCom.toString)
 		this.innerState = NameParser.getItemStack(tagCom.getString("inner"))
 		this.size = tagCom.getLong("stackSize")
 	}

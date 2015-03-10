@@ -1,7 +1,6 @@
 package com.temportalist.compression.common.recipe
 
-import scala.collection.mutable
-
+import com.temportalist.origin.library.common.utility.Scala
 import net.minecraft.inventory.InventoryCrafting
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
@@ -21,7 +20,7 @@ class RecipeDynamic(
 	var useNBT: Boolean = true
 
 	def this(width: Int, height: Int, filler: ItemStack, output: ItemStack) {
-		this(width, height, RecipeDynamic.map(width*height, filler), Map(), output)
+		this(width, height, Scala.fill(width*height, filler), Map(), output)
 	}
 
 	def setUseNBT(doUse: Boolean): RecipeDynamic = {
@@ -74,14 +73,4 @@ class RecipeDynamic(
 		true
 	}
 
-}
-
-object RecipeDynamic {
-	// todo to origin
-	def map[B](size: Int, obj: B): Map[Int, B] = {
-		val map: mutable.Map[Int, B] = mutable.Map[Int, B]()
-		for(i <- 0 until size)
-			map(i) = obj
-		map.toMap
-	}
 }

@@ -9,10 +9,11 @@ import com.temportalist.compression.common.item.IFood
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.network.PacketUpdateCompressed
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDeCompress, RecipeDynamic}
-import com.temportalist.origin.library.common.helpers.RegisterHelper
+import com.temportalist.origin.api.{IResourceHandler, IProxy}
+import com.temportalist.origin.library.common.handlers.RegisterHelper
 import com.temportalist.origin.library.common.lib.NameParser
-import com.temportalist.origin.library.common.utility.States
-import com.temportalist.origin.wrapper.common.{ModWrapper, ProxyWrapper}
+import com.temportalist.origin.library.common.utility.{States, WorldHelper}
+import com.temportalist.origin.wrapper.common.ModWrapper
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.creativetab.CreativeTabs
@@ -37,7 +38,7 @@ import net.minecraftforge.fml.common.{Mod, SidedProxy}
 	//guiFactory = Compression.clientProxy,
 	dependencies = "required-after:origin@[4,);"
 )
-object Compression extends ModWrapper {
+object Compression extends ModWrapper with IResourceHandler {
 
 	final val MODID = "compression"
 	//"@MODID@"
@@ -45,8 +46,10 @@ object Compression extends ModWrapper {
 	final val clientProxy = "com.temportalist.compression.client.ProxyClient"
 	final val serverProxy = "com.temportalist.compression.server.ProxyServer"
 
+	override protected def getModid(): String = this.MODID
+
 	@SidedProxy(clientSide = this.clientProxy, serverSide = this.serverProxy)
-	var proxy: ProxyWrapper = null
+	var proxy: IProxy = null
 
 	/**
 	 * The tab for all the Compressed blocks
@@ -82,11 +85,12 @@ object Compression extends ModWrapper {
 	val compressables: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
 
 	def isValidStack(stack: ItemStack, bvi: Boolean): Boolean = {
-		if (bvi) { // blocks
+		if (stack == null || stack.getItem == null) return false
+		if (bvi && WorldHelper.isBlock(stack.getItem)) { // blocks
 			val state: IBlockState = States.getState(stack)
 			val block: Block = state.getBlock
 			for (clazz <- Options.blackList_Block_Class) {
-				if (block.getClass.isAssignableFrom(clazz)) return false
+				if (clazz.isAssignableFrom(block.getClass)) return false
 			}
 			block.isSolidFullCube && block.isVisuallyOpaque && block.isOpaqueCube &&
 					Item.getItemFromBlock(block) != null && !block.hasTileEntity(state)
@@ -94,7 +98,7 @@ object Compression extends ModWrapper {
 		else { // items
 			val item: Item = stack.getItem
 			for (clazz <- Options.blackList_Item_Class) {
-				if (item.getClass.isAssignableFrom(clazz)) return false
+				if (clazz.isAssignableFrom(item.getClass)) return false
 			}
 			item.getItemStackLimit(stack) > 1
 		}
@@ -156,7 +160,7 @@ object Compression extends ModWrapper {
 				stack.getItem.asInstanceOf[IFood].setSaturation(food.getSaturationModifier(inner))
 			case food: IFood =>
 				tag.setBoolean("canEat", true)
-				stack.getItem.asInstanceOf[IFood].setHealAmount(food.getHealAmount(inner))
+				stack.getItem.asInstanceOf[IFood].setHealAmount(food.getFoodAmount(inner))
 				stack.getItem.asInstanceOf[IFood].setSaturation(food.getSaturationAmount(inner))
 			case _ =>
 				tag.setBoolean("canEat", false)

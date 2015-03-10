@@ -126,7 +126,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 		world.getTileEntity(pos) match {
 			case compressed: TECompressed =>
 				if (compressed.getState() != null)
-					return Compression.constructCompressed(compressed.getState())
+					return Compression.constructCompressed(compressed.getState(), compressed.getSize())
 			case _ =>
 		}
 		null

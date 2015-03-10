@@ -13,7 +13,7 @@ import net.minecraft.block.{Block, BlockSnow}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.item.{ItemBlock, ItemStack}
-import net.minecraft.util.{BlockPos, EnumFacing}
+import net.minecraft.util.{FoodStats, BlockPos, EnumFacing}
 import net.minecraft.world.World
 
 /**
@@ -124,8 +124,35 @@ class ItemCompressed(block: Block) extends ItemBlock(block) with IFood {
 		}
 	}
 
-	override def decrementStack(stack: ItemStack): Unit = {
-		super.decrementStack(stack) // todo compressed eatings
+	override def decrementStack(stack: ItemStack, stats: FoodStats): Float = {
+		val food: Int = this.getFoodAmount(stack)
+		var foodMult: Int = stats.getFoodLevel / food
+		if (stats.getFoodLevel % food > 0) foodMult += 1
+		val saturation: Float = this.getSaturationAmount(stack)
+		var satMult: Float = stats.getSaturationLevel / saturation
+		if (stats.getSaturationLevel % saturation > 0) satMult += 1
+		var mult: Float = Math.max(foodMult, satMult)
+
+		if (stack.hasTagCompound) {
+			val size: Long = stack.getTagCompound.getLong("stackSize")
+			if (size + 1 > mult) {
+				stack.getTagCompound.setLong("stackSize", size - mult.toLong)
+			}
+			else if (size > mult) {
+				val inner: ItemStack = NameParser.getItemStack(
+					stack.getTagCompound.getString("inner")
+				)
+				stack.setItem(inner.getItem)
+				stack.setItemDamage(inner.getItemDamage)
+				stack.setTagCompound(inner.getTagCompound)
+			}
+			else {
+				mult = size.toFloat
+				stack.stackSize = 0 // effectively kill the stack
+			}
+			return mult
+		}
+		0f
 	}
 
 }

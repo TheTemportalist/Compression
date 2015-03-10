@@ -2,7 +2,8 @@ package com.temportalist.compression.common.recipe
 
 import com.temportalist.compression.common.item.ItemCompressed
 import com.temportalist.origin.library.common.lib.NameParser
-import net.minecraft.inventory.{IInventory, InventoryCrafting}
+import com.temportalist.origin.library.common.utility.Scala
+import net.minecraft.inventory.InventoryCrafting
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.world.World
@@ -19,7 +20,7 @@ class RecipeDeCompress(inner: ItemStack) extends IRecipe {
 
 	private final def getKeptAndOutput(inv: InventoryCrafting): Array[ItemStack] = {
 		val set: Array[ItemStack] = new Array[ItemStack](2)
-		this.loopCallBack(inv, (i: Int, slotStack: ItemStack) => {
+		Scala.foreach(inv, (i: Int, slotStack: ItemStack) => {
 			if (slotStack != null) if (this.isValidCompressed(slotStack)) {
 				val inner: ItemStack = NameParser.getItemStack(
 					slotStack.getTagCompound.getString("inner")
@@ -46,21 +47,11 @@ class RecipeDeCompress(inner: ItemStack) extends IRecipe {
 			Array[ItemStack]()
 		else {
 			val leftover: Array[ItemStack] = new Array[ItemStack](inv.getSizeInventory)
-			this.loopCallBack(inv, (i: Int, slotStack: ItemStack) => {
+			Scala.foreach(inv, (i: Int, slotStack: ItemStack) => {
 				if (this.isValidCompressed(slotStack))
 					leftover(i) = keptAndOutput(0)
 			})
 			leftover
-		}
-	}
-
-	def loopCallBack(inv: IInventory, callback: (Int, ItemStack) => Unit): Unit = {
-		for (i <- 0 until inv.getSizeInventory) callback(i, inv.getStackInSlot(i))
-	}
-
-	def loopCallBack[T](data: Array[T], callback: (Int, T) => Unit): Unit = {
-		for (i <- 0 until data.length) {
-			callback(i, data(i))
 		}
 	}
 
