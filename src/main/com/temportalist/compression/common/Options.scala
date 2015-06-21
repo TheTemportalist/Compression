@@ -1,10 +1,10 @@
 package com.temportalist.compression.common
 
 import com.temportalist.compression.common.blocks.BlockCompressed
-import com.temportalist.origin.library.common.lib.ConfigJson
-import com.temportalist.origin.library.common.register.OptionRegister
+import com.temportalist.origin.api.common.lib.ConfigJson
+import com.temportalist.origin.foundation.common.register.OptionRegister
+import cpw.mods.fml.common.event.FMLPreInitializationEvent
 import net.minecraft.item._
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 
 /**
  *
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
  */
 object Options extends OptionRegister {
 
-	override def hasDefaultConfig(): Boolean = false
+	override def hasDefaultConfig: Boolean = false
 
 	override def customizeConfiguration(event: FMLPreInitializationEvent): Unit = {
 		if (this.config == null) {
@@ -32,8 +32,7 @@ object Options extends OptionRegister {
 		"item" -> Array[String](
 			classOf[ItemBlock].getName, classOf[ItemMonsterPlacer].getName,
 			classOf[ItemSkull].getName, classOf[ItemFireworkCharge].getName,
-			classOf[ItemDoor].getName, classOf[ItemArmorStand].getName,
-			classOf[ItemEmptyMap].getName, classOf[ItemMap].getName
+			classOf[ItemDoor].getName, classOf[ItemEmptyMap].getName, classOf[ItemMap].getName
 		)
 	)
 	var blackList_Block_Class: Array[Class[_]] = null

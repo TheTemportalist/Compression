@@ -2,34 +2,31 @@ package com.temportalist.compression.common.blocks
 
 import java.util
 
+import com.sun.deploy.panel.IProperty
 import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.ItemCompressed
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.tile.TECompressed
-import com.temportalist.origin.library.common.lib.{BlockProps, NameParser}
-import com.temportalist.origin.library.common.utility.States
-import com.temportalist.origin.wrapper.common.block.BlockWrapperTE
+import com.temportalist.origin.api.common.block.BlockTile
+import com.temportalist.origin.api.common.lib.{BlockState, BlockPos}
+import cpw.mods.fml.relauncher.{SideOnly, Side}
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.state.{BlockState, IBlockState}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{BlockPos, EnumWorldBlockLayer, MovingObjectPosition}
+import net.minecraft.util.MovingObjectPosition
 import net.minecraft.world.{IBlockAccess, World}
-import net.minecraftforge.common.property.{ExtendedBlockState, IExtendedBlockState, IUnlistedProperty}
-import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 /**
  *
  *
  * @author TheTemportalist 2/7/15
  */
-class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWrapperTE(
+class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTile(
 	Material.ground, Compression.MODID, name, classOf[ItemCompressed], te) {
 
 	@SideOnly(Side.CLIENT)
@@ -72,7 +69,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 			if (!innerName.isEmpty) {
 				worldIn.getTileEntity(pos) match {
 					case compressed: TECompressed =>
-						compressed.setState(NameParser.getItemStack(innerName))
+						compressed.setStack(NameParser.getItemStack(innerName))
 						compressed.setSize(stack.getTagCompound.getLong("stackSize"))
 
 						val mult: Int = Tupla.getTierFromSize(compressed.getSize())
@@ -98,6 +95,8 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockWra
 	override def canRenderInLayer(layer: EnumWorldBlockLayer): Boolean = {
 		true //CBlocks.validRenderLayers.contains(layer)
 	}
+
+	override def canRenderInPass(pass: Int): Boolean = true
 
 	override def getRenderColor(state: IBlockState): Int = {
 		state match {

@@ -4,11 +4,9 @@ package com.temportalist.compression.common.init
 import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.blocks.BlockCompressed
 import com.temportalist.compression.common.tile.TECompressed
-import com.temportalist.origin.library.common.register.BlockRegister
+import com.temportalist.origin.foundation.common.register.BlockRegister
+import cpw.mods.fml.relauncher.SideOnly
 import net.minecraft.item.Item
-import net.minecraft.util.EnumWorldBlockLayer
-import net.minecraftforge.common.property.IUnlistedProperty
-import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 
 /**
  *
@@ -17,6 +15,7 @@ import net.minecraftforge.fml.relauncher.{Side, SideOnly}
  */
 object CBlocks extends BlockRegister {
 
+	/*
 	@SideOnly(Side.CLIENT)
 	val validRenderLayers: List[EnumWorldBlockLayer] = List(
 		EnumWorldBlockLayer.SOLID, EnumWorldBlockLayer.TRANSLUCENT
@@ -43,6 +42,7 @@ object CBlocks extends BlockRegister {
 
 		override def isValid(v: Long): Boolean = true
 	}
+	*/
 
 	var compressed: BlockCompressed = null
 	def compressedItem: Item = Item.getItemFromBlock(compressed)

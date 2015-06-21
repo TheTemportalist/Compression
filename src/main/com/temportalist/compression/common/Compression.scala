@@ -2,6 +2,16 @@ package com.temportalist.compression.common
 
 import java.util
 
+import com.temportalist.origin.api.common.proxy.IProxy
+import com.temportalist.origin.api.common.resource.IModDetails
+import com.temportalist.origin.api.common.utility.WorldHelper
+import com.temportalist.origin.foundation.common.IMod
+import com.temportalist.origin.internal.common.handlers.RegisterHelper
+import cpw.mods.fml.common.event.{FMLPostInitializationEvent, FMLInitializationEvent, FMLPreInitializationEvent}
+import cpw.mods.fml.common.eventhandler.SubscribeEvent
+import cpw.mods.fml.common.registry.{GameRegistry, GameData}
+import cpw.mods.fml.common.{SidedProxy, Mod}
+
 import scala.collection.JavaConversions
 
 import com.temportalist.compression.common.init.CBlocks
@@ -9,13 +19,7 @@ import com.temportalist.compression.common.item.IFood
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.network.PacketUpdateCompressed
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDeCompress, RecipeDynamic}
-import com.temportalist.origin.api.{IResourceHandler, IProxy}
-import com.temportalist.origin.library.common.handlers.RegisterHelper
-import com.temportalist.origin.library.common.lib.NameParser
-import com.temportalist.origin.library.common.utility.{States, WorldHelper}
-import com.temportalist.origin.wrapper.common.ModWrapper
 import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
@@ -23,30 +27,32 @@ import net.minecraft.init.{Blocks, Items}
 import net.minecraft.item._
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent
-import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.registry.{GameData, GameRegistry}
-import net.minecraftforge.fml.common.{Mod, SidedProxy}
 
 /**
  *
  *
  * @author TheTemportalist 2/6/15
  */
-@Mod(modid = Compression.MODID, name = Compression.MODNAME, version = "@PLUGIN_VERSION@",
+@Mod(modid = Compression.MODID, name = Compression.MODNAME, version = Compression.VERSION,
 	modLanguage = "scala",
 	//guiFactory = Compression.clientProxy,
-	dependencies = "required-after:origin@[4,);"
+	dependencies = "required-after:origin@[5,);"
 )
-object Compression extends ModWrapper with IResourceHandler {
+object Compression extends IMod with IModDetails {
 
-	final val MODID = "compression"
-	//"@MODID@"
+	final val MODID = "compression" //"@MODID@"
 	final val MODNAME = "@MODNAME@"
+	final val VERSION = "@PLUGIN_VERSION@"
 	final val clientProxy = "com.temportalist.compression.client.ProxyClient"
 	final val serverProxy = "com.temportalist.compression.server.ProxyServer"
 
-	override protected def getModid(): String = this.MODID
+	override def getDetails: IModDetails = this
+
+	override def getModid: String = this.MODID
+
+	override def getModName: String = this.MODNAME
+
+	override def getModVersion: String = this.VERSION
 
 	@SidedProxy(clientSide = this.clientProxy, serverSide = this.serverProxy)
 	var proxy: IProxy = null
@@ -62,9 +68,9 @@ object Compression extends ModWrapper with IResourceHandler {
 
 	@Mod.EventHandler
 	def pre(event: FMLPreInitializationEvent): Unit = {
-		super.preInitialize(this.MODID, this.MODNAME, event, this.proxy, CBlocks, Options)
+		super.preInitialize(this, event, this.proxy, Options, CBlocks)
 		// register this mod's packets
-		RegisterHelper.registerPacketHandler(this.MODID, classOf[PacketUpdateCompressed])
+		this.registerPackets(classOf[PacketUpdateCompressed])
 
 	}
 
@@ -73,7 +79,7 @@ object Compression extends ModWrapper with IResourceHandler {
 
 	@Mod.EventHandler
 	def post(event: FMLPostInitializationEvent): Unit = {
-		super.postInitialize(event)
+		super.postInitialize(event, this.proxy)
 		// construct blocks & items compressed
 		this.constructCompressables(true)
 		this.constructCompressables(false)
@@ -87,13 +93,17 @@ object Compression extends ModWrapper with IResourceHandler {
 	def isValidStack(stack: ItemStack, bvi: Boolean): Boolean = {
 		if (stack == null || stack.getItem == null) return false
 		if (bvi && WorldHelper.isBlock(stack.getItem)) { // blocks
-			val state: IBlockState = States.getState(stack)
-			val block: Block = state.getBlock
+			val block: Block = Block.getBlockFromItem(stack.getItem)
 			for (clazz <- Options.blackList_Block_Class) {
 				if (clazz.isAssignableFrom(block.getClass)) return false
 			}
-			block.isSolidFullCube && block.isVisuallyOpaque && block.isOpaqueCube &&
-					Item.getItemFromBlock(block) != null && !block.hasTileEntity(state)
+			if (Item.getItemFromBlock(block) != null) {
+				this.log("WARNING: Block " + block.getUnlocalizedName + " with metadata " +
+						stack.getItemDamage + " can be identified from " +
+						stack.getItem.getUnlocalizedName + " but not vice versa.")
+				false
+			}
+			else block.isOpaqueCube && !block.hasTileEntity(stack.getItemDamage)
 		}
 		else { // items
 			val item: Item = stack.getItem
@@ -140,11 +150,7 @@ object Compression extends ModWrapper with IResourceHandler {
 	}
 
 	def constructCompressed(block: Block): ItemStack = {
-		this.constructCompressed(block.getDefaultState)
-	}
-
-	def constructCompressed(state: IBlockState): ItemStack = {
-		this.constructCompressed(States.getStack(state))
+		this.constructCompressed(new ItemStack(block, 1, 0))
 	}
 
 	def constructCompressed(inner: ItemStack): ItemStack = this.constructCompressed(inner, 5)
