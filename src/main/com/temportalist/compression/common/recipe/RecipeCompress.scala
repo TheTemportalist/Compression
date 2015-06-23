@@ -1,7 +1,7 @@
 package com.temportalist.compression.common.recipe
 
 import com.temportalist.compression.common.Compression
-import com.temportalist.compression.common.item.ItemCompressed
+import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.origin.library.common.lib.NameParser
 import net.minecraft.inventory.InventoryCrafting
@@ -51,7 +51,7 @@ class RecipeCompress(inner: ItemStack) extends IRecipe {
 	}
 
 	private final def isValidCompressed(slotStack: ItemStack): Boolean = {
-		slotStack.getItem.isInstanceOf[ItemCompressed] &&
+		slotStack.getItem.isInstanceOf[ItemBlockCompressed] &&
 			NameParser.getItemStack(slotStack.getTagCompound.getString("inner")).getItem == this.inner.getItem
 	}
 

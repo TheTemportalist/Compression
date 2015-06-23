@@ -3,7 +3,7 @@ package com.temportalist.compression.common.blocks
 import java.util
 
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.item.ItemCompressed
+import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.compression.common.tile.TECompressed
 import com.temportalist.compression.common.{Compression, Tiers}
 import com.temportalist.origin.api.common.block.BlockTile
@@ -26,7 +26,7 @@ import net.minecraft.world.{IBlockAccess, World}
  * @author  TheTemportalist  6/18/15
  */
 class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTile(
-	Material.ground, Compression.getModid, name, classOf[ItemCompressed], te) {
+	Material.ground, Compression.getModid, name, classOf[ItemBlockCompressed], te) {
 
 	override def onBlockPlacedBy(world: World, x: Int, y: Int, z: Int, placer: EntityLivingBase,
 			stack: ItemStack): Unit = {
@@ -103,7 +103,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTil
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {
 		// return a list of ALL compressable blocks
-		list.asInstanceOf[util.List[ItemStack]].addAll(CBlocks.compressables)
+		list.asInstanceOf[util.List[ItemStack]].addAll(CBlocks.compressedBlocks)
 	}
 
 	override def renderAsNormalBlock(): Boolean = false

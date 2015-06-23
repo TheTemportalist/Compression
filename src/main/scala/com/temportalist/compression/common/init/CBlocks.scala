@@ -29,9 +29,9 @@ object CBlocks extends BlockRegister {
 
 	var compressed: BlockCompressed = null
 
-	val compressedRenderID: Int = RenderingRegistry.getNextAvailableRenderId
+	def compressedItem: Item = Item.getItemFromBlock(this.compressed)
 
-	def compressedItem: Item = Item.getItemFromBlock(CBlocks.compressed)
+	val compressedRenderID: Int = RenderingRegistry.getNextAvailableRenderId
 
 	/**
 	 * This method is used to register TileEntities.
@@ -43,7 +43,7 @@ object CBlocks extends BlockRegister {
 
 	override def register(): Unit = {
 
-		this.compressed = new BlockCompressed("compressed", classOf[TECompressed])
+		this.compressed = new BlockCompressed("compressedBlock", classOf[TECompressed])
 		this.compressed.setCreativeTab(Compression.tab)
 
 	}
@@ -51,9 +51,14 @@ object CBlocks extends BlockRegister {
 	// Compressables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	/**
-	 * A list of ALL compressed blocks & items that were registered to minecraft
+	 * A list of ALL compressed blocks that were registered to minecraft
 	 */
-	val compressables: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
+	val compressedBlocks: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
+
+	/**
+	 * A list of ALL compressed items that were registered to minecraft
+	 */
+	val compressedItems: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
 
 	def constructCompressables(bvi: Boolean): Unit = {
 		if (bvi) {
@@ -66,7 +71,7 @@ object CBlocks extends BlockRegister {
 					for (i <- 0 until subBlocks.size()) {
 						if (this.canStackBeCompressed(subBlocks.get(i), bvi)) {
 							val stack: ItemStack = this.wrapInnerStack(subBlocks.get(i))
-							this.compressables.add(stack)
+							this.compressedBlocks.add(stack)
 							this.makeRecipe(subBlocks.get(i), stack)
 						}
 					}
@@ -83,7 +88,7 @@ object CBlocks extends BlockRegister {
 					for (i <- 0 until subItems.size()) {
 						if (this.canStackBeCompressed(subItems.get(i), bvi)) {
 							val stack: ItemStack = this.wrapInnerStack(subItems.get(i))
-							this.compressables.add(stack)
+							this.compressedItems.add(stack)
 							this.makeRecipe(subItems.get(i), stack)
 						}
 					}
@@ -152,7 +157,8 @@ object CBlocks extends BlockRegister {
 	def wrapInnerStack(stack: ItemStack): ItemStack = this.wrapInnerStack(stack, 5)
 
 	def wrapInnerStack(stack: ItemStack, size: Long): ItemStack = {
-		val retStack = new ItemStack(this.compressed)
+		val retStack = if (WorldHelper.isBlock(stack.getItem))
+			new ItemStack(this.compressed) else new ItemStack(CItems.compressed)
 		val tag = new NBTTagCompound
 		stack.getItem match {
 			case food: ItemFood =>

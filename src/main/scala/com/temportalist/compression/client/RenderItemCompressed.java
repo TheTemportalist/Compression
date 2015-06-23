@@ -1,7 +1,6 @@
 package com.temportalist.compression.client;
 
-import com.temportalist.compression.common.init.CBlocks;
-import com.temportalist.origin.api.common.utility.WorldHelper;
+import com.temportalist.compression.common.init.CItems;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
@@ -11,6 +10,12 @@ import org.lwjgl.opengl.GL11;
  */
 public class RenderItemCompressed implements IItemRenderer {
 
+	private final boolean isItem;
+
+	public RenderItemCompressed(boolean isAnItem) {
+		this.isItem = isAnItem;
+	}
+
 	@Override
 	public boolean handleRenderType(ItemStack item, ItemRenderType type) {
 		return true;
@@ -19,12 +24,13 @@ public class RenderItemCompressed implements IItemRenderer {
 	@Override
 	public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item,
 			ItemRendererHelper helper) {
-		if (WorldHelper.isBlock(CBlocks.getInnerStack(item).getItem()))
-			return helper != ItemRendererHelper.INVENTORY_BLOCK;
+		if (item.getItem() == CItems.compressed()) {
+			if (type == ItemRenderType.ENTITY)
+				return true;
+			return type != ItemRenderType.INVENTORY && helper != ItemRendererHelper.BLOCK_3D;
+		}
 		else {
-			return type != ItemRenderType.INVENTORY && helper != ItemRendererHelper.BLOCK_3D
-					&& helper != ItemRendererHelper.ENTITY_ROTATION
-					&& helper != ItemRendererHelper.ENTITY_BOBBING;
+			return helper != ItemRendererHelper.INVENTORY_BLOCK;
 		}
 	}
 
@@ -37,7 +43,7 @@ public class RenderItemCompressed implements IItemRenderer {
 		else if (type == ItemRenderType.EQUIPPED)
 			GL11.glTranslated(0.5, 0.5, 0.5);
 
-		RenderBlockCompressed.renderItem(type, item, data);
+		RenderBlockCompressed.renderItem(type, item, this.isItem, data);
 
 		GL11.glPopMatrix();
 	}

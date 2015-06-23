@@ -1,7 +1,7 @@
 package com.temportalist.compression.client
 
 import com.temportalist.compression.common.ProxyCommon
-import com.temportalist.compression.common.init.CBlocks
+import com.temportalist.compression.common.init.{CItems, CBlocks}
 import cpw.mods.fml.client.registry.RenderingRegistry
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.tileentity.TileEntity
@@ -18,7 +18,8 @@ class ProxyClient extends ProxyCommon {
 	override def register(): Unit = {
 
 		RenderingRegistry.registerBlockHandler(RenderBlockCompressed)
-		MinecraftForgeClient.registerItemRenderer(CBlocks.compressedItem, new RenderItemCompressed)
+		MinecraftForgeClient.registerItemRenderer(CBlocks.compressedItem, new RenderItemCompressed(false))
+		MinecraftForgeClient.registerItemRenderer(CItems.compressed, new RenderItemCompressed(true))
 
 	}
 

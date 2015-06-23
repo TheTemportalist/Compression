@@ -1,6 +1,6 @@
 package com.temportalist.compression.common
 
-import com.temportalist.compression.common.init.CBlocks
+import com.temportalist.compression.common.init.{CItems, CBlocks}
 import com.temportalist.compression.common.recipe.{RecipeRefill, RecipeDynamic, RecipeDeCompress, RecipeCompress}
 import com.temportalist.origin.api.common.proxy.IProxy
 import com.temportalist.origin.api.common.resource.IModDetails
@@ -53,7 +53,7 @@ object Compression extends IMod with IModDetails {
 
 	@Mod.EventHandler
 	def pre(event: FMLPreInitializationEvent): Unit = {
-		super.preInitialize(this, event, this.proxy, Options, CBlocks)
+		super.preInitialize(this, event, this.proxy, Options, CBlocks, CItems)
 
 		RecipeSorter.register("compress", classOf[RecipeCompress], Category.SHAPELESS, "")
 		RecipeSorter.register("decompress", classOf[RecipeDeCompress], Category.SHAPELESS, "")

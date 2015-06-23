@@ -5,7 +5,7 @@ import java.util
 import com.sun.deploy.panel.IProperty
 import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.item.ItemCompressed
+import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.compression.common.lib.Tupla
 import com.temportalist.compression.common.tile.TECompressed
 import com.temportalist.origin.api.common.block.BlockTile
@@ -27,7 +27,7 @@ import net.minecraft.world.{IBlockAccess, World}
  * @author TheTemportalist 2/7/15
  */
 class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTile(
-	Material.ground, Compression.MODID, name, classOf[ItemCompressed], te) {
+	Material.ground, Compression.MODID, name, classOf[ItemBlockCompressed], te) {
 
 	@SideOnly(Side.CLIENT)
 	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[_]): Unit = {

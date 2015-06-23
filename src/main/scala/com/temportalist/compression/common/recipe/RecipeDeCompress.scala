@@ -1,7 +1,7 @@
 package com.temportalist.compression.common.recipe
 
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.item.ItemCompressed
+import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.origin.api.common.utility.Scala
 import net.minecraft.inventory.InventoryCrafting
 import net.minecraft.item.ItemStack
@@ -62,7 +62,7 @@ class RecipeDeCompress(inner: ItemStack) extends IRecipe {
 	}
 
 	private final def isValidCompressed(slotStack: ItemStack): Boolean = {
-		slotStack != null && slotStack.getItem.isInstanceOf[ItemCompressed] &&
+		slotStack != null && slotStack.getItem.isInstanceOf[ItemBlockCompressed] &&
 				CBlocks.getInnerStack(slotStack).getItem == this.inner.getItem
 	}
 
