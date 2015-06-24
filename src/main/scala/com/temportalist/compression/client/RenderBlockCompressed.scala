@@ -62,9 +62,11 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 			data: Array[AnyRef]): Unit = {
 		val innerStack = CBlocks.getInnerStack(stack)
 		val tier = CBlocks.getStackTier(stack)
+		if (tier < 0) return
+		val icon = CBlocks.compressed.icons(tier)
 
 		// Start block and item stack rendering
-		///*
+		// render block start
 		Rendering.Gl.push()
 		Rendering.Gl.color(1.0F, 1.0F, 1.0F, 1.0F)
 		if (!isCompressedItem) {
@@ -73,14 +75,19 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 		}
 		renderType match {
 			case ItemRenderType.INVENTORY =>
+				///*
+				// render things in the inventory
+				// render the opaque standard block or item
 				Rendering.getRenderItem.renderItemAndEffectIntoGUI(
 					Rendering.mc.fontRenderer, Rendering.mc.getTextureManager, innerStack, 0, 0
 				)
 				if (!isCompressedItem) {
-					this.drawBlockInvOverlay(stack, CBlocks.compressed, Rendering.getRenderBlocks,
-						CBlocks.compressed.icons(tier), isInGui = true)
+					// render the block overlay as a block
+					this.drawBlockOverlay(stack, CBlocks.compressed, Rendering.getRenderBlocks,
+						icon, isInGui = true)
 				}
 				else {
+					// render the item overlay
 					Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
 					GL11.glEnable(GL11.GL_ALPHA_TEST)
 
@@ -92,12 +99,17 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 
 					TessRenderer.startQuads()
 					TessRenderer.setNormal(0, 0, -1)
-					Rendering.getRenderBlocks.renderFaceZNeg(CBlocks.compressed, 0, 0, 0, CBlocks.compressed.icons(tier))
+					Rendering.getRenderBlocks.renderFaceZNeg(CBlocks.compressed, 0, 0, 0, icon)
 					TessRenderer.draw()
 				}
-			case _ => //ItemRenderType.ENTITY =>
+				//*/
+			case _ =>
+				///*
+				// rendering for entities and equipped POVs
 				if (isCompressedItem) {
+					// push full item render matrix
 					Rendering.Gl.push()
+					// tranform if the rendering is and entity
 					if (renderType == ItemRenderType.ENTITY) {
 						GL11.glScaled(0.65, 0.65, 0.65)
 						GL11.glRotated(25, 1, 0, 1)
@@ -105,6 +117,7 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 						GL11.glTranslated(0.5, 0, -0.5)
 					}
 
+					// render matrix for opaque render
 					Rendering.Gl.push()
 					val k = innerStack.getItem.getColorFromItemStack(innerStack, 0)
 					val red = (k >> 16 & 255).toFloat / 255.0F
@@ -112,10 +125,13 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 					val blue = (k & 255).toFloat / 255.0F
 					GL11.glColor4f(red, green, blue, 1.0F)
 
+					// render the opaque
 					RenderManager.instance.itemRenderer.renderItem(
 						Rendering.mc.thePlayer, innerStack, 0, renderType)
+					// close matrix for opaque render
 					Rendering.Gl.pop()
 
+					// open matrix for overlay
 					Rendering.Gl.push()
 					Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
 
@@ -124,7 +140,6 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 					OpenGlHelper.glBlendFunc(770, 771, 1, 0)
 
 					TextureUtil.func_152777_a(false, false, 1.0F)
-					val icon = CBlocks.compressed.icons(tier)
 
 					val minU: Float = icon.getMinU
 					val maxU: Float = icon.getMaxU
@@ -137,116 +152,41 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 					GL11.glRotatef(50.0F, 0.0F, 1.0F, 0.0F)
 					GL11.glRotatef(335.0F, 0.0F, 0.0F, 1.0F)
 					GL11.glTranslatef(-0.9375F, -0.0625F, 0.0F)
+					// render overlay
 					ItemRenderer.renderItemIn2D(TessRenderer.getTess(),
 						maxU, minV, minU, maxV, icon.getIconWidth, icon.getIconHeight, 0.0625F)
 					GL11.glDisable(GL12.GL_RESCALE_NORMAL)
 					Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
 					TextureUtil.func_147945_b()
+					// close overlay matrix
 					Rendering.Gl.pop()
 
+					// close item render matrix
 					Rendering.Gl.pop()
 				}
 				else {
+					// open block render matrix
 					Rendering.Gl.push()
 					val s = 0.999D
 					val s1 = 1 / s
 					GL11.glScaled(s, s, s)
+					// render opaue block
 					RenderManager.instance.itemRenderer.renderItem(
 						Rendering.mc.thePlayer, innerStack, 0, renderType)
 					GL11.glScaled(s1, s1, s1)
+					// close block render matrix
 					Rendering.Gl.pop()
 
-					this.drawBlockInvOverlay(null, CBlocks.compressed, Rendering.getRenderBlocks,
-						CBlocks.compressed.icons(tier), isInGui = false)
-
+					// draw overlay as 3D block
+					this.drawBlockOverlay(null, CBlocks.compressed, Rendering.getRenderBlocks,
+						icon, isInGui = false)
 				}
-				/*
-			case _ =>
-				RenderManager.instance.itemRenderer.renderItem(
-					Rendering.mc.thePlayer, innerStack, 0, renderType)
-				*/
+				//*/
 		}
-		/*
-		if (isBlock) {
-
-		}
-		else {
-			if (renderType == ItemRenderType.ENTITY) {
-				GL11.glScaled(0.06, 0.06, 0.06)
-				GL11.glRotated(50, 0, 1, 0)
-				GL11.glTranslated(0, -4, -100)
-			}
-
-			Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
-			val z = Rendering.getRenderItem.zLevel
-			Rendering.getRenderItem.zLevel = 100
-			Rendering.getRenderItem.renderIcon(0, 0, CBlocks.compressed.icons(tier), 16, 16)
-			Rendering.getRenderItem.zLevel = z
-		}
-		*/
-		Rendering.Gl.blend(isOn = false)
 		Rendering.Gl.pop()
-		//*/
-		// end opaque render
-
-		/*
-		if (WorldHelper.isBlock(innerStack.getItem)) {
-			Rendering.Gl.push()
-			Rendering.Gl.pushAttribute(GL11.GL_ENABLE_BIT)
-			Rendering.Gl.blend(isOn = true)
-			Rendering.Gl.blendSrcAlpha()
-
-			TessRenderer.startQuads()
-			Rendering.getRenderBlocks.renderFaceYPos(Blocks.stone, 0.0D, 1D, 0.0D,
-				CBlocks.compressed.icons(4))
-			TessRenderer.draw()
-
-			Rendering.Gl.popAttribute()
-			Rendering.Gl.pop()
-		}
-		*/
-
 	}
 
-	def drawBlock(block: Block, meta: Int, renderer: RenderBlocks): Unit = {
-		this.drawBlock(block, meta, renderer, null)
-	}
-
-	def drawBlock(block: Block, meta: Int, renderer: RenderBlocks, icon: IIcon): Unit = {
-		Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(0.0F, -1.0F, 0.0F)
-		renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(0, meta) else icon)
-		TessRenderer.draw()
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(0.0F, 1.0F, 0.0F)
-		renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(1, meta) else icon)
-		TessRenderer.draw()
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(0.0F, 0.0F, -1.0F)
-		renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(2, meta) else icon)
-		TessRenderer.draw()
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(0.0F, 0.0F, 1.0F)
-		renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(3, meta) else icon)
-		TessRenderer.draw()
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(-1.0F, 0.0F, 0.0F)
-		renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(4, meta) else icon)
-		TessRenderer.draw()
-		TessRenderer.startQuads()
-		TessRenderer.setNormal(1.0F, 0.0F, 0.0F)
-		renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D,
-			if (icon == null) block.getIcon(5, meta) else icon)
-		TessRenderer.draw()
-	}
-
-	def drawBlockInvOverlay(stack: ItemStack, block: Block,
+	def drawBlockOverlay(stack: ItemStack, block: Block,
 			renderer: RenderBlocks, icon: IIcon, isInGui: Boolean): Unit = {
 		Rendering.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture)
 		if (isInGui) GL11.glEnable(GL11.GL_ALPHA_TEST)
@@ -285,16 +225,10 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 		TessRenderer.setNormal(0, -1, 0)
 		renderer.renderFaceYNeg(block, 0, 0, 0, icon)
 		TessRenderer.draw()
-
-		// color code
-
 		TessRenderer.startQuads()
 		TessRenderer.setNormal(0, 1, 0)
 		renderer.renderFaceYPos(block, 0, 0, 0, icon)
 		TessRenderer.draw()
-
-		// color code
-
 		TessRenderer.startQuads()
 		TessRenderer.setNormal(0, 0, -1)
 		renderer.renderFaceZNeg(block, 0, 0, 0, icon)

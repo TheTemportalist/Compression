@@ -137,7 +137,7 @@ object CBlocks extends BlockRegister {
 			Map(0 -> piston, 2 -> piston, 6 -> piston, 8 -> piston),
 			output
 		))
-		if (Options.hasTraditionalRecipes) {
+		if (Options.useTraditionalRecipes) {
 			for (tier: Int <- 1 to Tiers.getMaxTier()) {
 				val last: ItemStack =
 					if (tier == 1) inner
@@ -197,6 +197,22 @@ object CBlocks extends BlockRegister {
 
 	def getInnerSize(stack: ItemStack): Long = {
 		stack.getTagCompound.getLong("stackSize")
+	}
+
+	def canAddToStack(stack: ItemStack): Boolean = this.canAddToStack(stack, 1)
+
+	def canAddToStack(stack: ItemStack, amount: Long): Boolean = {
+		CBlocks.getInnerSize(stack) + amount <= Tiers.getMaxCap()
+	}
+
+	def addToInnerSize(stack: ItemStack): Unit = this.addToInnerSize(stack, 1)
+
+	def addToInnerSize(stack: ItemStack, amount: Long): Unit = {
+		this.setStackSize(stack, this.getInnerSize(stack) + amount)
+	}
+
+	def setStackSize(stack: ItemStack, size: Long): Unit = {
+		stack.getTagCompound.setLong("stackSize", size)
 	}
 
 	def getDisplayName(stack: ItemStack): String = {

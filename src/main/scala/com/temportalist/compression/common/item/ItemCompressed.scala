@@ -7,7 +7,9 @@ import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.origin.api.common.item.ItemBase
 import cpw.mods.fml.relauncher.{Side, SideOnly}
 import net.minecraft.creativetab.CreativeTabs
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{ItemStack, Item}
+import net.minecraft.world.World
 
 /**
  *
@@ -26,6 +28,11 @@ class ItemCompressed(n: String) extends ItemBase(Compression.getModid, n) with I
 
 	override def requiresMultipleRenderPasses(): Boolean = true
 
-
+	override def onItemRightClick(itemStackIn: ItemStack, worldIn: World,
+			playerIn: EntityPlayer): ItemStack = {
+		if (playerIn.capabilities.isCreativeMode)
+			super.onItemRightClick(itemStackIn, worldIn, playerIn)
+		else this.onClick(itemStackIn, worldIn, playerIn)
+	}
 
 }

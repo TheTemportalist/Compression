@@ -1,9 +1,8 @@
 package com.temportalist.compression.common
 
 import com.temportalist.origin.api.client.utility.Rendering
-import cpw.mods.fml.relauncher.{SideOnly, Side}
+import cpw.mods.fml.relauncher.{Side, SideOnly}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
-import net.minecraft.item.ItemStack
 
 /**
  *
@@ -61,17 +60,6 @@ object Tiers {
 		Rendering.mc.getTextureMapBlocks.getAtlasSprite(
 			"compression:blocks/overlay_" + this.getTierFromSize(size)
 		)
-	}
-
-	def canHold(compressed: ItemStack, size: Long): Boolean = {
-		compressed.getTagCompound.getLong("stackSize") + size <= this.getMaxCap()
-	}
-
-	def absorb(compressed: ItemStack, toAbsorb: ItemStack): Unit = {
-		compressed.getTagCompound.setLong("stackSize",
-			compressed.getTagCompound.getLong("stackSize") + toAbsorb.stackSize
-		)
-		toAbsorb.stackSize = 0
 	}
 
 }

@@ -185,7 +185,7 @@ object Compression extends IMod with IModDetails {
 			Map(0 -> piston, 2 -> piston, 6 -> piston, 8 -> piston),
 			output
 		))
-		if (Options.hasTraditionalRecipes) {
+		if (Options.useTraditionalRecipes) {
 			for (tier: Int <- 1 to Tupla.getMaxTier()) {
 				val last: ItemStack =
 					if (tier == 1) inner

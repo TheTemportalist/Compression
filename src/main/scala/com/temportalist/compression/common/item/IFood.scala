@@ -79,7 +79,7 @@ trait IFood extends Item {
 		}
 	}
 
-	override def onItemRightClick(itemStackIn: ItemStack, worldIn: World,
+	def onClick(itemStackIn: ItemStack, worldIn: World,
 			playerIn: EntityPlayer): ItemStack = {
 		val eatable: Boolean = !itemStackIn.getTagCompound.hasKey("canEat") ||
 				itemStackIn.getTagCompound.getBoolean("canEat")

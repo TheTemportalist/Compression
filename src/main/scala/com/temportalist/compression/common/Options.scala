@@ -18,7 +18,20 @@ object Options extends OptionRegister {
 
 	override def getExtension: String = "json"
 
-	var hasTraditionalRecipes: Boolean = true
+	var useTraditionalRecipes: Boolean = true
+
+	/**
+	 * /dev/null functionality
+	 */
+	var poolPlayerTier: Int = 3
+	/**
+	 * sucks in other entity items within a growing radius
+	 */
+	var blackHoleTier: Int = 4
+	/**
+	 * Magnet mode for item type X
+	 */
+	var magnetTier: Int = 5
 
 	val blackList: Map[String, Array[String]] = Map[String, Array[String]](
 		"block" -> Array[String](
@@ -37,9 +50,9 @@ object Options extends OptionRegister {
 
 	override def register(): Unit = {
 
-		this.hasTraditionalRecipes = this.getAndComment(
+		this.useTraditionalRecipes = this.getAndComment(
 			"general", "Use Traditional Recipes",
-			"Use traditional 9x9 recipes", this.hasTraditionalRecipes
+			"Use traditional 9x9 recipes", this.useTraditionalRecipes
 		)
 
 		val blackList_Block: Array[String] = this.getAndComment(
@@ -67,6 +80,22 @@ object Options extends OptionRegister {
 						((Block.getBlockFromItem(stack.getItem), stack.getItemDamage))
 			else this.blacklist_items += ((stack.getItem, stack.getItemDamage))
 		})
+
+		this.poolPlayerTier = this.getAndComment("compressed objects", "Pool Functionality",
+			"When players pick up blocks or items that match the same type as the first compressed " +
+				"block or item with a minimum tier as this value, the block or item will be " +
+				"inserted into the first compressed stack (-1 to disable).", this.poolPlayerTier)
+
+		this.blackHoleTier = this.getAndComment("compressed objects", "Black Hole",
+			"When a compressed block or item is on the ground, others of the same type will be " +
+				"sucked into it, as long as it is this minimum tier (-1 to disable).",
+			this.blackHoleTier)
+
+		this.magnetTier = this.getAndComment("compressed objects", "Magnet",
+			"When a compressed block or item of this minimum tier is in your inventory, " +
+					"all blocks and items of the same type will be attracted to you " +
+					"(-1 to disable).",
+			this.magnetTier)
 
 	}
 

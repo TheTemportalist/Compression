@@ -18,6 +18,8 @@ class TECompressed extends TileEntity with ITileSaver {
 	private var inner: ItemStack = null
 	private var size: Long = 0
 
+	override def canUpdate: Boolean = false
+
 	def setStack(state: ItemStack): Unit = {
 		this.inner = state
 		this.markDirty()

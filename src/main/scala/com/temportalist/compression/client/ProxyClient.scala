@@ -24,6 +24,11 @@ class ProxyClient extends ProxyCommon {
 	}
 
 	override def getClientElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int,
-			z: Int, tileEntity: TileEntity): AnyRef = null
+			z: Int, tileEntity: TileEntity): AnyRef = {
+		if (ID == 0) {
+			new GuiCompression(player)
+		}
+		else null
+	}
 
 }
