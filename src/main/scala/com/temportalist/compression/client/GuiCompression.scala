@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer
  *
  * @author  TheTemportalist  6/23/15
  */
+@Deprecated
 class GuiCompression(p: EntityPlayer) extends GuiContainerBase(new ContainerCompression(p)) {
 
 	private val isCreative: Boolean = p.capabilities.isCreativeMode
@@ -73,7 +74,7 @@ class GuiCompression(p: EntityPlayer) extends GuiContainerBase(new ContainerComp
 		super.drawGuiForegroundLayer(mouseX, mouseY, renderPartialTicks)
 
 		if (this.isCreative) {
-			val tierStr = (this.tier) + ""
+			val tierStr = this.tier + ""
 			val tierStrSize = this.getStringWidth(tierStr)
 			this.drawString(tierStr, 112 - (tierStrSize / 2), 22)
 		}

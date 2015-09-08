@@ -2,21 +2,20 @@ package com.temportalist.compression.common.init
 
 import java.util
 
-import com.temportalist.compression.common.recipe.{RecipeDeCompress, RecipeCompress, RecipeDynamic}
-import com.temportalist.compression.common.{Tiers, Options, Compression}
 import com.temportalist.compression.common.blocks.BlockCompressed
 import com.temportalist.compression.common.item.IFood
+import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDynamic}
 import com.temportalist.compression.common.tile.TECompressed
+import com.temportalist.compression.common.{Compression, Options, Tiers}
 import com.temportalist.origin.api.common.lib.NameParser
 import com.temportalist.origin.api.common.utility.WorldHelper
 import com.temportalist.origin.foundation.common.register.BlockRegister
 import cpw.mods.fml.client.registry.RenderingRegistry
-import cpw.mods.fml.common.registry.{GameRegistry, GameData}
-import net.minecraft.init.Blocks
-import net.minecraft.item.{ItemFood, ItemStack}
-import net.minecraft.nbt.NBTTagCompound
+import cpw.mods.fml.common.registry.{GameData, GameRegistry}
 import net.minecraft.block.Block
-import net.minecraft.item.Item
+import net.minecraft.init.Blocks
+import net.minecraft.item.{Item, ItemFood, ItemStack}
+import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.JavaConversions
 
@@ -149,16 +148,17 @@ object CBlocks extends BlockRegister {
 		else {
 			GameRegistry.addRecipe(new RecipeCompress(inner))
 		}
-		GameRegistry.addRecipe(new RecipeDeCompress(inner))
+		//GameRegistry.addRecipe(new RecipeDeCompress(inner))
 	}
 
 	// Compressed block utility methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	def wrapInnerStack(stack: ItemStack): ItemStack = this.wrapInnerStack(stack, 5)
+	def wrapInnerStack(stack: ItemStack): ItemStack = this.wrapInnerStack(stack, 9)
 
 	def wrapInnerStack(stack: ItemStack, size: Long): ItemStack = {
 		val retStack = if (WorldHelper.isBlock(stack.getItem))
-			new ItemStack(this.compressed) else new ItemStack(CItems.compressed)
+			new ItemStack(this.compressed)
+		else new ItemStack(CItems.compressed)
 		val tag = new NBTTagCompound
 		stack.getItem match {
 			case food: ItemFood =>
@@ -213,6 +213,10 @@ object CBlocks extends BlockRegister {
 
 	def setStackSize(stack: ItemStack, size: Long): Unit = {
 		stack.getTagCompound.setLong("stackSize", size)
+	}
+
+	def decrStackSize(stack: ItemStack, amt: Long): Unit = {
+		this.setStackSize(stack, this.getInnerSize(stack) - amt)
 	}
 
 	def getDisplayName(stack: ItemStack): String = {

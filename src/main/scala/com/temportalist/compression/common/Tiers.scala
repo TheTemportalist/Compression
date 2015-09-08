@@ -11,6 +11,12 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
  */
 object Tiers {
 
+	/*
+	Pulls in items from around player to player & and to stack
+	- not when sneaking
+
+	 */
+
 	/* http://blogs.transparent.com/latin/latin-numbers-1-100/ */
 	val tiers: Array[String] = Array[String](
 		"Null",

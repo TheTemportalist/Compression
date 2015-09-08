@@ -5,7 +5,7 @@ import java.util
 import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.{CBlocks, CEntity, CItems}
 import com.temportalist.compression.common.item.ICompressed
-import com.temportalist.compression.common.packets.PacketUpdateHeldSize
+import com.temportalist.compression.common.packets.{PacketDropFullStack, PacketUpdateHeldSize}
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDeCompress, RecipeDynamic, RecipeRefill}
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.proxy.IProxy
@@ -18,13 +18,16 @@ import cpw.mods.fml.common.{Mod, SidedProxy}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Items
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.world.World
+import net.minecraftforge.event.entity.item.ItemTossEvent
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent
 import net.minecraftforge.oredict.RecipeSorter
 import net.minecraftforge.oredict.RecipeSorter.Category
+
 /**
  *
  *
@@ -33,13 +36,13 @@ import net.minecraftforge.oredict.RecipeSorter.Category
 @Mod(modid = Compression.MODID, name = Compression.MODNAME, version = Compression.VERSION,
 	modLanguage = "scala",
 	//guiFactory = Compression.clientProxy,
-	dependencies = "required-after:origin@[5,);"
+	dependencies = "" //required-after:origin@[6,);"
 )
 object Compression extends IMod with IModResource {
 
 	final val MODID = "compression"
 	final val MODNAME = "Compression"
-	final val VERSION = "@PLUGIN_VERSION@"
+	final val VERSION = "@MOD_VERSION@"
 	final val clientProxy = "com.temportalist.compression.client.ProxyClient"
 	final val serverProxy = "com.temportalist.compression.server.ProxyServer"
 
@@ -67,7 +70,7 @@ object Compression extends IMod with IModResource {
 	def pre(event: FMLPreInitializationEvent): Unit = {
 		super.preInitialize(this, event, this.proxy, Options, CBlocks, CItems, CEntity)
 
-		this.registerPackets(classOf[PacketUpdateHeldSize])
+		this.registerPackets(classOf[PacketUpdateHeldSize], classOf[PacketDropFullStack])
 
 		RecipeSorter.register("compress", classOf[RecipeCompress], Category.SHAPELESS, "")
 		RecipeSorter.register("decompress", classOf[RecipeDeCompress], Category.SHAPELESS, "")
@@ -140,7 +143,8 @@ object Compression extends IMod with IModResource {
 	}
 
 	def isCompressedStack(stack: ItemStack): Boolean = {
-		stack.getItem == CBlocks.compressedItem || stack.getItem == CItems.compressed
+		stack != null &&
+				(stack.getItem == CBlocks.compressedItem || stack.getItem == CItems.compressed)
 	}
 
 	def pullEntityTowards(entityBeingPulled: Entity, pos: V3O, motion: V3O): Unit = {
@@ -204,7 +208,8 @@ object Compression extends IMod with IModResource {
 	 * @param loopCall If function null or returns false,
 	 *                 then items are pulled closer to the pos vec
 	 */
-	def tryToPullItemsCloser(requiredTier: Int, entity: Entity, stack: ItemStack, boundingBox: AxisAlignedBB,
+	def tryToPullItemsCloser(requiredTier: Int, entity: Entity, stack: ItemStack,
+			boundingBox: AxisAlignedBB,
 			world: World, pos: V3O, motion: V3O,
 			loopCall: (EntityItem, ItemStack) => Boolean): Unit = {
 		val thisTier: Int = CBlocks.getStackTier(stack)
@@ -219,7 +224,8 @@ object Compression extends IMod with IModResource {
 								if (e.age >= 10) {
 									val entStack = e.getEntityItem
 									if (loopCall == null || !loopCall(e, entStack)) {
-										if (Compression.shouldCompressedPickUpStack(stack, entStack)) {
+										if (Compression
+												.shouldCompressedPickUpStack(stack, entStack)) {
 											Compression.pullEntityTowards(e, pos, motion)
 										}
 									}
@@ -230,6 +236,44 @@ object Compression extends IMod with IModResource {
 				case _ =>
 			}
 		}
+	}
+
+	@SubscribeEvent
+	def tossEvent(event: ItemTossEvent): Unit = {
+		val stack = event.entityItem.getEntityItem
+		if (!this.isCompressedStack(stack)) return
+
+		// player has pressed the drop key and is sneaking
+		if (event.player.inventory.getItemStack == null && event.player.isSneaking) {
+			this.splitAndDropCompressedStack(event.player, stack)
+			event.setCanceled(true) // remove the entityitem sent from being dropped
+		}
+
+	}
+
+	def splitAndDropCompressedStack(player: EntityPlayer, heldStack: ItemStack,
+			dropMaxStack: Boolean = false): Unit = {
+		if (!this.isCompressedStack(heldStack)) return
+
+		var newInvStack = heldStack.copy()
+		val dropStack = CBlocks.getInnerStack(newInvStack)
+
+		// if we have the potential to drop up to 64 (maxstacksize), then drop as many as possible
+		var sizeToDrop: Int = 1
+		if (dropMaxStack)
+			sizeToDrop = Math.min(dropStack.getMaxStackSize,
+				CBlocks.getInnerSize(newInvStack)).toInt
+		dropStack.stackSize = sizeToDrop
+		CBlocks.decrStackSize(newInvStack, sizeToDrop)
+
+		if (CBlocks.getInnerSize(newInvStack) > 0) {
+			if (CBlocks.getInnerSize(newInvStack) == 1) newInvStack = dropStack.copy()
+		}
+		else newInvStack = null
+		// set the player's inv slot to the newInvStack
+		player.inventory.setInventorySlotContents(player.inventory.currentItem, newInvStack)
+		Stacks.tossItem(dropStack, player)
+
 	}
 
 }

@@ -50,11 +50,13 @@ trait ICompressed extends Item {
 
 	private def onClick(itemStackIn: ItemStack, worldIn: World,
 			playerIn: EntityPlayer): ItemStack = {
+		/*
 		playerIn.openGui(Compression, 0, worldIn,
 			MathHelper.floor_double(playerIn.posX),
 			MathHelper.floor_double(playerIn.posY),
 			MathHelper.floor_double(playerIn.posZ)
 		)
+		*/
 		itemStackIn
 	}
 
@@ -77,7 +79,7 @@ trait ICompressed extends Item {
 	 */
 	override def onUpdate(stack: ItemStack, world: World, player: Entity, slot: Int,
 			isCurrentItem: Boolean): Unit = {
-		Compression.tryToPullItemsCloser(Options.magnetTier, player, stack,
+		if (!player.isSneaking) Compression.tryToPullItemsCloser(Options.magnetTier, player, stack,
 			player.boundingBox.expand(1, 0.5D, 1), world, new V3O(player),
 			new V3O(player.motionX, player.motionY, player.motionZ), null)
 	}

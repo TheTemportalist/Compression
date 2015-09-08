@@ -25,11 +25,11 @@ object Options extends OptionRegister {
 	 */
 	var poolPlayerTier: Int = 3
 	/**
-	 * sucks in other entity items within a growing radius
+	 * while item is an entity, sucks in other entity items within a growing radius
 	 */
 	var blackHoleTier: Int = 4
 	/**
-	 * Magnet mode for item type X
+	 * while item is inventory, sucks in other entity items within a growing radius
 	 */
 	var magnetTier: Int = 5
 

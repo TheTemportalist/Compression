@@ -2,7 +2,9 @@ package com.temportalist.compression.client
 
 import com.temportalist.compression.common.ProxyCommon
 import com.temportalist.compression.common.init.{CItems, CBlocks}
+import com.temportalist.origin.api.common.register.Registry
 import cpw.mods.fml.client.registry.RenderingRegistry
+import modwarriors.notenoughkeys.api.Api
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
@@ -16,6 +18,7 @@ import net.minecraftforge.client.MinecraftForgeClient
 class ProxyClient extends ProxyCommon {
 
 	override def register(): Unit = {
+		Registry.registerKeyBinder(KeyBinder)
 
 		RenderingRegistry.registerBlockHandler(RenderBlockCompressed)
 		MinecraftForgeClient.registerItemRenderer(CBlocks.compressedItem, new RenderItemCompressed(false))
