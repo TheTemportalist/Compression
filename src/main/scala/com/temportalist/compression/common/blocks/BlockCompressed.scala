@@ -110,7 +110,7 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTil
 
 	override def isOpaqueCube: Boolean = false
 
-	override def getRenderType: Int = CBlocks.compressedRenderID
+	override def getRenderType: Int = Compression.proxy.compressedRenderID
 
 	override def canRenderInPass(pass: Int): Boolean = true
 

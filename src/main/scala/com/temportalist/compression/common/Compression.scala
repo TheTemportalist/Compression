@@ -55,7 +55,7 @@ object Compression extends IMod with IModResource {
 	override def getModVersion: String = this.VERSION
 
 	@SidedProxy(clientSide = this.clientProxy, serverSide = this.serverProxy)
-	var proxy: IProxy = null
+	var proxy: ProxyCommon = null
 
 	/**
 	 * The tab for all the Compressed blocks
@@ -89,8 +89,11 @@ object Compression extends IMod with IModResource {
 		CBlocks.constructCompressables(true)
 		CBlocks.constructCompressables(false)
 		// resources
-		this.setResource("gui_creative", this.loadResource(EnumResource.GUI, "stack_creative.png"))
-		this.setResource("gui_survival", this.loadResource(EnumResource.GUI, "stack_survival.png"))
+		this.loadResource("gui_creative", (EnumResource.GUI, "stack_creative.png"))
+		this.loadResource("gui_survival", (EnumResource.GUI, "stack_survival.png"))
+		this.loadResource("compressor", (EnumResource.GUI, "compressor.png"))
+		this.loadResource("compressorWorld", (EnumResource.TEXTURE_BLOCK, "compressor.png"))
+
 	}
 
 	@SubscribeEvent
@@ -212,6 +215,7 @@ object Compression extends IMod with IModResource {
 			boundingBox: AxisAlignedBB,
 			world: World, pos: V3O, motion: V3O,
 			loopCall: (EntityItem, ItemStack) => Boolean): Unit = {
+		if (stack == null) return
 		val thisTier: Int = CBlocks.getStackTier(stack)
 		if (thisTier >= requiredTier) {
 			val radius = thisTier - requiredTier + 1.5D

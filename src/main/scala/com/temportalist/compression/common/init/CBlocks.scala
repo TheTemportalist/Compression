@@ -2,10 +2,10 @@ package com.temportalist.compression.common.init
 
 import java.util
 
-import com.temportalist.compression.common.blocks.BlockCompressed
+import com.temportalist.compression.common.blocks.{BlockCompress, BlockCompressed}
 import com.temportalist.compression.common.item.IFood
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDynamic}
-import com.temportalist.compression.common.tile.TECompressed
+import com.temportalist.compression.common.tile.{TECompress, TECompressed}
 import com.temportalist.compression.common.{Compression, Options, Tiers}
 import com.temportalist.origin.api.common.lib.NameParser
 import com.temportalist.origin.api.common.utility.WorldHelper
@@ -13,6 +13,7 @@ import com.temportalist.origin.foundation.common.register.BlockRegister
 import cpw.mods.fml.client.registry.RenderingRegistry
 import cpw.mods.fml.common.registry.{GameData, GameRegistry}
 import net.minecraft.block.Block
+import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.init.Blocks
 import net.minecraft.item.{Item, ItemFood, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
@@ -27,10 +28,9 @@ import scala.collection.JavaConversions
 object CBlocks extends BlockRegister {
 
 	var compressed: BlockCompressed = null
+	var compressor: BlockCompress = null
 
 	def compressedItem: Item = Item.getItemFromBlock(this.compressed)
-
-	val compressedRenderID: Int = RenderingRegistry.getNextAvailableRenderId
 
 	/**
 	 * This method is used to register TileEntities.
@@ -38,12 +38,18 @@ object CBlocks extends BlockRegister {
 	 */
 	override def registerTileEntities(): Unit = {
 		this.register(Compression.getModid + ":compressed", classOf[TECompressed])
+		this.register(Compression.getModid + ":compressor", classOf[TECompress])
+
 	}
 
 	override def register(): Unit = {
 
 		this.compressed = new BlockCompressed("compressedBlock", classOf[TECompressed])
 		this.compressed.setCreativeTab(Compression.tab)
+
+		this.compressor = new BlockCompress("compressor", classOf[TECompress])
+		this.compressor.setCreativeTab(CreativeTabs.tabRedstone)
+
 
 	}
 
@@ -196,6 +202,7 @@ object CBlocks extends BlockRegister {
 	}
 
 	def getInnerSize(stack: ItemStack): Long = {
+		if (!stack.hasTagCompound) stack.setTagCompound(new NBTTagCompound)
 		stack.getTagCompound.getLong("stackSize")
 	}
 

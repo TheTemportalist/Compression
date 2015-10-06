@@ -25,7 +25,7 @@ import org.lwjgl.opengl.{GL12, GL11}
 @SideOnly(Side.CLIENT)
 object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 
-	override def getRenderId: Int = CBlocks.compressedRenderID
+	override def getRenderId: Int = Compression.proxy.compressedRenderID
 
 	override def shouldRender3DInInventory(modelId: Int): Boolean = false
 
