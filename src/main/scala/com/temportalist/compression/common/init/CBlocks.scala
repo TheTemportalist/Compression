@@ -71,6 +71,9 @@ object CBlocks extends BlockRegister {
 			val blocks: java.lang.Iterable[Block] = GameData.getBlockRegistry.typeSafeIterable()
 			for (block: Block <- JavaConversions.asScalaIterator(blocks.iterator())) {
 				if (this.canStackBeCompressed(new ItemStack(block), bvi)) {
+					/*
+					See item loop
+
 					val subBlocks: util.List[ItemStack] = new util.ArrayList[ItemStack]()
 					try {
 						block.getSubBlocks(Item.getItemFromBlock(block), null, subBlocks)
@@ -86,6 +89,10 @@ object CBlocks extends BlockRegister {
 							this.makeRecipe(subBlocks.get(i), stack)
 						}
 					}
+					*/
+					val stack: ItemStack = this.wrapInnerStack(new ItemStack(block))
+					this.compressedBlocks.add(stack)
+					this.makeRecipe(new ItemStack(block), stack)
 				}
 			}
 		}
@@ -94,6 +101,10 @@ object CBlocks extends BlockRegister {
 			val items: java.lang.Iterable[Item] = GameData.getItemRegistry.typeSafeIterable()
 			for (item: Item <- JavaConversions.asScalaIterator(items.iterator())) {
 				if (this.canStackBeCompressed(new ItemStack(item), bvi)) {
+					/*
+					We can use item.getHasSubtypes for both items and blocks, but
+					there is no way to retrieve those subtypes without going clientside
+
 					val subItems: util.List[ItemStack] = new util.ArrayList[ItemStack]()
 					try {
 						item.getSubItems(item, null, subItems)
@@ -109,6 +120,10 @@ object CBlocks extends BlockRegister {
 							this.makeRecipe(subItems.get(i), stack)
 						}
 					}
+					*/
+					val stack: ItemStack = this.wrapInnerStack(new ItemStack(item))
+					this.compressedItems.add(stack)
+					this.makeRecipe(new ItemStack(item), stack)
 				}
 			}
 		}
