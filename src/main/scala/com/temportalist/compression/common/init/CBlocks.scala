@@ -72,7 +72,13 @@ object CBlocks extends BlockRegister {
 			for (block: Block <- JavaConversions.asScalaIterator(blocks.iterator())) {
 				if (this.canStackBeCompressed(new ItemStack(block), bvi)) {
 					val subBlocks: util.List[ItemStack] = new util.ArrayList[ItemStack]()
-					block.getSubBlocks(Item.getItemFromBlock(block), null, subBlocks)
+					try {
+						block.getSubBlocks(Item.getItemFromBlock(block), null, subBlocks)
+					}
+					catch {
+						case e: Exception =>
+							Compression.log("Could not compress " + block.getUnlocalizedName)
+					}
 					for (i <- 0 until subBlocks.size()) {
 						if (this.canStackBeCompressed(subBlocks.get(i), bvi)) {
 							val stack: ItemStack = this.wrapInnerStack(subBlocks.get(i))
@@ -89,7 +95,13 @@ object CBlocks extends BlockRegister {
 			for (item: Item <- JavaConversions.asScalaIterator(items.iterator())) {
 				if (this.canStackBeCompressed(new ItemStack(item), bvi)) {
 					val subItems: util.List[ItemStack] = new util.ArrayList[ItemStack]()
-					item.getSubItems(item, null, subItems)
+					try {
+						item.getSubItems(item, null, subItems)
+					}
+					catch {
+						case e: Exception =>
+							Compression.log("Could not compress " + item.getUnlocalizedName)
+					}
 					for (i <- 0 until subItems.size()) {
 						if (this.canStackBeCompressed(subItems.get(i), bvi)) {
 							val stack: ItemStack = this.wrapInnerStack(subItems.get(i))
@@ -108,7 +120,7 @@ object CBlocks extends BlockRegister {
 	}
 
 	def canStackBeCompressed(stack: ItemStack, bvi: Boolean): Boolean = {
-		if (stack == null || stack.getItem == null || stack.hasEffect(0)) return false
+		if (stack == null || stack.getItem == null || stack.isItemEnchanted) return false
 		// blocks
 		if (bvi && WorldHelper.isBlock(stack.getItem)) {
 			val block: Block = Block.getBlockFromItem(stack.getItem)
