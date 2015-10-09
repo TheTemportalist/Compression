@@ -6,9 +6,8 @@ import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.{CBlocks, CEntity, CItems}
 import com.temportalist.compression.common.item.ICompressed
 import com.temportalist.compression.common.packets.{PacketDropFullStack, PacketUpdateHeldSize}
-import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDeCompress, RecipeDynamic, RecipeRefill}
+import com.temportalist.compression.common.recipe.{RecipeCompressClassic, RecipeCompress, RecipeDeCompress, RecipeRefill}
 import com.temportalist.origin.api.common.lib.V3O
-import com.temportalist.origin.api.common.proxy.IProxy
 import com.temportalist.origin.api.common.resource.{EnumResource, IModDetails, IModResource}
 import com.temportalist.origin.api.common.utility.{Scala, Stacks}
 import com.temportalist.origin.foundation.common.IMod
@@ -35,8 +34,8 @@ import net.minecraftforge.oredict.RecipeSorter.Category
  */
 @Mod(modid = Compression.MODID, name = Compression.MODNAME, version = Compression.VERSION,
 	modLanguage = "scala",
-	//guiFactory = Compression.clientProxy,
-	dependencies = "required-after:origin@[6,);"
+	guiFactory = Compression.clientProxy,
+	dependencies = ""//required-after:origin@[6,);"
 )
 object Compression extends IMod with IModResource {
 
@@ -74,7 +73,7 @@ object Compression extends IMod with IModResource {
 
 		RecipeSorter.register("compress", classOf[RecipeCompress], Category.SHAPELESS, "")
 		RecipeSorter.register("decompress", classOf[RecipeDeCompress], Category.SHAPELESS, "")
-		RecipeSorter.register("dynamic", classOf[RecipeDynamic], Category.SHAPELESS, "")
+		RecipeSorter.register("dynamic", classOf[RecipeCompressClassic], Category.SHAPELESS, "")
 		RecipeSorter.register("refill", classOf[RecipeRefill], Category.SHAPELESS, "")
 
 	}

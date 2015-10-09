@@ -7,6 +7,7 @@ import net.minecraft.inventory.InventoryCrafting
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.world.World
+import scala.collection.mutable
 
 /**
  *
@@ -15,7 +16,8 @@ import net.minecraft.world.World
  */
 class RecipeCompress(inner: ItemStack) extends IRecipe {
 
-	// just used to determine order of which to check recipes
+	RecipeCompress.recipes(inner) = this
+
 	override def getRecipeSize: Int = 9
 
 	override def getRecipeOutput: ItemStack = null // todo what does this do
@@ -57,4 +59,8 @@ class RecipeCompress(inner: ItemStack) extends IRecipe {
 
 	override def getCraftingResult(inv: InventoryCrafting): ItemStack = this.getResult(inv)
 
+}
+
+object RecipeCompress {
+	val recipes = mutable.Map[ItemStack, RecipeCompress]()
 }

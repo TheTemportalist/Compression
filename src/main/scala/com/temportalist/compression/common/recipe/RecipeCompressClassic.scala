@@ -6,15 +6,19 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.world.World
 
+import scala.collection.mutable
+
 /**
  *
  *
  * @author TheTemportalist
  */
-class RecipeDynamic(
+class RecipeCompressClassic(
 		val width: Int, val height: Int,
 		val consumed: Map[Int, ItemStack], val kept: Map[Int, ItemStack], val output: ItemStack
 		) extends IRecipe {
+
+	RecipeCompressClassic.recipes(output) = this
 
 	var useNBT: Boolean = true
 
@@ -22,7 +26,7 @@ class RecipeDynamic(
 		this(width, height, Scala.fill(width * height, filler), Map(), output)
 	}
 
-	def setUseNBT(doUse: Boolean): RecipeDynamic = {
+	def setUseNBT(doUse: Boolean): RecipeCompressClassic = {
 		this.useNBT = doUse
 		this
 	}
@@ -67,4 +71,8 @@ class RecipeDynamic(
 		true
 	}
 
+}
+
+object RecipeCompressClassic {
+	val recipes = mutable.Map[ItemStack, RecipeCompressClassic]()
 }

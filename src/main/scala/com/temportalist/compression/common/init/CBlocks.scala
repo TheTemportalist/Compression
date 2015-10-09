@@ -4,13 +4,12 @@ import java.util
 
 import com.temportalist.compression.common.blocks.{BlockCompress, BlockCompressed}
 import com.temportalist.compression.common.item.IFood
-import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeDynamic}
+import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompressClassic}
 import com.temportalist.compression.common.tile.{TECompress, TECompressed}
 import com.temportalist.compression.common.{Compression, Options, Tiers}
 import com.temportalist.origin.api.common.lib.NameParser
 import com.temportalist.origin.api.common.utility.WorldHelper
 import com.temportalist.origin.foundation.common.register.BlockRegister
-import cpw.mods.fml.client.registry.RenderingRegistry
 import cpw.mods.fml.common.registry.{GameData, GameRegistry}
 import net.minecraft.block.Block
 import net.minecraft.creativetab.CreativeTabs
@@ -51,6 +50,16 @@ object CBlocks extends BlockRegister {
 		this.compressor.setCreativeTab(CreativeTabs.tabRedstone)
 
 
+	}
+
+	/**
+	 * This method is used to register crafting recipes
+	 */
+	override def registerCrafting(): Unit = {
+		GameRegistry.addShapedRecipe(new ItemStack(this.compressor),
+			"cpc", "c c", "cpc",
+			Char.box('c'), this.wrapInnerStack(new ItemStack(Blocks.cobblestone), 9),
+			Char.box('p'), Blocks.piston)
 	}
 
 	// Compressables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,19 +172,21 @@ object CBlocks extends BlockRegister {
 	}
 
 	def makeRecipe(inner: ItemStack, output: ItemStack): Unit = {
-		val piston: ItemStack = new ItemStack(Blocks.piston)
+		//val piston: ItemStack = new ItemStack(Blocks.piston)
+		/*
 		GameRegistry.addRecipe(new RecipeDynamic(3, 3,
 			Map(1 -> inner, 3 -> inner, 4 -> inner, 5 -> inner, 7 -> inner),
 			Map(0 -> piston, 2 -> piston, 6 -> piston, 8 -> piston),
 			output
 		))
+		*/
 		if (Options.useTraditionalRecipes) {
 			for (tier: Int <- 1 to Tiers.getMaxTier()) {
 				val last: ItemStack =
 					if (tier == 1) inner
 					else this.wrapInnerStack(inner, Tiers.getMaxCap(tier - 1))
 				val next: ItemStack = this.wrapInnerStack(inner, Tiers.getMaxCap(tier))
-				GameRegistry.addRecipe(new RecipeDynamic(3, 3, last, next))
+				GameRegistry.addRecipe(new RecipeCompressClassic(3, 3, last, next))
 			}
 		}
 		else {
