@@ -7,9 +7,8 @@ import com.temportalist.compression.common.container.ContainerCompressor
 import com.temportalist.compression.common.init.{CBlocks, CItems}
 import com.temportalist.compression.common.tile.TECompress
 import com.temportalist.origin.api.common.register.Registry
-import com.temportalist.origin.internal.client.gui.GuiConfig
 import cpw.mods.fml.client.IModGuiFactory
-import cpw.mods.fml.client.IModGuiFactory.{RuntimeOptionGuiHandler, RuntimeOptionCategoryElement}
+import cpw.mods.fml.client.IModGuiFactory.{RuntimeOptionCategoryElement, RuntimeOptionGuiHandler}
 import cpw.mods.fml.client.registry.{ClientRegistry, RenderingRegistry}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen

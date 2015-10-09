@@ -11,7 +11,18 @@ import net.minecraft.entity.player.EntityPlayer
 class PacketDropFullStack extends IPacket {
 
 	override def handle(player: EntityPlayer, side: Side): Unit = {
-		Compression.splitAndDropCompressedStack(player, player.getHeldItem, dropMaxStack = true)
+		if (player.getHeldItem == null) return
+		// todo look at Compression.tossItem and compare code to move into function
+		var newInvStack = player.getHeldItem.copy()
+		val dropStack = newInvStack.copy()
+		newInvStack.stackSize -= 1
+		if (newInvStack.stackSize < 1) newInvStack = null
+		dropStack.stackSize = 1
+
+		Compression.splitAndDropCompressedStack(player, dropStack, dropMaxStack = true)
+		if (newInvStack != null)
+			player.inventory.setInventorySlotContents(player.inventory.currentItem, newInvStack)
+
 	}
 
 }

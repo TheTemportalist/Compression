@@ -21,7 +21,7 @@ import net.minecraft.world.World
  */
 trait ICompressed extends Item {
 
-	this.setMaxStackSize(1)
+	//this.setMaxStackSize(1)
 
 	override def getItemStackDisplayName(stack: ItemStack): String = {
 		if (stack.hasTagCompound)

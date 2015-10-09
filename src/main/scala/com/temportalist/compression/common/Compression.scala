@@ -35,7 +35,7 @@ import net.minecraftforge.oredict.RecipeSorter.Category
 @Mod(modid = Compression.MODID, name = Compression.MODNAME, version = Compression.VERSION,
 	modLanguage = "scala",
 	guiFactory = Compression.clientProxy,
-	dependencies = ""//required-after:origin@[6,);"
+	dependencies = "required-after:origin@[6,);"
 )
 object Compression extends IMod with IModResource {
 
@@ -248,15 +248,28 @@ object Compression extends IMod with IModResource {
 
 		// player has pressed the drop key and is sneaking
 		if (event.player.inventory.getItemStack == null && event.player.isSneaking) {
-			this.splitAndDropCompressedStack(event.player, stack)
+			// get the remainder of the main stack
+			var singleStack = stack.copy()
+			singleStack.stackSize = 1
+
+			// drops the single item and returns the stack without that item
+			singleStack = this.splitAndDropCompressedStack(event.player, singleStack)
+
+			if (singleStack != null) {
+				if (event.player.getCurrentEquippedItem == null)
+					event.player.inventory.setInventorySlotContents(
+						event.player.inventory.currentItem, singleStack)
+				else
+					event.player.inventory.addItemStackToInventory(singleStack)
+			}
 			event.setCanceled(true) // remove the entityitem sent from being dropped
 		}
 
 	}
 
 	def splitAndDropCompressedStack(player: EntityPlayer, heldStack: ItemStack,
-			dropMaxStack: Boolean = false): Unit = {
-		if (!this.isCompressedStack(heldStack)) return
+			dropMaxStack: Boolean = false): ItemStack = {
+		if (!this.isCompressedStack(heldStack)) return null
 
 		var newInvStack = heldStack.copy()
 		val dropStack = CBlocks.getInnerStack(newInvStack)
@@ -273,10 +286,8 @@ object Compression extends IMod with IModResource {
 			if (CBlocks.getInnerSize(newInvStack) == 1) newInvStack = dropStack.copy()
 		}
 		else newInvStack = null
-		// set the player's inv slot to the newInvStack
-		player.inventory.setInventorySlotContents(player.inventory.currentItem, newInvStack)
 		Stacks.tossItem(dropStack, player)
-
+		newInvStack
 	}
 
 }
