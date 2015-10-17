@@ -283,4 +283,10 @@ object CBlocks extends BlockRegister {
 		Tiers.getTierFromSize(CBlocks.getInnerSize(stack))
 	}
 
+	def checkInnerSize(stack: ItemStack): ItemStack = {
+		if (CBlocks.getInnerSize(stack) <= 0) null
+		else if (CBlocks.getInnerSize(stack) == 1) CBlocks.getInnerStack(stack)
+		else stack
+	}
+
 }

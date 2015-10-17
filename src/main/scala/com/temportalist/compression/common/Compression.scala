@@ -5,7 +5,7 @@ import java.util
 import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.{CBlocks, CEntity, CItems}
 import com.temportalist.compression.common.item.ICompressed
-import com.temportalist.compression.common.packets.{PacketDropFullStack, PacketUpdateHeldSize}
+import com.temportalist.compression.common.packets.PacketUpdateHeldSize
 import com.temportalist.compression.common.recipe.{RecipeCompressClassic, RecipeCompress, RecipeDeCompress, RecipeRefill}
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.resource.{EnumResource, IModDetails, IModResource}
@@ -69,7 +69,7 @@ object Compression extends IMod with IModResource {
 	def pre(event: FMLPreInitializationEvent): Unit = {
 		super.preInitialize(this, event, this.proxy, Options, CBlocks, CItems, CEntity)
 
-		this.registerPackets(classOf[PacketUpdateHeldSize], classOf[PacketDropFullStack])
+		this.registerPackets(classOf[PacketUpdateHeldSize])
 
 		RecipeSorter.register("compress", classOf[RecipeCompress], Category.SHAPELESS, "")
 		RecipeSorter.register("decompress", classOf[RecipeDeCompress], Category.SHAPELESS, "")
@@ -241,30 +241,68 @@ object Compression extends IMod with IModResource {
 		}
 	}
 
+	/**
+	 * Toss No Sneak - toss regular
+	 * Toss W/ Sneak - toss stack of 9 and return remaining
+	 */
 	@SubscribeEvent
 	def tossEvent(event: ItemTossEvent): Unit = {
 		val stack = event.entityItem.getEntityItem
 		if (!this.isCompressedStack(stack)) return
+		if (!event.player.isSneaking) return
 
-		// player has pressed the drop key and is sneaking
-		if (event.player.inventory.getItemStack == null && event.player.isSneaking) {
-			// get the remainder of the main stack
-			var singleStack = stack.copy()
-			singleStack.stackSize = 1
+		// Stack to drop is the stack entity (which WAS in the inventory, but was dropped)
+		// there could still be a stack in the player's current slot
+		var fullStack = stack.copy()
+		val fullStack_Size = CBlocks.getInnerSize(fullStack)
 
-			// drops the single item and returns the stack without that item
-			singleStack = this.splitAndDropCompressedStack(event.player, singleStack)
+		// Split the stack which was going to drop into its crafting components
+		// if classic crafting is off, the remainderStack below takes care of extra parts
+		fullStack.stackSize = 8 // 8 parts of the 9 will be returned to the inventory
+		CBlocks.setStackSize(fullStack, fullStack_Size / 9)
+		fullStack = CBlocks.checkInnerSize(fullStack)
 
-			if (singleStack != null) {
-				if (event.player.getCurrentEquippedItem == null)
-					event.player.inventory.setInventorySlotContents(
-						event.player.inventory.currentItem, singleStack)
-				else
-					event.player.inventory.addItemStackToInventory(singleStack)
-			}
-			event.setCanceled(true) // remove the entityitem sent from being dropped
+		// this is the last part of the 9 which is the new drop stack
+		var newDropStack: ItemStack = null
+		// this is the remainder stack, it is carrying any left over stack parts
+		var remainderStack: ItemStack = null
+
+		if (fullStack != null) {
+			// last part of the 9 parts split
+			newDropStack = fullStack.copy()
+			newDropStack.stackSize = 1
+
+			remainderStack = fullStack.copy()
+			remainderStack.stackSize = 1
+			CBlocks.setStackSize(remainderStack, fullStack_Size % 9)
+			remainderStack = CBlocks.checkInnerSize(remainderStack)
+
 		}
 
+		// fullStack (8 of 9 parts) should go back into the inventory if possible
+		if (fullStack != null) {
+			if (!this.addToInventory(event.player, event.player.inventory.currentItem, fullStack))
+				Stacks.tossItem(fullStack, event.player)
+		}
+		// the last part of 9 should be intentionally dropped
+		if (newDropStack != null) Stacks.tossItem(newDropStack, event.player)
+		// the remainder should be added to the inventory if possible
+		if (remainderStack != null) {
+			if (!event.player.inventory.addItemStackToInventory(remainderStack))
+				Stacks.tossItem(remainderStack, event.player)
+		}
+
+		event.setCanceled(true) // remove the entityitem sent from being dropped
+
+	}
+
+	def addToInventory(player: EntityPlayer, prioritySlot: Int, stack: ItemStack): Boolean = {
+		if (player.inventory.getStackInSlot(prioritySlot) != null){
+			player.inventory.setInventorySlotContents(prioritySlot, stack)
+			true
+		}
+		else
+			player.inventory.addItemStackToInventory(stack)
 	}
 
 	def splitAndDropCompressedStack(player: EntityPlayer, heldStack: ItemStack,
