@@ -6,7 +6,7 @@ import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.{CBlocks, CEntity, CItems}
 import com.temportalist.compression.common.item.ICompressed
 import com.temportalist.compression.common.packets.PacketUpdateHeldSize
-import com.temportalist.compression.common.recipe.{RecipeCompressClassic, RecipeCompress, RecipeDeCompress, RecipeRefill}
+import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompressClassic, RecipeDeCompress, RecipeRefill}
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.resource.{EnumResource, IModDetails, IModResource}
 import com.temportalist.origin.api.common.utility.{Scala, Stacks}
@@ -273,10 +273,13 @@ object Compression extends IMod with IModResource {
 			newDropStack.stackSize = 1
 
 			remainderStack = fullStack.copy()
-			remainderStack.stackSize = 1
-			CBlocks.setStackSize(remainderStack, fullStack_Size % 9)
-			remainderStack = CBlocks.checkInnerSize(remainderStack)
-
+			val size: Int = (fullStack_Size % 9).toInt
+			if (this.isCompressedStack(remainderStack)) {
+				CBlocks.setStackSize(remainderStack, size)
+				remainderStack = CBlocks.checkInnerSize(remainderStack)
+			}
+			else if (size > 0) remainderStack.stackSize = size
+			else remainderStack = null
 		}
 
 		// fullStack (8 of 9 parts) should go back into the inventory if possible
@@ -297,7 +300,7 @@ object Compression extends IMod with IModResource {
 	}
 
 	def addToInventory(player: EntityPlayer, prioritySlot: Int, stack: ItemStack): Boolean = {
-		if (player.inventory.getStackInSlot(prioritySlot) != null){
+		if (player.inventory.getStackInSlot(prioritySlot) != null) {
 			player.inventory.setInventorySlotContents(prioritySlot, stack)
 			true
 		}
