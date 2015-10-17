@@ -63,7 +63,7 @@ trait ICompressed extends Item {
 	override def hasCustomEntity(stack: ItemStack): Boolean = true
 
 	override def createEntity(world: World, location: Entity, stack: ItemStack): Entity = {
-		println("get entity")
+		//println("get entity")
 		val ent = new EntityItemCompressed(
 			world, location.posX, location.posY, location.posZ, stack)
 		ent.motionX = location.motionX

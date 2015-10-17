@@ -285,7 +285,11 @@ object CBlocks extends BlockRegister {
 
 	def checkInnerSize(stack: ItemStack): ItemStack = {
 		if (CBlocks.getInnerSize(stack) <= 0) null
-		else if (CBlocks.getInnerSize(stack) == 1) CBlocks.getInnerStack(stack)
+		else if (CBlocks.getInnerSize(stack) == 1) {
+			val inner = CBlocks.getInnerStack(stack)
+			inner.stackSize *= stack.stackSize
+			inner
+		}
 		else stack
 	}
 

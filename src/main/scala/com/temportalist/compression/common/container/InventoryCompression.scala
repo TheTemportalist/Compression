@@ -25,7 +25,7 @@ class InventoryCompression(private val player: EntityPlayer) extends IInv {
 
 	override def setInventorySlotContents(slot: Int, stack: ItemStack): Unit = {
 		if (stack == null) {
-			println("remove stack")
+			//println("remove stack")
 			// removing stack
 			if (!this.player.capabilities.isCreativeMode)
 				this.decrCompressedSize(this.internalStack.stackSize)
@@ -49,7 +49,7 @@ class InventoryCompression(private val player: EntityPlayer) extends IInv {
 	private def decrCompressedSize(amount: Int): Unit = {
 		val compressed = player.getHeldItem.copy()
 		CBlocks.addToInnerSize(compressed, -amount)
-		println(compressed.getTagCompound)
+		//println(compressed.getTagCompound)
 		player.inventory.mainInventory(player.inventory.currentItem) = compressed
 		this.markDirty()
 		this.updateInternalStack(compressed)

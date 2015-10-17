@@ -113,9 +113,17 @@ object Compression extends IMod with IModResource {
 								CBlocks.getInnerSize(entStack)
 							else entStack.stackSize
 							if (CBlocks.canAddToStack(stack, amountToAdd)) {
-								val newStack = stack.copy()
-								CBlocks.addToInnerSize(newStack, amountToAdd)
-								player.inventory.setInventorySlotContents(slot, newStack)
+								var newCurrentSlotStack = stack.copy()
+								newCurrentSlotStack.stackSize -= 1
+
+								val stackAddedTo = newCurrentSlotStack.copy()
+								stackAddedTo.stackSize = 1
+								CBlocks.addToInnerSize(stackAddedTo, amountToAdd)
+
+								if (newCurrentSlotStack.stackSize <= 0) newCurrentSlotStack = null
+
+								player.inventory.setInventorySlotContents(slot, newCurrentSlotStack)
+								this.addToInventoryWithDrop(player, stackAddedTo)
 
 								event.setCanceled(true)
 								event.item.setDead()
@@ -131,7 +139,7 @@ object Compression extends IMod with IModResource {
 
 	def shouldCompressedPickUpStack(compressed: ItemStack, other: ItemStack): Boolean = {
 		(Compression.isStackCompressedAndMatches(other, compressed) &&
-				CBlocks.getStackTier(other) < CBlocks.getStackTier(compressed)) ||
+				CBlocks.getInnerSize(other) < CBlocks.getInnerSize(compressed)) ||
 				Stacks.doStacksMatch(CBlocks.getInnerStack(compressed), other)
 	}
 
@@ -189,8 +197,20 @@ object Compression extends IMod with IModResource {
 					else stack.stackSize
 					if (CBlocks.canAddToStack(compressed, amountToAdd)) {
 						val newThisStack: ItemStack = compressed.copy
-						CBlocks.addToInnerSize(newThisStack, amountToAdd)
-						entity.setEntityItemStack(newThisStack)
+						newThisStack.stackSize -= 1
+
+						val stackAddedTo = newThisStack.copy()
+						stackAddedTo.stackSize = 1
+						CBlocks.addToInnerSize(stackAddedTo, amountToAdd)
+
+						if (newThisStack.stackSize >= 1) {
+							entity.setEntityItemStack(newThisStack)
+							entity.worldObj.spawnEntityInWorld(
+								stackAddedTo.getItem.asInstanceOf[ICompressed].createEntity(
+									entity.worldObj, entity, stackAddedTo))
+						}
+						else entity.setEntityItemStack(stackAddedTo)
+
 						e.setDead()
 						true
 					}
@@ -251,6 +271,8 @@ object Compression extends IMod with IModResource {
 		if (!this.isCompressedStack(stack)) return
 		if (!event.player.isSneaking) return
 
+		val shouldDropSingle: Boolean = false
+
 		// Stack to drop is the stack entity (which WAS in the inventory, but was dropped)
 		// there could still be a stack in the player's current slot
 		var fullStack = stack.copy()
@@ -260,52 +282,53 @@ object Compression extends IMod with IModResource {
 		// if classic crafting is off, the remainderStack below takes care of extra parts
 		fullStack.stackSize = 8 // 8 parts of the 9 will be returned to the inventory
 		CBlocks.setStackSize(fullStack, fullStack_Size / 9)
-		fullStack = CBlocks.checkInnerSize(fullStack)
+		// At this point, fullStack is still a compressed stack
 
 		// this is the last part of the 9 which is the new drop stack
-		var newDropStack: ItemStack = null
-		// this is the remainder stack, it is carrying any left over stack parts
-		var remainderStack: ItemStack = null
+		// has the same internal size as fullStack
+		var newDropStack: ItemStack = fullStack.copy()
+		newDropStack.stackSize = 1
 
-		if (fullStack != null) {
-			// last part of the 9 parts split
-			newDropStack = fullStack.copy()
-			newDropStack.stackSize = 1
-
-			remainderStack = fullStack.copy()
-			val size: Int = (fullStack_Size % 9).toInt
-			if (this.isCompressedStack(remainderStack)) {
-				CBlocks.setStackSize(remainderStack, size)
-				remainderStack = CBlocks.checkInnerSize(remainderStack)
-			}
-			else if (size > 0) remainderStack.stackSize = size
-			else remainderStack = null
+		if (!shouldDropSingle) {
+			fullStack.stackSize += 1
+			newDropStack = null
 		}
+
+		// this is the remainder stack, it is carrying any left over stack parts
+		var remainderStack: ItemStack = fullStack.copy()
+		remainderStack.stackSize = 1
+		CBlocks.setStackSize(remainderStack, fullStack_Size % 9)
+
+		// Check the stacks for their sizes
+		fullStack = CBlocks.checkInnerSize(fullStack)
+		if (newDropStack != null) newDropStack = CBlocks.checkInnerSize(newDropStack)
+		remainderStack = CBlocks.checkInnerSize(remainderStack)
 
 		// fullStack (8 of 9 parts) should go back into the inventory if possible
 		if (fullStack != null) {
-			if (!this.addToInventory(event.player, event.player.inventory.currentItem, fullStack))
-				Stacks.tossItem(fullStack, event.player)
+			this.addToInventoryWithCurrentPiority(event.player, fullStack)
 		}
 		// the last part of 9 should be intentionally dropped
 		if (newDropStack != null) Stacks.tossItem(newDropStack, event.player)
+
 		// the remainder should be added to the inventory if possible
 		if (remainderStack != null) {
-			if (!event.player.inventory.addItemStackToInventory(remainderStack))
-				Stacks.tossItem(remainderStack, event.player)
+			this.addToInventoryWithDrop(event.player, remainderStack)
 		}
 
 		event.setCanceled(true) // remove the entityitem sent from being dropped
 
 	}
 
-	def addToInventory(player: EntityPlayer, prioritySlot: Int, stack: ItemStack): Boolean = {
-		if (player.inventory.getStackInSlot(prioritySlot) != null) {
-			player.inventory.setInventorySlotContents(prioritySlot, stack)
-			true
+	def addToInventoryWithCurrentPiority(player: EntityPlayer, stack: ItemStack): Unit = {
+		if (player.inventory.getCurrentItem == null) {
+			player.inventory.setInventorySlotContents(player.inventory.currentItem, stack)
 		}
-		else
-			player.inventory.addItemStackToInventory(stack)
+		else this.addToInventoryWithDrop(player, stack)
+	}
+
+	def addToInventoryWithDrop(player: EntityPlayer, stack: ItemStack): Unit = {
+		if (!player.inventory.addItemStackToInventory(stack)) Stacks.tossItem(stack, player)
 	}
 
 	def splitAndDropCompressedStack(player: EntityPlayer, heldStack: ItemStack,
