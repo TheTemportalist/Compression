@@ -8,7 +8,7 @@ import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompres
 import com.temportalist.compression.common.tile.{TECompress, TECompressed}
 import com.temportalist.compression.common.{Compression, Options, Tiers}
 import com.temportalist.origin.api.common.lib.NameParser
-import com.temportalist.origin.api.common.utility.WorldHelper
+import com.temportalist.origin.api.common.utility.{NBTHelper, WorldHelper}
 import com.temportalist.origin.foundation.common.register.BlockRegister
 import cpw.mods.fml.common.registry.{GameData, GameRegistry}
 import net.minecraft.block.Block
@@ -49,7 +49,6 @@ object CBlocks extends BlockRegister {
 		this.compressor = new BlockCompress("compressor", classOf[TECompress])
 		this.compressor.setCreativeTab(CreativeTabs.tabRedstone)
 
-
 	}
 
 	/**
@@ -75,6 +74,22 @@ object CBlocks extends BlockRegister {
 	val compressedItems: java.util.List[ItemStack] = new util.ArrayList[ItemStack]()
 
 	def constructCompressables(bvi: Boolean): Unit = {
+
+		def tryToCompress[U](plainStack: ItemStack, f: (ItemStack, ItemStack) => U): Unit = {
+			try {
+				val compressedStack = this.wrapInnerStack(plainStack)
+				f(plainStack, compressedStack)
+			}
+			catch {
+				case e: Exception =>
+					Compression.log("Could not compress stack with item " +
+							plainStack.getUnlocalizedName + " and size of " + plainStack.stackSize
+							+ " and meta of " + plainStack.getItemDamage + " and nbt of " +
+							(if (plainStack.hasTagCompound) plainStack.getTagCompound.toString
+							else "{}"))
+			}
+		}
+
 		if (bvi) {
 			// blocks
 			val blocks: java.lang.Iterable[Block] = GameData.getBlockRegistry.typeSafeIterable()
@@ -99,9 +114,12 @@ object CBlocks extends BlockRegister {
 						}
 					}
 					*/
-					val stack: ItemStack = this.wrapInnerStack(new ItemStack(block))
-					this.compressedBlocks.add(stack)
-					this.makeRecipe(new ItemStack(block), stack)
+					tryToCompress(new ItemStack(block),
+						(regStack: ItemStack, compressed: ItemStack) => {
+							this.compressedBlocks.add(compressed)
+							this.makeRecipe(regStack, compressed)
+						}
+					)
 				}
 			}
 		}
@@ -130,9 +148,12 @@ object CBlocks extends BlockRegister {
 						}
 					}
 					*/
-					val stack: ItemStack = this.wrapInnerStack(new ItemStack(item))
-					this.compressedItems.add(stack)
-					this.makeRecipe(new ItemStack(item), stack)
+					tryToCompress(new ItemStack(item),
+						(regStack: ItemStack, compressed: ItemStack) => {
+							this.compressedItems.add(compressed)
+							this.makeRecipe(regStack, compressed)
+						}
+					)
 				}
 			}
 		}
