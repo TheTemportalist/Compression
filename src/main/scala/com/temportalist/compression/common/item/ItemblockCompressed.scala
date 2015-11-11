@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.item
 
+import com.temportalist.compression.common.Compression
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.utility.{Stacks, WorldHelper}
@@ -24,6 +25,7 @@ class ItemBlockCompressed(block: Block) extends ItemBlock(block) with ICompresse
 	override def onItemUse(stack: ItemStack, player: EntityPlayer, world: World,
 			x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
 		if (!player.isSneaking) {
+			/*
 			val innerStack = CBlocks.getInnerStack(stack)
 			val sentStack = innerStack.copy()
 			if (innerStack.getItem.onItemUse(sentStack, player, world, x, y, z, side,
@@ -36,6 +38,32 @@ class ItemBlockCompressed(block: Block) extends ItemBlock(block) with ICompresse
 					return true
 				}
 			}
+			false
+			*/
+			// this is the stack which should be added to the inventory
+			// it has been split into 9 parts, 8 of which are represented here
+			var newCurrentStack = stack.copy()
+			newCurrentStack.stackSize -= 1
+
+			var usedStack = newCurrentStack.copy()
+			usedStack.stackSize = 1
+			CBlocks.decrStackSize(usedStack, 1)
+			usedStack = CBlocks.checkInnerSize(usedStack)
+
+			if (newCurrentStack.stackSize <= 0) newCurrentStack = null
+
+			val placementStack = CBlocks.getInnerStack(stack)
+			if (placementStack.getItem.onItemUse(placementStack, player, world, x, y, z, side,
+				hitX, hitY, hitZ)) {
+
+				player.inventory.setInventorySlotContents(player.inventory.currentItem, newCurrentStack)
+
+				if (usedStack != null)
+					Compression.addToInventoryWithDrop(player, usedStack)
+
+				return true
+			}
+
 			false
 		}
 		else this.onItemUse(stack, player, world, new V3O(x, y, z), new V3O(hitX, hitY, hitZ),
