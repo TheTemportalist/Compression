@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.recipe
 
+import com.temportalist.compression.common.CompressedStack
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.origin.api.common.utility.Scala
@@ -22,8 +23,8 @@ class RecipeDeCompress(inner: ItemStack) extends IRecipe {
 		val set: Array[ItemStack] = new Array[ItemStack](2)
 		Scala.foreach(inv, (i: Int, slotStack: ItemStack) => {
 			if (slotStack != null) if (this.isValidCompressed(slotStack)) {
-				val inner: ItemStack = CBlocks.getInnerStack(slotStack)
-				val size: Long = CBlocks.getInnerSize(slotStack)
+				val inner: ItemStack = CompressedStack.getStackType(slotStack)
+				val size: Long = CompressedStack.getCompressedSize(slotStack)
 				if (size <= 64) {
 					inner.stackSize = size.toInt
 				}
@@ -63,7 +64,7 @@ class RecipeDeCompress(inner: ItemStack) extends IRecipe {
 
 	private final def isValidCompressed(slotStack: ItemStack): Boolean = {
 		slotStack != null && slotStack.getItem.isInstanceOf[ItemBlockCompressed] &&
-				CBlocks.getInnerStack(slotStack).getItem == this.inner.getItem
+				CompressedStack.getStackType(slotStack).getItem == this.inner.getItem
 	}
 
 	override def matches(inv: InventoryCrafting, worldIn: World): Boolean = {

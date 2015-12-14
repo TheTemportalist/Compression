@@ -5,7 +5,7 @@ import java.util
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.ItemBlockCompressed
 import com.temportalist.compression.common.tile.TECompressed
-import com.temportalist.compression.common.{Compression, Tiers}
+import com.temportalist.compression.common.{Rank, CompressedStack, Compression}
 import com.temportalist.origin.api.common.block.BlockTile
 import com.temportalist.origin.api.common.lib.{BlockState, NameParser, V3O}
 import cpw.mods.fml.relauncher.{Side, SideOnly}
@@ -30,13 +30,13 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTil
 
 	override def onBlockPlacedBy(world: World, x: Int, y: Int, z: Int, placer: EntityLivingBase,
 			stack: ItemStack): Unit = {
-		if (CBlocks.doesStackHaveInner(stack)) world.getTileEntity(x, y, z) match {
+		if (CompressedStack.isCompressedStack(stack)) world.getTileEntity(x, y, z) match {
 			case compressed: TECompressed =>
 				// write inner stats to tile
 				CBlocks.writeCompressedToTile(stack, compressed)
 
 				// set block details based on stats from tile
-				val mult = Tiers.getTierFromSize(compressed.getSize)
+				val mult = Rank.getRank(compressed.getSize).getIndex
 				val innerStack = NameParser.getItemStack(compressed.getStackString)
 				val block = Block.getBlockFromItem(innerStack.getItem)
 

@@ -1,6 +1,6 @@
 package com.temportalist.compression.client
 
-import com.temportalist.compression.common.Compression
+import com.temportalist.compression.common.{Rank, CompressedStack, Compression}
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.tile.TECompressed
 import com.temportalist.origin.api.client.utility.{Rendering, TessRenderer}
@@ -40,7 +40,7 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 		var tier = 0
 		world.getTileEntity(x, y, z) match {
 			case tile: TECompressed =>
-				tier = tile.getTier
+				tier = tile.getRank.getIndex
 				//renderer.renderBlockByRenderType(tile.getStackBlock, x, y, z)
 				renderer.setRenderBounds(0.0001, 0.0001, 0.0001, 0.9999, 0.9999, 0.9999)
 				renderer.renderStandardBlock(tile.getStackBlock, x, y, z)
@@ -60,8 +60,8 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 
 	def renderItem(renderType: ItemRenderType, stack: ItemStack, isCompressedItem: Boolean,
 			data: Array[AnyRef]): Unit = {
-		val innerStack = CBlocks.getInnerStack(stack)
-		val tier = CBlocks.getStackTier(stack)
+		val innerStack = CompressedStack.getStackType(stack)
+		val tier = Rank.getRank(stack).getIndex
 		if (tier < 0) return
 		val icon = CBlocks.compressed.icons(tier)
 

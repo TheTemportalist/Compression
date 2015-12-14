@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.item
 
-import com.temportalist.compression.common.Compression
+import com.temportalist.compression.common.{CompressedStack, Temp, Compression}
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.utility.{Stacks, WorldHelper}
@@ -47,19 +47,19 @@ class ItemBlockCompressed(block: Block) extends ItemBlock(block) with ICompresse
 
 			var usedStack = newCurrentStack.copy()
 			usedStack.stackSize = 1
-			CBlocks.decrStackSize(usedStack, 1)
-			usedStack = CBlocks.checkInnerSize(usedStack)
+			CompressedStack -= (usedStack, 1)
+			usedStack = CompressedStack.simplifyStack(usedStack)
 
 			if (newCurrentStack.stackSize <= 0) newCurrentStack = null
 
-			val placementStack = CBlocks.getInnerStack(stack)
+			val placementStack = CompressedStack.getStackType(stack)
 			if (placementStack.getItem.onItemUse(placementStack, player, world, x, y, z, side,
 				hitX, hitY, hitZ)) {
 
 				player.inventory.setInventorySlotContents(player.inventory.currentItem, newCurrentStack)
 
 				if (usedStack != null)
-					Compression.addToInventoryWithDrop(player, usedStack)
+					Temp.addToInventoryWithDrop(player, usedStack)
 
 				return true
 			}
@@ -107,7 +107,7 @@ class ItemBlockCompressed(block: Block) extends ItemBlock(block) with ICompresse
 
 	def placeBlockAt(stack: ItemStack, player: EntityPlayer, world: World,
 			vecCoord: V3O, vecHit: V3O, side: ForgeDirection, metadata: Int): Boolean = {
-		val innerStack = CBlocks.getInnerStack(stack)
+		val innerStack = CompressedStack.getStackType(stack)
 		if (innerStack != null && WorldHelper.isBlock(innerStack.getItem)) {
 			super.placeBlockAt(stack, player, world,
 				vecCoord.x_i(), vecCoord.y_i(), vecCoord.z_i(), side.ordinal(),

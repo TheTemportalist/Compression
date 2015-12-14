@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.recipe
 
-import com.temportalist.compression.common.Tiers
+import com.temportalist.compression.common.{Rank, CompressedStack}
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.item.ItemBlockCompressed
 import net.minecraft.inventory.InventoryCrafting
@@ -37,7 +37,7 @@ class RecipeCompress(inner: ItemStack) extends IRecipe {
 				else 0L
 				if (toAdd > 0) {
 					inputs += 1
-					if (compressedSize + toAdd <= Tiers.getMaxCap())
+					if (compressedSize + toAdd <= Rank.getHighestRank.getMaximum)
 						compressedSize += toAdd
 					else return null
 				}
@@ -50,7 +50,7 @@ class RecipeCompress(inner: ItemStack) extends IRecipe {
 
 	private final def isValidCompressed(slotStack: ItemStack): Boolean = {
 		slotStack.getItem.isInstanceOf[ItemBlockCompressed] &&
-				CBlocks.getInnerStack(slotStack).getItem == this.inner.getItem
+				CompressedStack.getStackType(slotStack).getItem == this.inner.getItem
 	}
 
 	override def matches(inv: InventoryCrafting, worldIn: World): Boolean = {

@@ -1,7 +1,7 @@
 package com.temportalist.compression.common.tile
 
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.{Compression, Tiers}
+import com.temportalist.compression.common.{Rank, CompressedStack, Compression}
 import com.temportalist.origin.api.common.inventory.IInv
 import com.temportalist.origin.api.common.tile.ITileSaver
 import com.temportalist.origin.api.common.utility.Stacks
@@ -24,7 +24,7 @@ class TECompress extends TileEntity with IInv with ITileSaver {
 	override def updateEntity(): Unit = {
 		val stack = this.getStackInSlot(0)
 		if (stack != null) {
-			val isCompressedInput = Compression.isCompressedStack(stack)
+			val isCompressedInput = CompressedStack.isCompressedStack(stack)
 			val compressedInput = if (isCompressedInput) stack.copy()
 			else CBlocks.wrapInnerStack(stack.copy(), stack.stackSize)
 
@@ -36,27 +36,27 @@ class TECompress extends TileEntity with IInv with ITileSaver {
 
 			val nullOutputStack = outputStack == null
 			if (!isCompressedInput && stack.stackSize <= 1 && nullOutputStack) return
-			if (nullOutputStack || Stacks.doStacksMatch(CBlocks.getInnerStack(outputStack),
-				CBlocks.getInnerStack(compressedInput), nbt = true)) {
+			if (nullOutputStack || Stacks.doStacksMatch(CompressedStack.getStackType(outputStack),
+				CompressedStack.getStackType(compressedInput), nbt = true)) {
 
 				val amountToCompress = Math.min(
-					Tiers.getMaxCap() -
-							(if (nullOutputStack) 0 else CBlocks.getInnerSize(outputStack)),
-					if (isCompressedInput) CBlocks.getInnerSize(compressedInput)
-					else Math.min(CBlocks.getInnerSize(compressedInput), 9)
+					Rank.getHighestRank.getMaximum -
+							(if (nullOutputStack) 0 else CompressedStack.getCompressedSize(outputStack)),
+					if (isCompressedInput) CompressedStack.getCompressedSize(compressedInput)
+					else Math.min(CompressedStack.getCompressedSize(compressedInput), 9)
 				).toInt
 
 				if (amountToCompress > 0) {
 					newOutput = (if (nullOutputStack) compressedInput else outputStack).copy()
-					CBlocks.setStackSize(newOutput,
-						(if (nullOutputStack) 0 else CBlocks.getInnerSize(newOutput)) +
+					CompressedStack.setCompressedSize(newOutput,
+						(if (nullOutputStack) 0 else CompressedStack.getCompressedSize(newOutput)) +
 								amountToCompress)
 
 					newInput = stack.copy()
 					if (isCompressedInput) {
-						CBlocks.setStackSize(newInput,
-							CBlocks.getInnerSize(newInput) - amountToCompress)
-						if (CBlocks.getInnerSize(newInput) <= 0) newInput = null
+						CompressedStack.setCompressedSize(newInput,
+							CompressedStack.getCompressedSize(newInput) - amountToCompress)
+						if (CompressedStack.getCompressedSize(newInput) <= 0) newInput = null
 					}
 					else {
 						newInput.stackSize = newInput.stackSize - amountToCompress

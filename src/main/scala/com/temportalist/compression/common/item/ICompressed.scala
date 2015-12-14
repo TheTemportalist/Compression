@@ -4,7 +4,7 @@ import java.util
 
 import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.CBlocks
-import com.temportalist.compression.common.{Compression, Options, Tiers}
+import com.temportalist.compression.common.{CompressedStack, Rank, Compression, Options}
 import com.temportalist.origin.api.client.utility.Keys
 import com.temportalist.origin.api.common.lib.V3O
 import com.temportalist.origin.api.common.utility.Generic
@@ -25,8 +25,7 @@ trait ICompressed extends Item {
 
 	override def getItemStackDisplayName(stack: ItemStack): String = {
 		if (stack.hasTagCompound)
-			Tiers.getName(CBlocks.getInnerSize(stack)) + " Compressed " +
-					CBlocks.getDisplayName(stack)
+			Rank.getRank(stack).getName + " Compressed " + CompressedStack.getTypeName(stack)
 		else super.getItemStackDisplayName(stack)
 	}
 
@@ -63,25 +62,25 @@ trait ICompressed extends Item {
 	override def hasCustomEntity(stack: ItemStack): Boolean = true
 
 	override def createEntity(world: World, location: Entity, stack: ItemStack): Entity = {
-		//println("get entity")
-		val ent = new EntityItemCompressed(
-			world, location.posX, location.posY, location.posZ, stack)
-		ent.motionX = location.motionX
-		ent.motionY = location.motionY
-		ent.motionZ = location.motionZ
-		ent.delayBeforeCanPickup = 10
-		ent
+		CompressedStack.createEntity(world, location, stack)
 	}
 
 	/**
 	 * Also called, for this item, by the onArmorTick function (passing a -1 as the slot index).
 	 * This is done because Tinker's Construct adds the ability to put ANY block on a player's head
 	 */
-	override def onUpdate(stack: ItemStack, world: World, player: Entity, slot: Int,
+	override def onUpdate(stack: ItemStack, world: World, entity: Entity, slot: Int,
 			isCurrentItem: Boolean): Unit = {
-		if (!player.isSneaking) Compression.tryToPullItemsCloser(Options.magnetTier, player, stack,
+		entity match {
+			case player: EntityPlayer =>
+				if (!player.isSneaking) Rank.getRank(stack).onInventoryTick(stack, player)
+			case _ =>
+		}
+		/*
+		if (!player.isSneaking) Compression.tryToPullItemsCloser(Rank.magnet, player, stack,
 			player.boundingBox.expand(1, 0.5D, 1), world, new V3O(player),
 			new V3O(player.motionX, player.motionY, player.motionZ), null)
+		*/
 	}
 
 	override def onArmorTick(world: World, player: EntityPlayer, stack: ItemStack): Unit = {

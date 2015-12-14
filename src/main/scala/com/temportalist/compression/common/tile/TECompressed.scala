@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.tile
 
-import com.temportalist.compression.common.Tiers
+import com.temportalist.compression.common.Rank
 import com.temportalist.origin.api.common.lib.NameParser
 import com.temportalist.origin.api.common.tile.ITileSaver
 import net.minecraft.block.Block
@@ -40,7 +40,7 @@ class TECompressed extends TileEntity with ITileSaver {
 
 	def getSize: Long = this.size
 
-	def getTier: Int = Tiers.getTierFromSize(this.size)
+	def getRank: Rank = Rank.getRank(this.size)
 
 	override def writeToNBT(tagCom: NBTTagCompound): Unit = {
 		super.writeToNBT(tagCom)

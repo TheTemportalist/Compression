@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.entity;
 
-import com.temportalist.compression.common.Compression;
+import com.temportalist.compression.common.Rank;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -25,7 +25,9 @@ public class EntityItemCompressed extends EntityItem {
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-		Compression.onCompressedEntityUpdate(this, this.getEntityItem());
+		Rank.getRank(this.getEntityItem()).inWorldTick(this, this.getEntityItem());
 	}
+
+
 
 }

@@ -6,7 +6,7 @@ import com.temportalist.compression.common.blocks.{BlockCompress, BlockCompresse
 import com.temportalist.compression.common.item.IFood
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompressClassic}
 import com.temportalist.compression.common.tile.{TECompress, TECompressed}
-import com.temportalist.compression.common.{Compression, Options, Tiers}
+import com.temportalist.compression.common.{Rank, CompressedStack, Compression, Options}
 import com.temportalist.origin.api.common.lib.NameParser
 import com.temportalist.origin.api.common.utility.{NBTHelper, WorldHelper}
 import com.temportalist.origin.foundation.common.register.BlockRegister
@@ -202,11 +202,11 @@ object CBlocks extends BlockRegister {
 		))
 		*/
 		if (Options.useTraditionalRecipes) {
-			for (tier: Int <- 1 to Tiers.getMaxTier()) {
+			for (tier: Int <- 1 to Rank.getHighestRank.getIndex) {
 				val last: ItemStack =
 					if (tier == 1) inner
-					else this.wrapInnerStack(inner, Tiers.getMaxCap(tier - 1))
-				val next: ItemStack = this.wrapInnerStack(inner, Tiers.getMaxCap(tier))
+					else this.wrapInnerStack(inner, Rank.indexOf(tier - 1).getMaximum)
+				val next: ItemStack = this.wrapInnerStack(inner, Rank.indexOf(tier).getMaximum)
 				GameRegistry.addRecipe(new RecipeCompressClassic(3, 3, last, next))
 			}
 		}
@@ -248,8 +248,8 @@ object CBlocks extends BlockRegister {
 
 	def writeCompressedToTile(stack: ItemStack, tile: TECompressed): Unit = {
 		if (stack.hasTagCompound) {
-			tile.setStack(this.getInnerStack(stack))
-			tile.setSize(this.getInnerSize(stack))
+			tile.setStack(CompressedStack.getStackType(stack))
+			tile.setSize(CompressedStack.getCompressedSize(stack))
 		}
 	}
 
@@ -258,60 +258,6 @@ object CBlocks extends BlockRegister {
 		stack.getTagCompound.setString("inner", tile.getStackString)
 		stack.getTagCompound.setString("display", tile.getStackDisplay)
 		stack.getTagCompound.setLong("stackSize", tile.getSize)
-	}
-
-	def getInnerSize(stack: ItemStack): Long = {
-		if (!stack.hasTagCompound) stack.setTagCompound(new NBTTagCompound)
-		stack.getTagCompound.getLong("stackSize")
-	}
-
-	def canAddToStack(stack: ItemStack): Boolean = this.canAddToStack(stack, 1)
-
-	def canAddToStack(stack: ItemStack, amount: Long): Boolean = {
-		CBlocks.getInnerSize(stack) + amount <= Tiers.getMaxCap()
-	}
-
-	def addToInnerSize(stack: ItemStack): Unit = this.addToInnerSize(stack, 1)
-
-	def addToInnerSize(stack: ItemStack, amount: Long): Unit = {
-		this.setStackSize(stack, this.getInnerSize(stack) + amount)
-	}
-
-	def setStackSize(stack: ItemStack, size: Long): Unit = {
-		stack.getTagCompound.setLong("stackSize", size)
-	}
-
-	def decrStackSize(stack: ItemStack, amt: Long): Unit = {
-		this.setStackSize(stack, this.getInnerSize(stack) - amt)
-	}
-
-	def getDisplayName(stack: ItemStack): String = {
-		stack.getTagCompound.getString("display")
-	}
-
-	def getInnerString(stack: ItemStack): String = {
-		stack.getTagCompound.getString("inner")
-	}
-
-	def getInnerStack(stack: ItemStack): ItemStack = {
-		NameParser.getItemStack(CBlocks.getInnerString(stack))
-	}
-
-	def doesStackHaveInner(stack: ItemStack): Boolean =
-		stack.hasTagCompound && !this.getInnerString(stack).isEmpty
-
-	def getStackTier(stack: ItemStack): Int = {
-		Tiers.getTierFromSize(CBlocks.getInnerSize(stack))
-	}
-
-	def checkInnerSize(stack: ItemStack): ItemStack = {
-		if (CBlocks.getInnerSize(stack) <= 0) null
-		else if (CBlocks.getInnerSize(stack) == 1) {
-			val inner = CBlocks.getInnerStack(stack)
-			inner.stackSize *= stack.stackSize
-			inner
-		}
-		else stack
 	}
 
 }

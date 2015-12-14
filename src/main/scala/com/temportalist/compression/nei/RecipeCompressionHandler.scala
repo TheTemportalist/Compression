@@ -4,7 +4,7 @@ import java.util
 
 import codechicken.nei.PositionedStack
 import codechicken.nei.recipe.TemplateRecipeHandler
-import com.temportalist.compression.common.Compression
+import com.temportalist.compression.common.{CompressedStack, Compression}
 import com.temportalist.compression.common.init.CBlocks
 import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompressClassic}
 import com.temportalist.origin.api.common.utility.Stacks
@@ -18,7 +18,7 @@ object RecipeCompressionHandler extends TemplateRecipeHandler {
 	class ClassicCachedRecipe(val recipe: RecipeCompressClassic) extends CachedRecipe {
 
 		val outputPosStack = new PositionedStack(recipe.output, 10, 0)
-		val innerStack = CBlocks.getInnerStack(recipe.output)
+		val innerStack = CompressedStack.getStackType(recipe.output)
 		val ingredients = new util.ArrayList[PositionedStack]()
 		for (i <- 0 until 8)
 			ingredients.add(new PositionedStack(innerStack, (i % 3) * 18, (i / 3) * 18))
@@ -34,7 +34,7 @@ object RecipeCompressionHandler extends TemplateRecipeHandler {
 	override def getRecipeName: String = Compression.getModName
 
 	override def loadCraftingRecipes(result: ItemStack): Unit = {
-		if (Compression.isCompressedStack(result)) {
+		if (CompressedStack.isCompressedStack(result)) {
 			RecipeCompressClassic.recipes.values.foreach(recipe =>
 				if (Stacks.doStacksMatch(result, recipe.getRecipeOutput, nbt = true))
 					this.arecipes.add(
