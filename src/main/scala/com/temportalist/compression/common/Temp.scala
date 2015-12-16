@@ -34,8 +34,12 @@ object Temp {
 					list.get(i) match {
 						case otherEnt: Entity =>
 							if (shouldAttract == null || shouldAttract(otherEnt)) {
-								this.pullEntityTowards(otherEnt, pos, motion)
-								onAttraction(otherEnt)
+								val intersetBB = otherEnt.boundingBox != null &&
+										boundingBox != null &&
+										otherEnt.boundingBox.intersectsWith(
+											boundingBox.expand(0.25, 0.25, 0.25))
+								if (!intersetBB) this.pullEntityTowards(otherEnt, pos, motion)
+								if (intersetBB && onAttraction != null) onAttraction(otherEnt)
 							}
 						case _ =>
 					}

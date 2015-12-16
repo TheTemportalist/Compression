@@ -3,7 +3,7 @@ package com.temportalist.compression.common
 import com.temportalist.compression.common.entity.EntityItemCompressed
 import com.temportalist.compression.common.init.{CItems, CBlocks}
 import com.temportalist.compression.common.item.IFood
-import com.temportalist.origin.api.common.lib.NameParser
+import com.temportalist.origin.api.common.lib.{V3O, NameParser}
 import com.temportalist.origin.api.common.utility.{WorldHelper, Scala, Stacks}
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
@@ -13,6 +13,8 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.World
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
+import scala.util.control.Breaks._
 
 /**
  * Provides utility methods for dealing with compressed stacks
@@ -143,7 +145,7 @@ object CompressedStack {
 		ent.motionX = location.motionX
 		ent.motionY = location.motionY
 		ent.motionZ = location.motionZ
-		ent.delayBeforeCanPickup = 10
+		ent.delayBeforeCanPickup = 20
 		ent
 	}
 
@@ -162,7 +164,8 @@ object CompressedStack {
 		val itemType: ItemStack = this.getStackType(stack)
 		var total: Long = 0
 		if (itemType != null) Scala.foreach(player.inventory, (slot: Int, stack: ItemStack) => {
-			if ((withHotbar || slot >= 9) && this.doStackTypesMatch(itemType, stack)) {
+			if (stack != null && (withHotbar || slot >= 9) &&
+					this.doStackTypesMatch(itemType, stack)) {
 				total += this.getTotalSize(stack)
 				player.inventory.setInventorySlotContents(slot, null)
 			}
@@ -178,35 +181,49 @@ object CompressedStack {
 		val stackType = this.getStackType(stack)
 		val list = ListBuffer[ItemStack]()
 
-		var size = total
-		while (size > 0) {
-			val rank = Rank.getRank(size)
-			val highestFullRank = rank -= 1
-			val stackSize = Math.min(size, highestFullRank.getMaximum)
-			size -= stackSize
-			list += {
-				var stack: ItemStack = null
-				if (Rank.getRank(stackSize).getIndex <= 0) {
-					stack = stackType.copy()
-					stack.stackSize = stackSize.toInt
+		{
+			val sizeList = mutable.Map[Long, Int]()
+			var size = total
+			while (size > 0) {
+				var nextSize = 0L
+				if (size < 9)
+					nextSize = size
+				else {
+					breakable {for (i <- Rank.caps.indices) {
+						if (Rank.caps(i) > size) {
+							nextSize = if (i - 1 >= 0) Rank.caps(i - 1) else Rank.caps(i)
+							break()
+						}
+					}}
 				}
-				else stack = this.createCompressedStack(stackType, stackSize)
-				stack
+				size -= nextSize
+				sizeList(nextSize) = if (sizeList.contains(nextSize)) sizeList(nextSize) + 1 else 1
 			}
+			sizeList.foreach(sizeAmt => {
+				var stack: ItemStack = null
+				if (sizeAmt._1 >= 9) {
+					stack = CompressedStack.createCompressedStack(stackType, sizeAmt._1)
+					stack.stackSize = sizeAmt._2
+				}
+				else {
+					stack = stackType.copy()
+					stack.stackSize = sizeAmt._1.toInt
+				}
+				list += stack
+			})
 		}
 
 		list
 	}
 
-	def shouldAttractEntity(originEntity: EntityItemCompressed, otherEntity: Entity): Boolean = {
+	def shouldAttractEntity(originStack: ItemStack, otherEntity: Entity): Boolean = {
 		otherEntity match {
 			case entityItem: EntityItem =>
-				val stack = originEntity.getEntityItem
 				val otherEntStack = entityItem.getEntityItem
 				entityItem.age > 10 &&
-						CompressedStack.doStackTypesMatch(stack, otherEntStack) &&
+						CompressedStack.doStackTypesMatch(originStack, otherEntStack) &&
 						CompressedStack.getTotalSize(otherEntStack) <
-								CompressedStack.getTotalSize(stack)
+								CompressedStack.getTotalSize(originStack)
 			case _ => false
 		}
 	}
@@ -217,20 +234,24 @@ object CompressedStack {
 				val originStack = originEntity.getEntityItem
 				val otherStack = entityItem.getEntityItem
 				if (!CompressedStack.doStackTypesMatch(originStack, otherStack)) return
-				if (originEntity.boundingBox != null && entityItem.boundingBox != null &&
-						entityItem.boundingBox.intersectsWith(
-							originEntity.boundingBox.expand(0.25, 0.25, 0.25))) {
-					val totalAmount = CompressedStack.getTotalSize(originStack) +
-							CompressedStack.getTotalSize(otherStack)
-					val list = this.divideIntoClassicCompressions(originStack, totalAmount)
+				val totalAmount = CompressedStack.getTotalSize(originStack) +
+						CompressedStack.getTotalSize(otherStack)
+				val list = this.divideIntoClassicCompressions(originStack, totalAmount)
 
-					entityItem.setDead()
-					originEntity.setEntityItemStack(list.remove(0))
-					list.foreach(stack => originEntity.worldObj.spawnEntityInWorld(
-						this.createEntity(originEntity.worldObj, originEntity, stack)
-					))
-
-				}
+				entityItem.setDead()
+				originEntity.setEntityItemStack(list.remove(0))
+				val world = originEntity.worldObj
+				val pos = new V3O(originEntity)
+				list.foreach(stack => if (!originEntity.worldObj.isRemote) {
+					val ei = if (CompressedStack.isCompressedStack(stack))
+						new EntityItemCompressed(world, pos.x, pos.y, pos.z, stack)
+					else new EntityItem(world, pos.x, pos.y, pos.z, stack)
+					ei.motionX = originEntity.motionX
+					ei.motionY = originEntity.motionY
+					ei.motionZ = originEntity.motionZ
+					ei.delayBeforeCanPickup = 20
+					world.spawnEntityInWorld(ei)
+				})
 			case _ =>
 		}
 	}

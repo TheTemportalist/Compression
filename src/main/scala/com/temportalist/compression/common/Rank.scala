@@ -7,10 +7,8 @@ import com.temportalist.origin.api.common.register.Registry
 import com.temportalist.origin.api.common.utility.Scala
 import cpw.mods.fml.common.eventhandler.SubscribeEvent
 import net.minecraft.entity.Entity
-import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import net.minecraftforge.event.entity.item.ItemTossEvent
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent
 
 import scala.collection.mutable.ListBuffer
@@ -27,7 +25,7 @@ object Rank {
 		"Undecuple", "Duodecuple", "Tredecuple", "Quattuordecuple", "Quindecouple",
 		"Sedecouple", "Septendecouple", "Duodevdecouple"
 	)
-	private val caps = Array[Long](
+	val caps = Array[Long](
 		1L,
 		9L, 81L, 729L, 6561L, 59049L,
 		531441L, 4782969L, 43046721L, 387420489L, 3486784401L,
@@ -104,6 +102,7 @@ object Rank {
 						event.item.setDead()
 						return
 					}
+				case _ =>
 			}
 		})
 
@@ -111,19 +110,25 @@ object Rank {
 
 }
 
-class Rank(private val index: Int, private val name: String,
+class Rank(private var index: Int, private val name: String,
 		private val minimum: Long, private val maximum: Long) {
 
 	def onPickupItem(event: EntityItemPickupEvent,
 			player: EntityPlayer, compressedStack: ItemStack, entityStack: ItemStack): Boolean = {
+
+		//return false
+
 		// make sure this rank can do effect
 		if (this.index < Rank.absorbalof) return false
 
 		// if the type of the stack in slot and the picked up stack
 		if (CompressedStack.doStackTypesMatch(compressedStack, entityStack)) {
+
+			Compression.log("got " + entityStack.getUnlocalizedName + "x" + entityStack.stackSize)
+
 			// pull all stacks of type in inventory together (not including hotbar stacks)
 			val totalOfTypeInInventory =
-				CompressedStack.removeAllOfType(player, compressedStack, false, entityStack)
+				CompressedStack.removeAllOfType(player, compressedStack, true, entityStack)
 			// splits into stacks divisible by 9
 			val list = CompressedStack.divideIntoClassicCompressions(
 				compressedStack, totalOfTypeInInventory)
@@ -135,14 +140,15 @@ class Rank(private val index: Int, private val name: String,
 	}
 
 	def inWorldTick(entity: EntityItemCompressed, stack: ItemStack): Unit = {
+		//return
 		if (this.index < Rank.atractor) return
 		Temp.tryToPullCloser(this.index - Rank.atractor,
 			entity,
 			entity.boundingBox, entity.worldObj, new V3O(entity),
 			new V3O(entity.motionX, entity.motionY, entity.motionZ),
 			(otherEntity: Entity) => {
-				if (this.index >= Rank.blackHole) true
-				else CompressedStack.shouldAttractEntity(entity, otherEntity)
+				if (this.index >= Rank.blackHole) !otherEntity.isSneaking
+				else CompressedStack.shouldAttractEntity(entity.getEntityItem, otherEntity)
 			},
 			(otherEntity: Entity) => CompressedStack.onAttraction(entity, otherEntity)
 		)
@@ -153,21 +159,17 @@ class Rank(private val index: Int, private val name: String,
 		Temp.tryToPullCloser(this.index - Rank.magnet, player,
 			player.boundingBox.expand(1, 0.5D, 1), player.getEntityWorld, new V3O(player),
 			new V3O(player.motionX, player.motionY, player.motionZ),
-			(entity: Entity) => entity.isInstanceOf[EntityItem],
-			(entity: Entity) => {
-				if (player.inventory.addItemStackToInventory(
-					entity.asInstanceOf[EntityItem].getEntityItem))
-					entity.setDead()
-			}
+			(entity: Entity) => CompressedStack.shouldAttractEntity(stack, entity),
+			null
 		)
 	}
 
-	def -=(amt: Int): Rank = {
+	def -(amt: Int): Rank = {
 		if (this.index - amt >= 0) Rank.ranks(this.index - amt)
 		else Rank.ranks.head
 	}
 
-	def +=(amt: Int): Rank = {
+	def +(amt: Int): Rank = {
 		if (this.index + amt < Rank.ranks.size - 1) Rank.ranks(this.index + amt)
 		else Rank.ranks.last
 	}
