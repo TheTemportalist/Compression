@@ -3,8 +3,8 @@ package com.temportalist.compression.common.init
 import java.util
 
 import com.temportalist.compression.common.blocks.{BlockCompress, BlockCompressed}
-import com.temportalist.compression.common.item.IFood
-import com.temportalist.compression.common.recipe.{RecipeCompress, RecipeCompressClassic}
+import com.temportalist.compression.common.item.{ItemBlockCompressed, ItemCompressed, IFood}
+import com.temportalist.compression.common.recipe.{RecipeClassicDeCompress, RecipeCompress, RecipeCompressClassic}
 import com.temportalist.compression.common.tile.{TECompress, TECompressed}
 import com.temportalist.compression.common.{Rank, CompressedStack, Compression, Options}
 import com.temportalist.origin.api.common.lib.NameParser
@@ -166,6 +166,8 @@ object CBlocks extends BlockRegister {
 
 	def canStackBeCompressed(stack: ItemStack, bvi: Boolean): Boolean = {
 		if (stack == null || stack.getItem == null || stack.isItemEnchanted) return false
+		if (stack.getItem.isInstanceOf[ItemCompressed] ||
+				stack.getItem.isInstanceOf[ItemBlockCompressed]) return false
 		// blocks
 		if (bvi && WorldHelper.isBlock(stack.getItem)) {
 			val block: Block = Block.getBlockFromItem(stack.getItem)
@@ -193,14 +195,6 @@ object CBlocks extends BlockRegister {
 	}
 
 	def makeRecipe(inner: ItemStack, output: ItemStack): Unit = {
-		//val piston: ItemStack = new ItemStack(Blocks.piston)
-		/*
-		GameRegistry.addRecipe(new RecipeDynamic(3, 3,
-			Map(1 -> inner, 3 -> inner, 4 -> inner, 5 -> inner, 7 -> inner),
-			Map(0 -> piston, 2 -> piston, 6 -> piston, 8 -> piston),
-			output
-		))
-		*/
 		if (Options.useTraditionalRecipes) {
 			for (tier: Int <- 1 to Rank.getHighestRank.getIndex) {
 				val last: ItemStack =
@@ -208,12 +202,13 @@ object CBlocks extends BlockRegister {
 					else this.wrapInnerStack(inner, Rank.indexOf(tier - 1).getMaximum)
 				val next: ItemStack = this.wrapInnerStack(inner, Rank.indexOf(tier).getMaximum)
 				GameRegistry.addRecipe(new RecipeCompressClassic(3, 3, last, next))
+				GameRegistry.addRecipe(new RecipeClassicDeCompress(inner, tier))
 			}
 		}
 		else {
 			GameRegistry.addRecipe(new RecipeCompress(inner))
 		}
-		//GameRegistry.addRecipe(new RecipeDeCompress(inner))
+
 	}
 
 	// Compressed block utility methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
