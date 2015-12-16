@@ -28,7 +28,8 @@ public class EntityItemCompressed extends EntityItem {
 		Rank.getRank(this.getEntityItem()).inWorldTick(this, this.getEntityItem());
 	}
 
-	@Override public boolean isEntityInvulnerable() {
+	@Override
+	public boolean isEntityInvulnerable() {
 		return true;
 	}
 

@@ -60,9 +60,9 @@ object Temp {
 
 		val distance = Math.sqrt(distX * distX + distY * distY + distZ * distZ) * 2
 
-		distX = distX / distance + motion.x / 2
-		distY = distY / distance + motion.y / 2
-		distZ = distZ / distance + motion.z / 2
+		distX = distX / distance + motion.x * 0.5
+		distY = distY / distance + motion.y * 0.5
+		distZ = distZ / distance + motion.z * 0.5
 
 		entityBeingPulled.motionX = distX
 		entityBeingPulled.motionY = distY
@@ -72,6 +72,8 @@ object Temp {
 		if (entityBeingPulled.isCollidedHorizontally) {
 			entityBeingPulled.motionY += 1
 		}
+
+		entityBeingPulled.fallDistance = 0f
 
 		if (entityBeingPulled.worldObj.rand.nextInt(20) == 0) {
 			val pitch = 0.85f - entityBeingPulled.worldObj.rand.nextFloat() * 3f / 10f

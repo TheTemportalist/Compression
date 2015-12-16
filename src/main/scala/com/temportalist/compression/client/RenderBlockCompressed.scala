@@ -61,7 +61,8 @@ object RenderBlockCompressed extends ISimpleBlockRenderingHandler {
 	def renderItem(renderType: ItemRenderType, stack: ItemStack, isCompressedItem: Boolean,
 			data: Array[AnyRef]): Unit = {
 		val innerStack = CompressedStack.getStackType(stack)
-		val tier = Rank.getRank(stack).getIndex
+		val rank = Rank.getRank(stack)
+		val tier = if (rank != null) rank.getIndex else 0
 		if (tier < 0) return
 		val icon = CBlocks.compressed.icons(tier)
 

@@ -9,6 +9,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
+import net.minecraft.util.AxisAlignedBB
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent
 
 import scala.collection.mutable.ListBuffer
@@ -75,8 +76,9 @@ object Rank {
 
 	def getRank(size: Long): Rank = {
 		var highestRank: Rank = null
-		this.ranks.foreach(rank => {
-			if (highestRank == null || (rank.minimum <= size && size <= rank.maximum))
+		if (this.ranks != null)	this.ranks.foreach(rank => {
+			if (rank != null &&
+					(highestRank == null || (rank.minimum <= size && size <= rank.maximum)))
 				highestRank = rank
 		})
 		highestRank
@@ -124,7 +126,7 @@ class Rank(private var index: Int, private val name: String,
 		// if the type of the stack in slot and the picked up stack
 		if (CompressedStack.doStackTypesMatch(compressedStack, entityStack)) {
 
-			Compression.log("got " + entityStack.getUnlocalizedName + "x" + entityStack.stackSize)
+			//Compression.log("got " + entityStack.getUnlocalizedName + "x" + entityStack.stackSize)
 
 			// pull all stacks of type in inventory together (not including hotbar stacks)
 			val totalOfTypeInInventory =
@@ -140,15 +142,20 @@ class Rank(private var index: Int, private val name: String,
 	}
 
 	def inWorldTick(entity: EntityItemCompressed, stack: ItemStack): Unit = {
-		//return
 		if (this.index < Rank.atractor) return
+		if (this.index >= Rank.blackHole) this.blackHoleUpdate(entity)
 		Temp.tryToPullCloser(this.index - Rank.atractor,
 			entity,
 			entity.boundingBox, entity.worldObj, new V3O(entity),
 			new V3O(entity.motionX, entity.motionY, entity.motionZ),
 			(otherEntity: Entity) => {
-				if (this.index >= Rank.blackHole) !otherEntity.isSneaking
-				else CompressedStack.shouldAttractEntity(entity.getEntityItem, otherEntity)
+				if (this.index >= Rank.blackHole)
+					otherEntity match {
+						case ei: EntityItemCompressed =>
+							Rank.getRank(stack) > Rank.getRank(ei.getEntityItem)
+						case _ => !otherEntity.isSneaking
+					}
+				else CompressedStack.shouldAttractEntity(stack, otherEntity)
 			},
 			(otherEntity: Entity) => CompressedStack.onAttraction(entity, otherEntity)
 		)
@@ -164,6 +171,10 @@ class Rank(private var index: Int, private val name: String,
 		)
 	}
 
+	def blackHoleUpdate(entity: EntityItemCompressed): Unit = {
+		// TODO
+	}
+
 	def -(amt: Int): Rank = {
 		if (this.index - amt >= 0) Rank.ranks(this.index - amt)
 		else Rank.ranks.head
@@ -173,6 +184,14 @@ class Rank(private var index: Int, private val name: String,
 		if (this.index + amt < Rank.ranks.size - 1) Rank.ranks(this.index + amt)
 		else Rank.ranks.last
 	}
+
+	def >(r: Rank): Boolean = r != null && (this.getIndex > r.getIndex)
+
+	def <(r: Rank): Boolean = r != null && (this.getIndex > r.getIndex)
+
+	def >=(r: Rank): Boolean = r != null && (this > r || this.getIndex == r.getIndex)
+
+	def <=(r: Rank): Boolean = r != null && (this < r || this.getIndex == r.getIndex)
 
 	def getIndex: Int = this.index
 
