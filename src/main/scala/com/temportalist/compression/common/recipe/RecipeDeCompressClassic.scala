@@ -14,7 +14,7 @@ import net.minecraft.world.World
  *
  * @author TheTemportalist
  */
-class RecipeClassicDeCompress(stackType: ItemStack, rankIndex: Int) extends IRecipe {
+class RecipeDeCompressClassic(stackType: ItemStack, rankIndex: Int) extends IRecipe {
 
 	// just used to determine order of which to check recipes
 	override def getRecipeSize: Int = 1
@@ -42,7 +42,7 @@ class RecipeClassicDeCompress(stackType: ItemStack, rankIndex: Int) extends IRec
 		if (this.rankIndex - 1 > 0) {
 			val stack = CompressedStack.createCompressedStack(
 				this.stackType, decompressedRank.getMaximum)
-			stack.stackSize = multiple
+			stack.stackSize = multiple * 9
 			stack
 		}
 		else if (multiple <= 7) {

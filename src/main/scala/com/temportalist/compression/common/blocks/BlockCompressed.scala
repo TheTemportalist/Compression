@@ -8,6 +8,7 @@ import com.temportalist.compression.common.tile.TECompressed
 import com.temportalist.compression.common.{Rank, CompressedStack, Compression}
 import com.temportalist.origin.api.common.block.BlockTile
 import com.temportalist.origin.api.common.lib.{BlockState, NameParser, V3O}
+import com.temportalist.origin.api.common.utility.Stacks
 import cpw.mods.fml.relauncher.{Side, SideOnly}
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
@@ -19,6 +20,7 @@ import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.{IIcon, MovingObjectPosition}
 import net.minecraft.world.{IBlockAccess, World}
+import net.minecraftforge.oredict.OreDictionary
 
 /**
  *
@@ -123,6 +125,22 @@ class BlockCompressed(name: String, te: Class[_ <: TileEntity]) extends BlockTil
 	override def registerBlockIcons(reg: IIconRegister): Unit = {
 		this.icons = new Array[IIcon](18)
 		for (i <- 1 to 18) this.icons(i - 1) = reg.registerIcon(this.modid + ":overlay_" + i)
+	}
+
+	override def onBlockActivated(worldIn: World, x: Int, y: Int, z: Int, player: EntityPlayer,
+			side: Int, subX: Float, subY: Float, subZ: Float): Boolean = {
+		worldIn.getTileEntity(x, y, z) match {
+			case compressed: TECompressed =>
+				val validStacks = OreDictionary.getOres("stick")
+				for (i <- 0 until validStacks.size())
+					if (Stacks.doStacksMatch(player.getCurrentEquippedItem, validStacks.get(i),
+							nbt = true, nil = false)) {
+						compressed.createBlackHole()
+						return true
+					}
+			case _ =>
+		}
+		false
 	}
 
 }

@@ -58,4 +58,8 @@ class TECompressed extends TileEntity with ITileSaver {
 		this.size = tagCom.getLong("stackSize")
 	}
 
+	def createBlackHole(): Unit = {
+
+	}
+
 }

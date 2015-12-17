@@ -171,24 +171,43 @@ object CompressedStack {
 			}
 		})
 		extras.foreach(stack =>
-			if (this.doStackTypesMatch(itemType, stack))
+			if (stack != null && this.doStackTypesMatch(itemType, stack))
 				total += this.getTotalSize(stack)
 		)
 		total
 	}
 
-	def divideIntoClassicCompressions(stack: ItemStack, total: Long): ListBuffer[ItemStack] = {
+	def divideIntoClassicCompressions(stack: ItemStack, total: Long,
+			hasSinglesSlot: Boolean): ListBuffer[ItemStack] = {
 		val stackType = this.getStackType(stack)
 		val list = ListBuffer[ItemStack]()
 
 		{
+			/**
+			 * A list of rank size's 1-n mapped to the quantity of that size
+			 */
 			val sizeList = mutable.Map[Long, Int]()
+			var extraSingles = 64 - 9
+			/**
+			 * A variable to track how many are left to compress
+			 */
 			var size = total
+			if (hasSinglesSlot) {
+				if (size < 64) {
+					sizeList(size) = 1
+					size = 0
+				}
+				else size -= extraSingles
+			}
 			while (size > 0) {
+				// a variable to hold how many are in the next stack
 				var nextSize = 0L
+				// if there are less than 9 in the remaining, then they are all the same
 				if (size < 9)
 					nextSize = size
 				else {
+					// iterate through all the ranks, lowest to highest, finding the one that fits
+					// without going over the remaining
 					breakable {for (i <- Rank.caps.indices) {
 						if (Rank.caps(i) > size) {
 							nextSize = if (i - 1 >= 0) Rank.caps(i - 1) else Rank.caps(i)
@@ -196,21 +215,37 @@ object CompressedStack {
 						}
 					}}
 				}
+				// remove the next stack size from the remaining size
 				size -= nextSize
+
 				sizeList(nextSize) = if (sizeList.contains(nextSize)) sizeList(nextSize) + 1 else 1
 			}
+
+			var lastStack: (Long, Int) = null
+			if (hasSinglesSlot) {
+				lastStack = sizeList.last
+				sizeList(lastStack._1) = 0
+			}
 			sizeList.foreach(sizeAmt => {
-				var stack: ItemStack = null
-				if (sizeAmt._1 >= 9) {
-					stack = CompressedStack.createCompressedStack(stackType, sizeAmt._1)
-					stack.stackSize = sizeAmt._2
+				if (sizeAmt._2 > 0) {
+					var stack: ItemStack = null
+					if (sizeAmt._1 >= 9) {
+						stack = CompressedStack.createCompressedStack(stackType, sizeAmt._1)
+						stack.stackSize = sizeAmt._2
+					}
+					else {
+						stack = stackType.copy()
+						stack.stackSize = sizeAmt._1.toInt
+					}
+					list += stack
 				}
-				else {
-					stack = stackType.copy()
-					stack.stackSize = sizeAmt._1.toInt
-				}
-				list += stack
 			})
+			if (hasSinglesSlot && lastStack != null)
+				list += {
+					val stack = stackType.copy()
+					stack.stackSize = lastStack._1.toInt + extraSingles
+					stack
+				}
 		}
 
 		list
@@ -236,7 +271,8 @@ object CompressedStack {
 				if (!CompressedStack.doStackTypesMatch(originStack, otherStack)) return
 				val totalAmount = CompressedStack.getTotalSize(originStack) +
 						CompressedStack.getTotalSize(otherStack)
-				val list = this.divideIntoClassicCompressions(originStack, totalAmount)
+				val list = this.divideIntoClassicCompressions(originStack, totalAmount,
+					hasSinglesSlot = false)
 
 				entityItem.setDead()
 				originEntity.setEntityItemStack(list.remove(0))

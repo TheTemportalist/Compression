@@ -51,6 +51,10 @@ object Rank {
 	 * sucks in items and entities when in world
 	 */
 	var blackHole: Int = 9
+	/**
+	 * Creates world blackhole when placed in world
+	 */
+	var blackHoleWorld: Int = 12
 
 	def loadRanks(): Unit = {
 		if (this.names.length != this.caps.length) {
@@ -98,7 +102,8 @@ object Rank {
 			if (stack != null) stack.getItem match {
 				case compressed: ICompressed =>
 					// try pickup effects
-					if (this.getRank(stack).onPickupItem(event, player, stack.copy(), entStack)) {
+					if (this.getRank(stack).onPickupItem(event, player, slot,
+						stack.copy(), entStack)) {
 						// if worked, cancel event & exit loop
 						event.setCanceled(true)
 						event.item.setDead()
@@ -115,8 +120,8 @@ object Rank {
 class Rank(private var index: Int, private val name: String,
 		private val minimum: Long, private val maximum: Long) {
 
-	def onPickupItem(event: EntityItemPickupEvent,
-			player: EntityPlayer, compressedStack: ItemStack, entityStack: ItemStack): Boolean = {
+	def onPickupItem(event: EntityItemPickupEvent, player: EntityPlayer, compStackSlot: Int,
+			compressedStack: ItemStack, entityStack: ItemStack): Boolean = {
 
 		//return false
 
@@ -126,14 +131,28 @@ class Rank(private var index: Int, private val name: String,
 		// if the type of the stack in slot and the picked up stack
 		if (CompressedStack.doStackTypesMatch(compressedStack, entityStack)) {
 
-			//Compression.log("got " + entityStack.getUnlocalizedName + "x" + entityStack.stackSize)
+			var decompressedHotBarSlot = -1
 
+			{
+				var slot = 0
+				do {
+					val hotBarStack = player.inventory.getStackInSlot(slot)
+					if (hotBarStack != null && !CompressedStack.isCompressedStack(hotBarStack) &&
+							CompressedStack.doStackTypesMatch(compressedStack, hotBarStack))
+						decompressedHotBarSlot = slot
+					else slot += 1
+				} while (decompressedHotBarSlot < 0 && slot < 9)
+			}
+			
 			// pull all stacks of type in inventory together (not including hotbar stacks)
 			val totalOfTypeInInventory =
 				CompressedStack.removeAllOfType(player, compressedStack, true, entityStack)
 			// splits into stacks divisible by 9
 			val list = CompressedStack.divideIntoClassicCompressions(
-				compressedStack, totalOfTypeInInventory)
+				compressedStack, totalOfTypeInInventory, decompressedHotBarSlot >= 0)
+			player.inventory.setInventorySlotContents(compStackSlot, list.remove(0))
+			if (decompressedHotBarSlot >= 0)
+				player.inventory.setInventorySlotContents(decompressedHotBarSlot, list.remove(list.size - 1))
 			list.foreach(stack => Temp.addToInventoryWithDrop(player, stack))
 			return true
 		}
@@ -143,7 +162,6 @@ class Rank(private var index: Int, private val name: String,
 
 	def inWorldTick(entity: EntityItemCompressed, stack: ItemStack): Unit = {
 		if (this.index < Rank.atractor) return
-		if (this.index >= Rank.blackHole) this.blackHoleUpdate(entity)
 		Temp.tryToPullCloser(this.index - Rank.atractor,
 			entity,
 			entity.boundingBox, entity.worldObj, new V3O(entity),
@@ -169,10 +187,6 @@ class Rank(private var index: Int, private val name: String,
 			(entity: Entity) => CompressedStack.shouldAttractEntity(stack, entity),
 			null
 		)
-	}
-
-	def blackHoleUpdate(entity: EntityItemCompressed): Unit = {
-		// TODO
 	}
 
 	def -(amt: Int): Rank = {

@@ -4,7 +4,7 @@ import java.util
 
 import com.temportalist.compression.common.blocks.{BlockCompress, BlockCompressed}
 import com.temportalist.compression.common.item.{ItemBlockCompressed, ItemCompressed, IFood}
-import com.temportalist.compression.common.recipe.{RecipeClassicDeCompress, RecipeCompress, RecipeCompressClassic}
+import com.temportalist.compression.common.recipe.{RecipeDeCompressClassic, RecipeCompress, RecipeCompressClassic}
 import com.temportalist.compression.common.tile.{TECompress, TECompressed}
 import com.temportalist.compression.common.{Rank, CompressedStack, Compression, Options}
 import com.temportalist.origin.api.common.lib.NameParser
@@ -202,7 +202,7 @@ object CBlocks extends BlockRegister {
 					else this.wrapInnerStack(inner, Rank.indexOf(tier - 1).getMaximum)
 				val next: ItemStack = this.wrapInnerStack(inner, Rank.indexOf(tier).getMaximum)
 				GameRegistry.addRecipe(new RecipeCompressClassic(3, 3, last, next))
-				GameRegistry.addRecipe(new RecipeClassicDeCompress(inner, tier))
+				GameRegistry.addRecipe(new RecipeDeCompressClassic(inner, tier))
 			}
 		}
 		else {
