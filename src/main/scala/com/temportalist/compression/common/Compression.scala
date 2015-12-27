@@ -24,7 +24,7 @@ import net.minecraftforge.oredict.RecipeSorter.Category
 @Mod(modid = Compression.MODID, name = Compression.MODNAME, version = Compression.VERSION,
 	modLanguage = "scala",
 	guiFactory = Compression.clientProxy,
-	dependencies = "required-after:origin@[6,);"
+	dependencies = "required-after:origin@[8,);"
 )
 object Compression extends IMod with IModResource {
 
