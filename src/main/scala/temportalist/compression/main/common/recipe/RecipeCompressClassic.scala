@@ -21,17 +21,14 @@ class RecipeCompressClassic(private val stackIn: ItemStack, private val tierTarg
 
 	override def getRecipeSize: Int = 9
 
-	override def getRecipeOutput: ItemStack = {
-		this.stackOut.getTagCompound.setLong("size", this.tierTarget.getSizeMax)
-		this.stackOut
-	}
+	override def getRecipeOutput: ItemStack = this.stackOut
 
 	override def getCraftingResult(inv: InventoryCrafting): ItemStack = this.getRecipeOutput.copy()
 
 	override def getRemainingItems(inv: InventoryCrafting): Array[ItemStack] = new Array[ItemStack](9)
 
 	override def matches(inv: InventoryCrafting, worldIn: World): Boolean = {
-		for (row <- 0 until 2) for (col <- 0 until 2) {
+		for (row <- 0 until 3) for (col <- 0 until 3) {
 			inv.getStackInSlot(col + row * 3) match {
 				case invStack: ItemStack =>
 					val isSample = !invStack.getItem.isInstanceOf[ICompressed]
@@ -42,14 +39,17 @@ class RecipeCompressClassic(private val stackIn: ItemStack, private val tierTarg
 					val sameItem = this.stackIn.getItem == invStackSample.getItem
 					val sameMeta = this.stackIn.getItemDamage == invStackSample.getItemDamage
 					val sameTag = this.stackIn.getTagCompound == invStackSample.getTagCompound
+					var isValid = false
 					if (sameItem && sameMeta && sameTag) {
-						if (isSample) return this.tierTarget == EnumTier.SINGLE
-						else return this.tierTarget.ordinal() == Compressed.getTier(invStack).ordinal() + 1
+						isValid =
+								if (isSample) this.tierTarget == EnumTier.SINGLE
+								else this.tierTarget.ordinal() == Compressed.getTier(invStack).ordinal() + 1
 					}
-				case _ =>
+					if (!isValid) return false
+				case _ => return false
 			}
 		}
-		false
+		true
 	}
 
 

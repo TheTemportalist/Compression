@@ -2,12 +2,17 @@ package temportalist.compression.main.client.model
 
 import java.util
 
-import com.google.common.collect.Lists
+import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder
 import net.minecraft.client.renderer.block.model.{BakedQuad, IBakedModel, ItemCameraTransforms, ItemOverrideList}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
-import net.minecraft.util.EnumFacing
+import net.minecraft.util.{BlockRenderLayer, EnumFacing}
+import net.minecraft.util.math.BlockPos
+import net.minecraftforge.client.MinecraftForgeClient
+import net.minecraftforge.common.property.IExtendedBlockState
+import temportalist.compression.main.common.lib.{BlockProperties, EnumTier}
 
 /**
   *
@@ -19,9 +24,27 @@ class BakedCompressed(private val overlays: Array[TextureAtlasSprite]) extends I
 
 	private val overrideList = new ItemListCompressed(overlays)
 
-	//val overlayModel = ModelLoaderRegistry.getModel()
 	override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = {
-		Lists.newArrayList()
+		state match {
+			case extended: IExtendedBlockState =>
+				val sampleStack = extended.getValue(BlockProperties.ITEMSTACK_UN)
+				val sampleBlock = Block.getBlockFromItem(sampleStack.getItem)
+				val sampleState = sampleBlock.getStateFromMeta(sampleStack.getItemDamage)
+				val sampleModel = Minecraft.getMinecraft.getBlockRendererDispatcher.
+						getBlockModelShapes.getModelForState(sampleState)
+
+				return (MinecraftForgeClient.getRenderLayer match {
+					case BlockRenderLayer.SOLID => sampleModel
+					case BlockRenderLayer.TRANSLUCENT =>
+						val i = EnumTier.getTierForSize(extended.getValue(BlockProperties.LONG_UN)).ordinal()
+						val overlayModel = new Builder(sampleState, sampleModel, overlays(i), BlockPos.ORIGIN).makeBakedModel()
+						overlayModel
+					case _ => null
+				}).getQuads(state, side, rand)
+
+			case _ =>
+		}
+		new util.ArrayList[BakedQuad]()
 	}
 
 	override def isAmbientOcclusion: Boolean = true
@@ -32,8 +55,7 @@ class BakedCompressed(private val overlays: Array[TextureAtlasSprite]) extends I
 
 	override def getItemCameraTransforms: ItemCameraTransforms = ItemCameraTransforms.DEFAULT
 
-	override def getParticleTexture: TextureAtlasSprite =
-		Minecraft.getMinecraft.getTextureMapBlocks.getMissingSprite
+	override def getParticleTexture: TextureAtlasSprite = overlays.last
 
 	override def getOverrides: ItemOverrideList = this.overrideList
 

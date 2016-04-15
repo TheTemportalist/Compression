@@ -29,6 +29,7 @@ trait ICompressed extends Item {
 		if (Keys.isShiftKeyDown) {
 			tooltip.add(Compressed.getTier(stack).toString)
 			tooltip.add(Compressed.getSize(stack).toString)
+			tooltip.add(this.getClass.getSimpleName)
 		}
 
 	}

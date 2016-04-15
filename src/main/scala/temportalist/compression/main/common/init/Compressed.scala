@@ -1,7 +1,7 @@
 package temportalist.compression.main.common.init
 
 import net.minecraft.block.state.IBlockState
-import net.minecraft.item.ItemStack
+import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
 import temportalist.compression.main.common.item.{ItemBlockCompressed, ItemCompressed}
 import temportalist.compression.main.common.lib.EnumTier
@@ -16,7 +16,8 @@ import temportalist.origin.api.common.helper.Names
 object Compressed {
 
 	def create(itemStack: ItemStack, withSize: Boolean = false, tier: EnumTier = null): ItemStack = {
-		val compressed = new ItemStack(ModItems.item, 1, 0)
+		val isBlock = itemStack.getItem.isInstanceOf[ItemBlock]
+		val compressed = new ItemStack(if (isBlock) ModBlocks.blockItem else ModItems.item, 1, 0)
 		val tagCom = new NBTTagCompound
 		tagCom.setString("name", Names.getName(itemStack))
 		tagCom.setString("display", itemStack.getItem.getItemStackDisplayName(itemStack))

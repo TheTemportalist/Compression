@@ -10,11 +10,11 @@ import net.minecraft.client.renderer.block.model._
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.item.{ItemBlock, ItemStack}
+import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.{EnumFacing, ResourceLocation}
 import net.minecraft.world.World
-import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.init.Compressed
+import temportalist.compression.main.common.lib.EnumTier
 
 /**
   *
@@ -33,7 +33,7 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 		if (!stack.hasTagCompound) return this.getMissingModel
 
 		val sampleStack = Compressed.getSampleStack(stack)
-		val isBlock = sampleStack.getItem.isInstanceOf[ItemBlock]
+		val isBlock = stack.getItem.isInstanceOf[ItemBlock]
 
 		val sampleModel =
 			if (isBlock)
@@ -43,16 +43,15 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 				Minecraft.getMinecraft.getRenderItem.getItemModelMesher.getItemModel(sampleStack)
 
 		val size = Compressed.getSize(stack)
-		val i = 0
+		val i = EnumTier.getTierForSize(size).ordinal() + 1
 
 		new IBakedModel {
 
-			override def getParticleTexture: TextureAtlasSprite =
-				Minecraft.getMinecraft.getTextureMapBlocks.getMissingSprite
+			override def getParticleTexture: TextureAtlasSprite = sampleModel.getParticleTexture
 
-			override def isBuiltInRenderer: Boolean = false
+			override def isBuiltInRenderer: Boolean = sampleModel.isBuiltInRenderer
 
-			override def getItemCameraTransforms: ItemCameraTransforms = ItemCameraTransforms.DEFAULT
+			override def getItemCameraTransforms: ItemCameraTransforms = sampleModel.getItemCameraTransforms
 
 			override def isAmbientOcclusion: Boolean = true
 

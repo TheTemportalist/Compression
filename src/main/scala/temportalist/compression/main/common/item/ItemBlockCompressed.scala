@@ -9,6 +9,6 @@ import net.minecraft.item.ItemBlock
   *
   * @author TheTemportalist
   */
-class ItemBlockCompressed(b: Block) extends ItemBlock(b) {
+class ItemBlockCompressed(b: Block) extends ItemBlock(b) with ICompressed {
 
 }

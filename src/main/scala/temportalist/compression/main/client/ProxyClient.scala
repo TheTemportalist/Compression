@@ -2,8 +2,11 @@ package temportalist.compression.main.client
 
 import java.util
 
+import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.renderer.block.model.ModelResourceLocation
+import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
@@ -12,7 +15,7 @@ import net.minecraftforge.fml.client.IModGuiFactory
 import net.minecraftforge.fml.client.IModGuiFactory.{RuntimeOptionCategoryElement, RuntimeOptionGuiHandler}
 import temportalist.compression.main.client.model.ModelLoaderCompressed
 import temportalist.compression.main.common.ProxyCommon
-import temportalist.compression.main.common.init.ModItems
+import temportalist.compression.main.common.init.{ModBlocks, ModItems}
 
 /**
   *
@@ -27,6 +30,11 @@ class ProxyClient extends ProxyCommon with IModGuiFactory {
 		ModelLoaderRegistry.registerLoader(new ModelLoaderCompressed())
 
 		ModelLoader.setCustomModelResourceLocation(ModItems.item, 0, ModelLoaderCompressed.fakeRL)
+		ModelLoader.setCustomModelResourceLocation(ModBlocks.blockItem, 0, ModelLoaderCompressed.fakeRL)
+		ModelLoader.setCustomStateMapper(ModBlocks.block, new StateMapperBase {
+			override protected def getModelResourceLocation(
+					state: IBlockState): ModelResourceLocation = ModelLoaderCompressed.fakeRL
+		})
 
 	}
 
