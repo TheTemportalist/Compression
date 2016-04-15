@@ -4,6 +4,7 @@ import net.minecraft.item.crafting.{CraftingManager, ShapedRecipes}
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.item.ItemCompressed
+import temportalist.compression.main.common.lib.EnumTier
 import temportalist.compression.main.common.recipe.RecipeCompressClassic
 import temportalist.origin.foundation.common.registers.ItemRegister
 
@@ -31,7 +32,8 @@ object ModItems extends ItemRegister {
 			val itemStack = new ItemStack(item)
 			if (Compressed.canCompressItem(itemStack)) {
 				if (!this.hasCompressedRecipe(itemStack)) {
-					GameRegistry.addRecipe(new RecipeCompressClassic(itemStack))
+					for (tier <- EnumTier.values())
+						GameRegistry.addRecipe(new RecipeCompressClassic(itemStack, tier))
 				}
 			}
 		}

@@ -22,7 +22,8 @@ import temportalist.compression.main.common.init.Compressed
   *
   * @author TheTemportalist
   */
-class ItemListCompressed extends ItemOverrideList(Lists.newArrayList()) {
+class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
+		extends ItemOverrideList(Lists.newArrayList()) {
 
 	def getMissingModel: IBakedModel =
 		Minecraft.getMinecraft.getBlockRendererDispatcher.getBlockModelShapes.getModelManager.getMissingModel
@@ -31,7 +32,7 @@ class ItemListCompressed extends ItemOverrideList(Lists.newArrayList()) {
 			entity: EntityLivingBase): IBakedModel = {
 		if (!stack.hasTagCompound) return this.getMissingModel
 
-		val sampleStack = Compressed.createSampleStack(stack)
+		val sampleStack = Compressed.getSampleStack(stack)
 		val isBlock = sampleStack.getItem.isInstanceOf[ItemBlock]
 
 		val sampleModel =
@@ -65,14 +66,7 @@ class ItemListCompressed extends ItemOverrideList(Lists.newArrayList()) {
 				val quadList = new util.ArrayList[BakedQuad]()
 				quadList.addAll(sampleModel.getQuads(state, side, rand))
 
-				val textureLocation = new ResourceLocation(Compression.getModId, "textures/overlays/overlay_" + i + ".png")
-				Compression.log(textureLocation.toString)
-
-				val texture = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(textureLocation.toString)
-
-				//Compression.log(if (texture == null) "NULL TEXTURE AT " + textureLocation else texture.toString)
-
-				val overlayModel = new Builder(state, sampleModel, texture, BlockPos.ORIGIN).makeBakedModel()
+				val overlayModel = new Builder(state, sampleModel, overlays(i), BlockPos.ORIGIN).makeBakedModel()
 				quadList.addAll(overlayModel.getQuads(state, side, rand))
 
 				quadList

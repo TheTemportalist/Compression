@@ -3,7 +3,8 @@ package temportalist.compression.main.client.model
 import java.util
 
 import com.google.common.base.Function
-import net.minecraft.client.renderer.block.model.IBakedModel
+import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder
+import net.minecraft.client.renderer.block.model.{IBakedModel, SimpleBakedModel}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.VertexFormat
 import net.minecraft.util.ResourceLocation
@@ -33,15 +34,16 @@ class ModelCompressed extends IModel {
 
 	override def bake(state: IModelState, format: VertexFormat,
 			bakedTextureGetter: Function[ResourceLocation, TextureAtlasSprite]): IBakedModel = {
-		val overlayList = new Array[IBakedModel](18)
+		val overlayList = new Array[TextureAtlasSprite](18)
 		for (i <- overlayList.indices) {
 			val sprite = bakedTextureGetter.apply(new ResourceLocation(
 				Compression.getModId, "overlays/overlay_" + (i + 1)))
-			
+
+			overlayList(i) = sprite
 		}
 
 
-		new BakedCompressed
+		new BakedCompressed(overlayList)
 	}
 
 	override def getDefaultState: IModelState = TRSRTransformation.identity()

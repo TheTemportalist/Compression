@@ -15,9 +15,9 @@ import net.minecraft.util.EnumFacing
   *
   * @author TheTemportalist
   */
-class BakedCompressed extends IBakedModel {
+class BakedCompressed(private val overlays: Array[TextureAtlasSprite]) extends IBakedModel {
 
-	private val overrideList = new ItemListCompressed
+	private val overrideList = new ItemListCompressed(overlays)
 
 	//val overlayModel = ModelLoaderRegistry.getModel()
 	override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = {

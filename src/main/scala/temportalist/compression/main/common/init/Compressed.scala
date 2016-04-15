@@ -4,6 +4,7 @@ import net.minecraft.block.state.IBlockState
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import temportalist.compression.main.common.item.{ItemBlockCompressed, ItemCompressed}
+import temportalist.compression.main.common.lib.EnumTier
 import temportalist.origin.api.common.helper.Names
 
 /**
@@ -14,12 +15,16 @@ import temportalist.origin.api.common.helper.Names
   */
 object Compressed {
 
-	def create(itemStack: ItemStack, withSize: Boolean = false): ItemStack = {
+	def create(itemStack: ItemStack, withSize: Boolean = false, tier: EnumTier = null): ItemStack = {
 		val compressed = new ItemStack(ModItems.item, 1, 0)
 		val tagCom = new NBTTagCompound
 		tagCom.setString("name", Names.getName(itemStack))
 		tagCom.setString("display", itemStack.getItem.getItemStackDisplayName(itemStack))
-		tagCom.setLong("size", if (withSize) itemStack.stackSize else 1)
+
+		var size: Long = if (withSize) itemStack.stackSize else 1
+		if (tier != null) size = tier.getSizeMax
+		tagCom.setLong("size", size)
+
 		compressed.setTagCompound(tagCom)
 		compressed
 	}
@@ -35,10 +40,10 @@ object Compressed {
 	}
 
 	def getDisplayName(itemStack: ItemStack): String = {
-		"_" + " Compressed " + itemStack.getTagCompound.getString("display")
+		this.getTier(itemStack).getName + " Compressed " + itemStack.getTagCompound.getString("display")
 	}
 
-	def createSampleStack(itemStack: ItemStack): ItemStack = {
+	def getSampleStack(itemStack: ItemStack): ItemStack = {
 		Names.getItemStack(itemStack.getTagCompound.getString("name"))
 	}
 
@@ -47,5 +52,7 @@ object Compressed {
 	}
 
 	def getSize(itemStack: ItemStack): Long = itemStack.getTagCompound.getLong("size")
+
+	def getTier(itemStack: ItemStack): EnumTier = EnumTier.getTierForSize(this.getSize(itemStack))
 
 }
