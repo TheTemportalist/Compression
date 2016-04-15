@@ -42,6 +42,10 @@ public enum EnumTier {
 		return this.sizeMax;
 	}
 
+	public EnumTier getNext() {
+		return this != EnumTier.getTail() ? EnumTier.getTier(this.ordinal() + 1) : null;
+	}
+
 	public static int getQuantity() {
 		return EnumTier.values().length;
 	}

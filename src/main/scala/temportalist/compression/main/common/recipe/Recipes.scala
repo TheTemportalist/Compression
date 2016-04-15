@@ -24,8 +24,12 @@ object Recipes {
 			Compression.log("Constructing recipes for (isBlock: " +
 					itemStack.getItem.isInstanceOf[ItemBlock] + ") " +
 					itemStack.getDisplayName)
-			for (tier <- EnumTier.values())
-				GameRegistry.addRecipe(new RecipeCompressClassic(itemStack, tier))
+			for (tier <- EnumTier.values()) {
+				GameRegistry.addRecipe(new RecipeClassicCompress(itemStack, tier))
+				if (tier != EnumTier.getTail)
+					GameRegistry.addRecipe(new RecipeClassicDecompress(itemStack, tier))
+			}
+			GameRegistry.addRecipe(new RecipeClassicDecompress(itemStack, null))
 		}
 	}
 

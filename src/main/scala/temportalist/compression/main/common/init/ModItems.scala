@@ -6,7 +6,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.item.ItemCompressed
 import temportalist.compression.main.common.lib.EnumTier
-import temportalist.compression.main.common.recipe.{RecipeCompressClassic, Recipes}
+import temportalist.compression.main.common.recipe.{RecipeClassicCompress, Recipes}
 import temportalist.origin.foundation.common.registers.ItemRegister
 
 import scala.collection.JavaConversions
