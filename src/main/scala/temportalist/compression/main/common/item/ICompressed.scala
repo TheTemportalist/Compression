@@ -2,11 +2,17 @@ package temportalist.compression.main.common.item
 
 import java.util
 
+import net.minecraft.entity.Entity
+import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
+import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
+import temportalist.compression.main.common.Effects
+import temportalist.compression.main.common.entity.EntityItemCompressed
 import temportalist.compression.main.common.init.Compressed
 import temportalist.origin.api.client.Keys
+import temportalist.origin.api.common.lib.Vect
 
 /**
   *
@@ -32,6 +38,23 @@ trait ICompressed extends Item {
 			tooltip.add(this.getClass.getSimpleName)
 		}
 
+	}
+
+	override def onUpdate(stack: ItemStack, worldIn: World, entityIn: Entity,
+			itemSlot: Int, isSelected: Boolean): Unit = {
+		entityIn match {
+			case player: EntityPlayer =>
+				if (!player.isSneaking)
+					Effects.onInvUpdateCompressed(worldIn, player, stack)
+			case _ =>
+		}
+	}
+
+	override def hasCustomEntity(itemStack: ItemStack): Boolean = true
+
+	override def createEntity(world: World, oldEI: Entity, itemStack: ItemStack): Entity = {
+		new EntityItemCompressed(world, new Vect(oldEI),
+			new Vect(oldEI.motionX, oldEI.motionY, oldEI.motionZ), itemStack)
 	}
 
 }

@@ -3,7 +3,7 @@ package temportalist.compression.main.common
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.{Mod, SidedProxy}
 import net.minecraftforge.oredict.RecipeSorter
-import temportalist.compression.main.common.init.{ModBlocks, ModItems}
+import temportalist.compression.main.common.init.{ModBlocks, ModEntities, ModItems}
 import temportalist.compression.main.common.recipe.{RecipeClassicCompress, RecipeClassicDecompress}
 import temportalist.origin.foundation.Info
 import temportalist.origin.foundation.common.registers.{OptionRegister, Register}
@@ -53,7 +53,7 @@ object Compression extends ModBase {
 
 	override def getOptions: OptionRegister = Options
 
-	override def getRegisters: Seq[Register] = Seq(ModBlocks, ModItems)
+	override def getRegisters: Seq[Register] = Seq(ModBlocks, ModItems, ModEntities)
 
 	@Mod.EventHandler
 	def preInit(event: FMLPreInitializationEvent): Unit = {
@@ -61,6 +61,7 @@ object Compression extends ModBase {
 
 		RecipeSorter.register("ClassicCompress", classOf[RecipeClassicCompress], RecipeSorter.Category.SHAPED, "")
 		RecipeSorter.register("ClassicDecompress", classOf[RecipeClassicDecompress], RecipeSorter.Category.SHAPELESS, "")
+		this.registerHandler(Effects)
 
 	}
 

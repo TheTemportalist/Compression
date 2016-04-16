@@ -39,7 +39,7 @@ class RecipeClassicDecompress(private val sample: ItemStack, private val tierTar
 				case invStack: ItemStack =>
 					if (foundValidStack) return false
 
-					val isSample = !invStack.getItem.isInstanceOf[ICompressed]
+					val isSample = !Compressed.isCompressed(invStack)
 					if (isSample) return false
 
 					val invStackSample = Compressed.getSampleStack(invStack)

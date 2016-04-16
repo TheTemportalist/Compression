@@ -1,5 +1,6 @@
 package temportalist.compression.main.common.lib;
 
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import temportalist.origin.api.common.helper.Names;
@@ -10,6 +11,8 @@ import temportalist.origin.api.common.helper.Names;
  * @author TheTemportalist
  */
 public class BlockProperties {
+
+	public static final PropertyBool USE_TICKER = PropertyBool.create("USE_TICKER");
 
 	public static final IUnlistedProperty<Long> LONG_UN = new IUnlistedProperty<Long>() {
 

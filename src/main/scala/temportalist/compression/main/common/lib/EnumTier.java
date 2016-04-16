@@ -51,6 +51,7 @@ public enum EnumTier {
 	}
 
 	public static EnumTier getTier(int ordinal) {
+		if (ordinal < 0) return null;
 		return EnumTier.values()[ordinal % EnumTier.getQuantity()];
 	}
 

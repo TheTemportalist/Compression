@@ -43,7 +43,7 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 				Minecraft.getMinecraft.getRenderItem.getItemModelMesher.getItemModel(sampleStack)
 
 		val size = Compressed.getSize(stack)
-		val i = EnumTier.getTierForSize(size).ordinal() + 1
+		val i = EnumTier.getTierForSize(size).ordinal()
 
 		new IBakedModel {
 

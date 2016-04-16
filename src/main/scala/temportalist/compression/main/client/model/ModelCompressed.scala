@@ -35,11 +35,11 @@ class ModelCompressed extends IModel {
 	override def bake(state: IModelState, format: VertexFormat,
 			bakedTextureGetter: Function[ResourceLocation, TextureAtlasSprite]): IBakedModel = {
 		val overlayList = new Array[TextureAtlasSprite](18)
-		for (i <- overlayList.indices) {
+		for (i <- 1 to overlayList.length) {
 			val sprite = bakedTextureGetter.apply(new ResourceLocation(
-				Compression.getModId, "overlays/overlay_" + (i + 1)))
+				Compression.getModId, "overlays/overlay_" + i))
 
-			overlayList(i) = sprite
+			overlayList(i - 1) = sprite
 		}
 
 

@@ -3,7 +3,7 @@ package temportalist.compression.main.common.init
 import net.minecraft.block.state.IBlockState
 import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
-import temportalist.compression.main.common.item.{ItemBlockCompressed, ItemCompressed}
+import temportalist.compression.main.common.item.{ICompressed, ItemBlockCompressed, ItemCompressed}
 import temportalist.compression.main.common.lib.EnumTier
 import temportalist.origin.api.common.helper.Names
 
@@ -38,6 +38,24 @@ object Compressed {
 
 				itemStack.getItem.getItemStackLimit(itemStack) > 1
 		}
+	}
+
+	def isCompressed(itemStack: ItemStack): Boolean = itemStack.getItem.isInstanceOf[ICompressed]
+
+	def getSampleFromUnknown(itemStack: ItemStack): ItemStack = {
+		if (this.isCompressed(itemStack)) {
+			if (itemStack.hasTagCompound) this.getSampleStack(itemStack)
+			else null
+		}
+		else {
+			val stack = itemStack.copy()
+			stack.stackSize = 1
+			stack
+		}
+	}
+
+	def getTotalSizeForUnknown(itemStack: ItemStack): Long = {
+		itemStack.stackSize * (if (this.isCompressed(itemStack)) this.getSize(itemStack) else 1)
 	}
 
 	def getDisplayName(itemStack: ItemStack): String = {

@@ -31,7 +31,7 @@ class RecipeClassicCompress(private val stackIn: ItemStack, private val tierTarg
 		for (row <- 0 until 3) for (col <- 0 until 3) {
 			inv.getStackInSlot(col + row * 3) match {
 				case invStack: ItemStack =>
-					val isSample = !invStack.getItem.isInstanceOf[ICompressed]
+					val isSample = !Compressed.isCompressed(invStack)
 					val invStackSample =
 						if (isSample) invStack
 						else Compressed.getSampleStack(invStack)

@@ -6,7 +6,7 @@ import net.minecraft.item.{Item, ItemStack}
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.block.BlockCompressed
-import temportalist.compression.main.common.block.tile.TileCompressed
+import temportalist.compression.main.common.block.tile.{TileCompressed, TileCompressedTickable}
 import temportalist.compression.main.common.item.ItemBlockCompressed
 import temportalist.compression.main.common.recipe.Recipes
 import temportalist.origin.foundation.common.registers.BlockRegister
@@ -30,6 +30,7 @@ object ModBlocks extends BlockRegister {
 	  */
 	override def registerTileEntities(): Unit = {
 		this.register("Compressed", classOf[TileCompressed])
+		this.register("CompressedTicker", classOf[TileCompressedTickable])
 	}
 
 	override def register(): Unit = {
