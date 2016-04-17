@@ -12,7 +12,7 @@ import temportalist.origin.api.common.helper.Names;
  */
 public class BlockProperties {
 
-	public static final PropertyBool USE_TICKER = PropertyBool.create("USE_TICKER");
+	public static final PropertyBool USE_TICKER = PropertyBool.create("useticker");
 
 	public static final IUnlistedProperty<Long> LONG_UN = new IUnlistedProperty<Long>() {
 

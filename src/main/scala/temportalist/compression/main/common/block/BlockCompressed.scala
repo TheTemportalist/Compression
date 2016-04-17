@@ -29,10 +29,8 @@ class BlockCompressed extends BlockTile(Compression, null) {
 		ModBlocks.blockItem
 	}
 
-
-
 	override def getStateFromMeta(meta: Int): IBlockState = {
-		this.getDefaultState.withProperty(USE_TICKER, meta > 0)
+		this.getDefaultState.withProperty(USE_TICKER, Boolean.box(meta > 0))
 	}
 
 	override def getMetaFromState(state: IBlockState): Int = {
@@ -44,8 +42,10 @@ class BlockCompressed extends BlockTile(Compression, null) {
 			meta: Int, placer: EntityLivingBase): IBlockState = {
 		val state = this.getStateFromMeta(meta)
 		val itemStack = placer.getActiveItemStack
-		state.withProperty(USE_TICKER, Effects.shouldUseTickingTile(itemStack))
+		state.withProperty(USE_TICKER, Boolean.box(Effects.shouldUseTickingTile(itemStack)))
 	}
+
+	override def hasTileEntity(state: IBlockState): Boolean = state.getValue(USE_TICKER)
 
 	override def createTileEntity(world: World, state: IBlockState): TileEntity = {
 		if (state.getValue(USE_TICKER)) new TileCompressedTickable

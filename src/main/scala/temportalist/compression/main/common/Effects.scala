@@ -274,13 +274,6 @@ object Effects {
 
 	}
 
-	def onTileUpdateCompressed(world: World, tile: TileCompressed,
-			sample: ItemStack, size: Long): Unit = {
-		if (EnumTier.getTierForSize(size).ordinal() + 1 < Options.blackHole) return
-
-
-	}
-
 	def iterateEntitiesAround(boundingBoxBase: AxisAlignedBB, radius: Double,
 			world: World, entityToExclude: Entity, position: Vect, motion: Vect,
 			shouldPull: (Entity) => Boolean, onPull: (Entity) => Unit): Unit = {
@@ -294,7 +287,7 @@ object Effects {
 		}
 	}
 
-	def pullEntityTowards(entityToPull: Entity, pos: Vect, motion: Vect): Unit = {
+	def pullEntityTowards(entityToPull: Entity, pos: Vect, motion: Vect, speed: Double = 1): Unit = {
 		var distX = pos.x - entityToPull.posX
 		var distY = pos.y - entityToPull.posY
 		var distZ = pos.z - entityToPull.posZ
@@ -305,9 +298,9 @@ object Effects {
 		distY = distY / distance + motion.y * 0.5
 		distZ = distZ / distance + motion.z * 0.5
 
-		entityToPull.motionX = distX
-		entityToPull.motionY = distY
-		entityToPull.motionZ = distZ
+		entityToPull.motionX = distX * speed
+		entityToPull.motionY = distY * speed
+		entityToPull.motionZ = distZ * speed
 		entityToPull.isAirBorne = true
 
 		if (entityToPull.isCollidedHorizontally) {

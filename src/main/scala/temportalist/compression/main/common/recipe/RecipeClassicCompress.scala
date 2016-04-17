@@ -5,8 +5,9 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.world.World
 import temportalist.compression.main.common.init.Compressed
-import temportalist.compression.main.common.item.ICompressed
 import temportalist.compression.main.common.lib.EnumTier
+
+import scala.util.control.Breaks._
 
 /**
   *
@@ -23,11 +24,25 @@ class RecipeClassicCompress(private val stackIn: ItemStack, private val tierTarg
 
 	override def getRecipeOutput: ItemStack = this.stackOut
 
-	override def getCraftingResult(inv: InventoryCrafting): ItemStack = this.getRecipeOutput.copy()
+	override def getCraftingResult(inv: InventoryCrafting): ItemStack = {
+		var meta: Int = -1
+		breakable {
+			for (i <- 0 until inv.getSizeInventory) inv.getStackInSlot(i) match {
+				case stack: ItemStack =>
+					meta = stack.getItemDamage
+					break()
+				case _ =>
+			}
+		}
+		val stack = this.stackIn.copy()
+		stack.setItemDamage(meta)
+		Compressed.create(stack, tier = tierTarget)
+	}
 
 	override def getRemainingItems(inv: InventoryCrafting): Array[ItemStack] = new Array[ItemStack](9)
 
 	override def matches(inv: InventoryCrafting, worldIn: World): Boolean = {
+		var meta: Int = -1
 		for (row <- 0 until 3) for (col <- 0 until 3) {
 			inv.getStackInSlot(col + row * 3) match {
 				case invStack: ItemStack =>
@@ -36,11 +51,12 @@ class RecipeClassicCompress(private val stackIn: ItemStack, private val tierTarg
 						if (isSample) invStack
 						else Compressed.getSampleStack(invStack)
 
+					if (meta < 0) meta = invStackSample.getItemDamage
+
 					val sameItem = this.stackIn.getItem == invStackSample.getItem
-					val sameMeta = this.stackIn.getItemDamage == invStackSample.getItemDamage
-					val sameTag = this.stackIn.getTagCompound == invStackSample.getTagCompound
+					val sameMeta = meta == invStackSample.getItemDamage
 					var isValid = false
-					if (sameItem && sameMeta && sameTag) {
+					if (sameItem && sameMeta) {
 						isValid =
 								if (isSample) this.tierTarget == EnumTier.SINGLE
 								else this.tierTarget.ordinal() == Compressed.getTier(invStack).ordinal() + 1

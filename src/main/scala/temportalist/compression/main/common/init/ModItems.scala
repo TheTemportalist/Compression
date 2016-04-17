@@ -1,16 +1,19 @@
 package temportalist.compression.main.common.init
 
-import net.minecraft.item.crafting.{CraftingManager, ShapedRecipes}
+import net.minecraft.init.Items
+import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.item.ItemArmor.ArmorMaterial
 import net.minecraft.item.{Item, ItemBlock, ItemStack}
+import net.minecraft.util.{ResourceLocation, SoundEvent}
+import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
-import temportalist.compression.main.common.item.ItemCompressed
+import temportalist.compression.main.common.item.{ItemCompressed, ItemDenseArmor}
 import temportalist.compression.main.common.lib.EnumTier
-import temportalist.compression.main.common.recipe.{RecipeClassicCompress, Recipes}
+import temportalist.compression.main.common.recipe.Recipes
 import temportalist.origin.foundation.common.registers.ItemRegister
 
 import scala.collection.JavaConversions
-import scala.util.control.Breaks._
 
 /**
   *
@@ -22,8 +25,26 @@ object ModItems extends ItemRegister {
 
 	var item: ItemCompressed = _
 
+	var armorTypes: Array[EntityEquipmentSlot] = _
+	var leatherDense: ArmorMaterial = _
+	var leatherDenseArmor: Array[ItemDenseArmor] = _
+
 	override def register(): Unit = {
 		this.item = new ItemCompressed()
+
+		this.armorTypes = Array[EntityEquipmentSlot](
+			EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS,
+			EntityEquipmentSlot.CHEST, EntityEquipmentSlot.HEAD)
+
+		val leatherEquipRL = new ResourceLocation("item.armor.equip_leather")
+		this.leatherDense = EnumHelper.addArmorMaterial("DENSELEATHER",
+			Compression.getModId + ":denseleather",
+			50, Array[Int](2, 8, 10, 0), 0,
+			SoundEvent.soundEventRegistry.getObject(leatherEquipRL))
+
+		this.leatherDenseArmor = new Array[ItemDenseArmor](4)
+		for (slot <- this.armorTypes)
+			this.leatherDenseArmor(slot.getIndex) = new ItemDenseArmor(slot, this.leatherDense)
 
 	}
 
@@ -35,6 +56,23 @@ object ModItems extends ItemRegister {
 			if (!any.isInstanceOf[ItemBlock]) Recipes.tryAddRecipes(new ItemStack(any))
 		}
 
+		// ~~~~~ Armor
+
+		val leather = new ItemStack(Items.leather)
+		val armorComponent = Compressed.create(leather, tier = EnumTier.NONUPLE)
+		Map[EntityEquipmentSlot, (String, String, String)] (
+			EntityEquipmentSlot.HEAD    -> ("iii", "i i", "   "),
+			EntityEquipmentSlot.CHEST   -> ("i i", "iii", "iii"),
+			EntityEquipmentSlot.LEGS    -> ("iii", "i i", "i i"),
+			EntityEquipmentSlot.FEET    -> ("   ", "i i", "i i")
+		).foreach(set => {
+			GameRegistry.addRecipe(new ItemStack(this.getArmorDense(set._1)),
+				set._2._1, set._2._2, set._2._3,
+				Character.valueOf('i'), armorComponent)
+		})
+
 	}
+
+	def getArmorDense(slot: EntityEquipmentSlot): ItemDenseArmor = this.leatherDenseArmor(slot.getIndex)
 
 }

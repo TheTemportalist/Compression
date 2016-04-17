@@ -14,8 +14,8 @@ import net.minecraftforge.client.model.{ModelLoader, ModelLoaderRegistry}
 import net.minecraftforge.fml.client.IModGuiFactory
 import net.minecraftforge.fml.client.IModGuiFactory.{RuntimeOptionCategoryElement, RuntimeOptionGuiHandler}
 import temportalist.compression.main.client.model.ModelLoaderCompressed
-import temportalist.compression.main.common.ProxyCommon
 import temportalist.compression.main.common.init.{ModBlocks, ModItems}
+import temportalist.compression.main.common.{Compression, ProxyCommon}
 
 /**
   *
@@ -35,6 +35,12 @@ class ProxyClient extends ProxyCommon with IModGuiFactory {
 			override protected def getModelResourceLocation(
 					state: IBlockState): ModelResourceLocation = ModelLoaderCompressed.fakeRL
 		})
+
+		for (slot <- ModItems.armorTypes)
+			ModelLoader.setCustomModelResourceLocation(
+				ModItems.leatherDenseArmor(slot.getIndex), 0, new ModelResourceLocation(
+					Compression.getModId+ ":ItemDenseArmor", "part=" + slot.getName
+				))
 
 	}
 

@@ -34,7 +34,7 @@ object Options extends OptionRegister {
 
 	override def register(): Unit = {
 
-		val compressed = "compressed objects"
+		val compressed = "compressed effects"
 		this.compressor = this.getAndComment(compressed, "Compressor",
 			"Compress like-items as they enter the player's inventory when in the player's inventory. (-1 to disable)",
 			this.compressor)

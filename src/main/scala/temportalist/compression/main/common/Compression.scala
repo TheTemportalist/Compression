@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostIniti
 import net.minecraftforge.fml.common.{Mod, SidedProxy}
 import net.minecraftforge.oredict.RecipeSorter
 import temportalist.compression.main.common.init.{ModBlocks, ModEntities, ModItems}
-import temportalist.compression.main.common.recipe.{RecipeClassicCompress, RecipeClassicDecompress}
+import temportalist.compression.main.common.recipe.{RecipeClassicCompress, RecipeClassicDecompress, Recipes}
 import temportalist.origin.foundation.Info
 import temportalist.origin.foundation.common.registers.{OptionRegister, Register}
 import temportalist.origin.foundation.common.{IProxy, ModBase}
@@ -68,6 +68,7 @@ object Compression extends ModBase {
 	@Mod.EventHandler
 	def init(event: FMLInitializationEvent): Unit = {
 		super.initialize(event)
+		Recipes.registerOtherRecipes()
 
 	}
 

@@ -1,5 +1,6 @@
 package temportalist.compression.main.common.recipe
 
+import net.minecraft.init.Items
 import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.item.crafting.{CraftingManager, ShapedRecipes}
 import net.minecraftforge.fml.common.registry.GameRegistry
@@ -17,6 +18,10 @@ import scala.util.control.Breaks._
   * @author TheTemportalist
   */
 object Recipes {
+
+	def registerOtherRecipes(): Unit = {
+
+	}
 
 	def tryAddRecipes(itemStack: ItemStack) = {
 		if (Compressed.canCompressItem(itemStack) &&
