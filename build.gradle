@@ -1,0 +1,49 @@
+// For those who want the bleeding edge
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+// START
+apply plugin: 'scala'
+// END
+
+version = "1.0.0"
+group= "temportalist.compression"
+archivesBaseName = "compression"
+
+minecraft {
+    version = "1.9-12.16.0.1863-1.9"
+    runDir = "run"
+    mappings = "snapshot_20160409"
+}
+
+dependencies {
+    
+}
+
+processResources
+{
+    
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+}
