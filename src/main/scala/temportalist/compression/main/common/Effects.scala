@@ -11,8 +11,8 @@ import net.minecraft.util.{ResourceLocation, SoundCategory, SoundEvent}
 import net.minecraft.world.World
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import temportalist.compression.main.common.block.tile.TileCompressed
 import temportalist.compression.main.common.init.Compressed
+import temportalist.compression.main.common.item.ItemDenseArmor
 import temportalist.compression.main.common.lib.EnumTier
 import temportalist.origin.api.common.lib.Vect
 
@@ -208,7 +208,7 @@ object Effects {
 						else this.doesMatchSample(stackSample, entityItem)
 					case _ => false
 				}
-			}: Boolean,
+			}: Boolean, null,
 			// Post effect: When an entity is pulled
 			null
 		)
@@ -232,14 +232,21 @@ object Effects {
 		this.iterateEntitiesAround(boundingBoxBase, radius, world, entity, position, motion,
 			// Filter: Should the entity passed by pulled
 			(entity: Entity) => {
-				if (this.canUseAttractionIII(itemStack)) !entity.isSneaking
-				else entity match {
+				entity match {
+					case player: EntityPlayer => !player.capabilities.isCreativeMode
 					case entityItem: EntityItem =>
-						if (this.canUseAttractionII(itemStack)) true
-						else this.doesMatchSample(stackSample, entityItem)
-					case _ => false
+						this.canUseAttractionIII(itemStack) ||
+								this.canUseAttractionII(itemStack) ||
+								this.doesMatchSample(stackSample, entityItem)
+					case _ => this.canUseAttractionIII(itemStack)
 				}
 			}: Boolean,
+			(entity: Entity) => {
+				entity match {
+					case player: EntityPlayer => 0.25D * (4 - ItemDenseArmor.getClothedCount(player))
+					case _ => 1
+				}
+			}: Double,
 			// Post effect: When an entity is pulled
 			{
 				case entityItem: EntityItem =>
@@ -276,18 +283,21 @@ object Effects {
 
 	def iterateEntitiesAround(boundingBoxBase: AxisAlignedBB, radius: Double,
 			world: World, entityToExclude: Entity, position: Vect, motion: Vect,
-			shouldPull: (Entity) => Boolean, onPull: (Entity) => Unit): Unit = {
+			shouldPull: (Entity) => Boolean, getSpeed: (Entity) => Double,
+			onPull: (Entity) => Unit): Unit = {
 		val boundingBox = boundingBoxBase.expand(radius, radius, radius)
 		val entList = world.getEntitiesWithinAABBExcludingEntity(entityToExclude, boundingBox)
 		for (entityBB <- JavaConversions.asScalaBuffer(entList)) {
 			if (shouldPull == null || shouldPull(entityBB)) {
-				this.pullEntityTowards(entityBB, position, motion)
+				this.pullEntityTowards(entityBB, position, motion,
+					speed = if (getSpeed == null) 1 else getSpeed(entityBB))
 				if (onPull != null) onPull(entityBB)
 			}
 		}
 	}
 
 	def pullEntityTowards(entityToPull: Entity, pos: Vect, motion: Vect, speed: Double = 1): Unit = {
+		if (speed == 0) return
 		var distX = pos.x - entityToPull.posX
 		var distY = pos.y - entityToPull.posY
 		var distZ = pos.z - entityToPull.posZ

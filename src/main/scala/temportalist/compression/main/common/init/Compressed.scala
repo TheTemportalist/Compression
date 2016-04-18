@@ -30,6 +30,12 @@ object Compressed {
 		compressed
 	}
 
+	def createWithSize(itemStack: ItemStack, size: Long): ItemStack = {
+		val stack = this.create(itemStack)
+		stack.getTagCompound.setLong("size", size)
+		stack
+	}
+
 	def canCompressItem(itemStack: ItemStack): Boolean = {
 		itemStack.getItem match {
 			case compressed: ItemCompressed => false

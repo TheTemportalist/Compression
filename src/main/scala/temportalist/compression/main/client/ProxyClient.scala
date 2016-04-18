@@ -40,7 +40,6 @@ class ProxyClient extends ProxyCommon with IModGuiFactory {
 			val location = new ModelResourceLocation(
 				Compression.getModId+ ":ItemDenseArmor", "part=" + slot.getName
 			)
-			Compression.log(location.toString)
 			ModelLoader.setCustomModelResourceLocation(
 				ModItems.leatherDenseArmor(slot.getIndex), 0, location)
 		}

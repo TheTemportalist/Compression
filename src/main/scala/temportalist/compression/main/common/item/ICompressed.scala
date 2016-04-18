@@ -57,4 +57,6 @@ trait ICompressed extends Item {
 			new Vect(oldEI.motionX, oldEI.motionY, oldEI.motionZ), itemStack)
 	}
 
+
+
 }

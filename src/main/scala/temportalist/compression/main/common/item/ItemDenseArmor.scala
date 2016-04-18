@@ -1,5 +1,6 @@
 package temportalist.compression.main.common.item
 
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.{ItemArmor, ItemStack}
@@ -28,9 +29,9 @@ class ItemDenseArmor(slot: EntityEquipmentSlot, material: ArmorMaterial)
 
 	override def onArmorTick(world: World, player: EntityPlayer, itemStack: ItemStack): Unit = {
 		if (itemStack.getItem == ModItems.getArmorDense(EntityEquipmentSlot.CHEST)) {
-			val head = this.isClothed(player, EntityEquipmentSlot.HEAD)
-			val legs = this.isClothed(player, EntityEquipmentSlot.LEGS)
-			val feet = this.isClothed(player, EntityEquipmentSlot.FEET)
+			val head = ItemDenseArmor.isClothed(player, EntityEquipmentSlot.HEAD)
+			val legs = ItemDenseArmor.isClothed(player, EntityEquipmentSlot.LEGS)
+			val feet = ItemDenseArmor.isClothed(player, EntityEquipmentSlot.FEET)
 			if (!(head && legs && feet)) return
 			player.addPotionEffect(new PotionEffect(
 				slowness, 10, 4 // jabba has 4
@@ -38,11 +39,25 @@ class ItemDenseArmor(slot: EntityEquipmentSlot, material: ArmorMaterial)
 		}
 	}
 
+	override def getColor(stack: ItemStack): Int = 10511680
+
+}
+object ItemDenseArmor {
+
 	def isClothed(player: EntityPlayer, slot: EntityEquipmentSlot): Boolean = {
 		val stack = player.getItemStackFromSlot(slot)
 		stack != null && stack.getItem == ModItems.getArmorDense(slot)
 	}
 
-	override def getColor(stack: ItemStack): Int = 10511680
+	def getClothedCount(entity: EntityPlayer): Int = {
+		var count = 0
+		for (armorSlot <- ModItems.armorTypes)
+			entity.getItemStackFromSlot(armorSlot) match {
+				case stack: ItemStack =>
+					if (stack.getItem == ModItems.getArmorDense(armorSlot)) count += 1
+				case _ =>
+			}
+		count
+	}
 
 }
