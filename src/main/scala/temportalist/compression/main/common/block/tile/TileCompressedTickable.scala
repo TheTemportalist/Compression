@@ -2,10 +2,11 @@ package temportalist.compression.main.common.block.tile
 
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.entity.item.EntityItem
+import net.minecraft.entity.{Entity, EntityLivingBase, SharedMonsterAttributes}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ITickable
+import net.minecraft.util.{DamageSource, ITickable}
 import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
 import temportalist.compression.main.common.init.ModBlocks
 import temportalist.compression.main.common.item.ItemDenseArmor
@@ -23,6 +24,8 @@ import scala.collection.JavaConversions
   */
 class TileCompressedTickable extends TileCompressed with ITickable {
 
+	private var posCenter: Vect = _
+
 	private val blockDestroyDelay_base = Ticks.getTicks(seconds = 20)
 	private val blockDestroyDelay_deviation = Ticks.getTicks(seconds = 2)
 	private var blockDestroyDelay_till = -1
@@ -31,15 +34,24 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 
 	private val entityRadius = 10
 	private var entityAABB: AxisAlignedBB = _
-	private var posCenter: Vect = _
 
+	private val checkEnergyBounds_base = Ticks.getTicks(minutes = 4)
+	private var checkEnergyBounds_till = -1
+	private var checkEnergyBounds_needsReset = true
 	private var storedEnergy: Double = 0
+	private val energyRadius = 1.5D
+	private var energyAABB: AxisAlignedBB = _
 
 	override def update(): Unit = {
 		if (EnumTier.getTierForSize(this.getSize).ordinal() + 1 < Options.blackHole) return
 
+		if (this.posCenter == null) this.posCenter = new Vect(this) + Vect.CENTER
+
 		this.updateBlockDestroyLogic()
 		this.attractEntities()
+
+		if (Options.blackHolePotentialEnergy)
+			this.checkEnergyBoundsLogic()
 
 	}
 
@@ -48,10 +60,10 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 			this.destroyBlock()
 			this.blockDestroyDelay_needsReset = true
 		} else this.blockDestroyDelay_till -= 1
-		this.resetDelay()
+		this.blockDestroy_resetDelay()
 	}
 
-	private def resetDelay(): Unit = {
+	private def blockDestroy_resetDelay(): Unit = {
 		if (this.blockDestroyDelay_needsReset) {
 			this.blockDestroyDelay_till = this.blockDestroyDelay_base +
 					this.getWorld.rand.nextInt(this.blockDestroyDelay_deviation)
@@ -107,7 +119,6 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 				pos.getX + this.entityRadius, pos.getY + this.entityRadius, pos.getZ + this.entityRadius
 			)
 		}
-		if (this.posCenter == null) this.posCenter = new Vect(this) + Vect.CENTER
 
 		val entityList = this.getWorld.getEntitiesWithinAABB(classOf[Entity], this.entityAABB)
 		for (entity <- JavaConversions.asScalaBuffer(entityList)) {
@@ -131,9 +142,66 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 		}
 	}
 
+	private def checkEnergyBoundsLogic(): Unit = {
+		if (!this.checkEnergyBounds_needsReset && this.checkEnergyBounds_till <= 0) {
+			this.checkEnergyBounds()
+			this.checkEnergyBounds_needsReset = true
+		} else this.checkEnergyBounds_till -= 1
+		this.checkEnergy_resetDelay()
+	}
+
+	private def checkEnergy_resetDelay(): Unit = {
+		if (this.checkEnergyBounds_needsReset) {
+			this.checkEnergyBounds_till = this.checkEnergyBounds_base
+			this.checkEnergyBounds_till = 20
+			this.checkEnergyBounds_needsReset = false
+		}
+	}
+
+	private def checkEnergyBounds(): Unit = {
+		if (this.getWorld.isRemote) return
+
+		if (this.energyAABB == null) {
+			val pos = this.posCenter
+			this.energyAABB = new AxisAlignedBB(
+				pos.x - this.energyRadius, pos.y - this.energyRadius, pos.z - this.energyRadius,
+				pos.x + this.energyRadius, pos.y + this.energyRadius, pos.z + this.energyRadius
+			)
+		}
+
+		val entityList = this.getWorld.getEntitiesWithinAABB(classOf[Entity], this.energyAABB)
+		for (entity <- JavaConversions.asScalaBuffer(entityList)) {
+			entity match {
+				case living: EntityLivingBase =>
+					if (living.attackEntityFrom(DamageSource.outOfWorld, 1)) {
+						if (living.getHealth <= 0) {
+							living match {
+								case player: EntityPlayer => this.giveEnergyTo(player)
+								case _ => this.storedEnergy += living.getMaxHealth / 10
+							}
+						}
+					}
+				case entityItem: EntityItem =>
+					this.storedEnergy += entityItem.getEntityItem.stackSize
+					entityItem.setDead()
+				case _ => entity.setDead()
+			}
+		}
+
+	}
+
+	private def giveEnergyTo(player: EntityPlayer): Unit = {
+		val heartsToGrant = this.storedEnergy.toInt % 10
+		player.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(
+			player.getMaxHealth + 2 * heartsToGrant
+		)
+		this.storedEnergy -= heartsToGrant * 10
+	}
+
 	override def writeToNBT(compound: NBTTagCompound): Unit = {
 		super.writeToNBT(compound)
 		compound.setInteger("blockDestroyDelay_till", this.blockDestroyDelay_till)
+		compound.setInteger("checkEnergyBounds_till", this.checkEnergyBounds_till)
 		compound.setDouble("storedEnergy", this.storedEnergy)
 
 	}
@@ -141,6 +209,7 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 	override def readFromNBT(compound: NBTTagCompound): Unit = {
 		super.readFromNBT(compound)
 		this.blockDestroyDelay_till = compound.getInteger("blockDestroyDelay_till")
+		this.checkEnergyBounds_till = compound.getInteger("checkEnergyBounds_till")
 		this.storedEnergy = compound.getDouble("storedEnergy")
 
 	}

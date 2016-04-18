@@ -31,6 +31,8 @@ object Options extends OptionRegister {
 	var attractionIII: Int = 10
 	// eat world when in world as block
 	var blackHole: Int = 18
+	// enable potential hearts from consumed energy
+	var blackHolePotentialEnergy: Boolean = true
 
 	override def register(): Unit = {
 
@@ -56,6 +58,9 @@ object Options extends OptionRegister {
 		this.blackHole = this.getAndComment(compressed, "Black Hole",
 			"Destroy blocks and attract items/entities when in the world as a block. (-1 to disable)",
 			this.blackHole)
+		this.blackHolePotentialEnergy = this.getAndComment(compressed, "Potential Energy",
+			"When a blackhole-tier block consumes matter, create potential energy for extral health",
+			this.blackHolePotentialEnergy)
 
 	}
 
