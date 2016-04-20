@@ -42,7 +42,7 @@ minecraft {
     replace "@MOD_VERSION", "${version_major}.${version_minor}.${version_patch}"
 }
 
-version = "${project.minecraft.version}-${version_major}.${version_minor}.${version_patch}_" + getBuildNumber()
+version = "${project.minecraft.version}-${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
 
 repositories {
     mavenCentral()
