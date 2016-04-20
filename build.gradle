@@ -54,7 +54,7 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "temportalist.origin:Origin:9.0.+"
+    deobfCompile "temportalist.origin:Origin:9.0.0+"
 }
 
 processResources {
