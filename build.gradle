@@ -49,7 +49,7 @@ minecraft {
     mappings = "${version_mcp}"
 
     replace "required-after:Forge", "required-after:Forge@[${version_forge},)"
-    replace "required-after:Origin", "required-after:Origin@[${version_origin},)"
+    replace "required-after:Origin", "required-after:origin@[${version_origin},)"
     replace "@MOD_VERSION@", "${version_major}.${version_minor}.${version_patch}"
 }
 
