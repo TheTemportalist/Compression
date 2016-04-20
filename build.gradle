@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "temportalist.origin:Origin:9.0.+"
+    deobfCompile "temportalist.origin:Origin:${version_origin_dep}"
 }
 
 ext.getBuildNumber = {
@@ -49,6 +49,7 @@ minecraft {
     mappings = "${version_mcp}"
 
     replace "required-after:Forge", "required-after:Forge@[${version_forge},)"
+    replace "required-after:Origin", "required-after:Origin@[${version_origin},)"
     replace "@MOD_VERSION", "${version_major}.${version_minor}.${version_patch}"
 }
 

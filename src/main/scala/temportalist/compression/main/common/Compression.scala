@@ -17,7 +17,7 @@ import temportalist.origin.foundation.common.{IProxy, ModBase}
 @Mod(modid = Compression.MOD_ID, name = Compression.MOD_NAME, version = Compression.MOD_VERSION,
 	modLanguage = "scala",
 	guiFactory = Compression.proxyClient,
-	dependencies = "required-after:Forge"
+	dependencies = "required-after:Forge;required-after:Origin"
 )
 object Compression extends ModBase {
 
