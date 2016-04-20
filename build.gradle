@@ -44,7 +44,7 @@ def getDate() {
 group = "${org}.${groupName}"
 
 minecraft {
-    version = "${version_minecraft}-${version_forge}"
+    version = "${version_minecraft}-${version_forge}${version_forge_b}"
     runDir = "run"
     mappings = "${version_mcp}"
 
