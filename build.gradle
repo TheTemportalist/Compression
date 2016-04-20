@@ -26,7 +26,6 @@ repositories {
 }
 
 dependencies {
-    //deobfCompile
     deobfCompile "temportalist.origin:Origin:9.0.+"
 }
 
