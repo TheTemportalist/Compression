@@ -95,7 +95,7 @@ class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
 				val sample = tile.getStack
 				val size = tile.getSize
 				Compressed.createWithSize(sample, size)
-			case _ => Compressed.create(new ItemStack(Blocks.stone))
+			case _ => Compressed.create(new ItemStack(Blocks.STONE))
 		}
 	}
 

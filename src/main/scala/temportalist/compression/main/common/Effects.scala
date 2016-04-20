@@ -320,7 +320,7 @@ object Effects {
 		entityToPull.fallDistance = 0f
 
 		if (entityToPull.worldObj.rand.nextInt(20) == 0) {
-			val sound = SoundEvent.soundEventRegistry.getObject(this.portalSound)
+			val sound = SoundEvent.REGISTRY.getObject(this.portalSound)
 			val pitch = 0.85f - entityToPull.worldObj.rand.nextFloat() * 3f / 10f
 			entityToPull.getEntityWorld.playSound(
 				entityToPull.posX, entityToPull.posY, entityToPull.posZ,

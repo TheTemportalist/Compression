@@ -45,7 +45,7 @@ object ModBlocks extends BlockRegister {
 
 		Compression.log("Loading compressed recipes for Blocks...")
 
-		for (any <- JavaConversions.asScalaIterator(Block.blockRegistry.iterator())) {
+		for (any <- JavaConversions.asScalaIterator(Block.REGISTRY.iterator())) {
 			val state = any.getDefaultState
 			if (this.canCompressBlock(state)) {
 				Recipes.tryAddRecipes(new ItemStack(any, 1, any.getMetaFromState(state)))

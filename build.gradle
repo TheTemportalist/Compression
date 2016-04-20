@@ -11,11 +11,24 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
     }
 }
+
+apply plugin: 'scala'
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-// START
-apply plugin: 'scala'
-// END
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        name "dsiriusArt"
+        url "http://doubledoordev.net:8082/artifactory/mods"//http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
+    }
+}
+
+dependencies {
+    //deobfCompile
+    deobfCompile "temportalist.origin:Origin:9.0.+"
+}
 
 ext.getBuildNumber = {
     if (System.getenv("BUILD_NUMBER") != null) return "${System.getenv("BUILD_NUMBER")}"
@@ -30,7 +43,6 @@ def getDate() {
 }
 
 group = "${org}.${groupName}"
-archivesBaseName = "${archiveName}"
 
 minecraft {
     version = "${version_minecraft}-${version_forge}"
@@ -38,24 +50,11 @@ minecraft {
     mappings = "${version_mcp}"
 
     replace "required-after:Forge", "required-after:Forge@[${version_forge},)"
-    replace "required-after:Origin", "required-after:Origin@[${version_origin},)"
     replace "@MOD_VERSION", "${version_major}.${version_minor}.${version_patch}"
 }
 
-version = "${project.minecraft.version}-${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
-
-repositories {
-    mavenCentral()
-    jcenter()
-    maven {
-        name "dsiriusArt"
-        url "http://doubledoordev.net:8082/artifactory/mods"//http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
-    }
-}
-
-dependencies {
-    deobfCompile "temportalist.origin:Origin:9.0.+"
-}
+archivesBaseName = "${archiveName}-${project.minecraft.version}"
+version = "${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
 
 processResources {
     inputs.property "version", project.version
@@ -70,4 +69,58 @@ processResources {
         exclude 'mcmod.info'
     }
 
+}
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+uploadArchives {
+    repositories {
+        // official DDD maven stuffs
+        if (project.hasProperty("dddUser") && project.hasProperty("dddPass")) {
+            mavenDeployer {
+                repository(url: "http://doubledoordev.net:8082/artifactory/mods") {
+                    authentication(userName: dddUser, password: dddPass)
+                }
+                pom {
+                    groupId = project.group
+                    version = project.version
+                    artifactId = "${archiveName}"
+                    project {
+                        name project.archivesBaseName
+                        packaging 'jar'
+                        description '${gitConfig.gitName}'
+                        url 'https://github.com/TheTemportalist/${gitConfig.gitName}'
+
+                        scm {
+                            url 'https://github.com/TheTemportalist/${gitConfig.gitName}'
+                            connection 'scm:git:git://github.com/TheTemportalist/${gitConfig.gitName}.git'
+                            developerConnection 'scm:git:git@github.com:TheTemportalist/${gitConfig.gitName}.git'
+                        }
+
+                        issueManagement {
+                            system 'github'
+                            url 'https://github.com/TheTemportalist/${gitConfig.gitName}/issues'
+                        }
+
+                        licenses {
+                            license {
+                                name '${gitConfig.license}'
+                                url 'https://github.com/TheTemportalist/${gitConfig.gitName}/blob/master/LICENSE'
+                                distribution 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id 'TheTemportalist'
+                                name 'TheTemportalist'
+                                roles { role 'developer' }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

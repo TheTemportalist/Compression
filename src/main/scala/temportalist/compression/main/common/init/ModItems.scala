@@ -40,7 +40,7 @@ object ModItems extends ItemRegister {
 		this.leatherDense = EnumHelper.addArmorMaterial("DENSELEATHER",
 			Compression.getModId + ":denseleather",
 			50, Array[Int](2, 8, 10, 0), 0,
-			SoundEvent.soundEventRegistry.getObject(leatherEquipRL))
+			SoundEvent.REGISTRY.getObject(leatherEquipRL))
 
 		this.leatherDenseArmor = new Array[ItemDenseArmor](4)
 		for (slot <- this.armorTypes)
@@ -52,13 +52,13 @@ object ModItems extends ItemRegister {
 
 		Compression.log("Loading compressed recipes for Items...")
 
-		for (any <- JavaConversions.asScalaIterator(Item.itemRegistry.iterator())) {
+		for (any <- JavaConversions.asScalaIterator(Item.REGISTRY.iterator())) {
 			if (!any.isInstanceOf[ItemBlock]) Recipes.tryAddRecipes(new ItemStack(any))
 		}
 
 		// ~~~~~ Armor
 
-		val leather = new ItemStack(Items.leather)
+		val leather = new ItemStack(Items.LEATHER)
 		val armorComponent = Compressed.create(leather, tier = EnumTier.NONUPLE)
 		Map[EntityEquipmentSlot, (String, String, String)] (
 			EntityEquipmentSlot.HEAD    -> ("iii", "i i", "   "),

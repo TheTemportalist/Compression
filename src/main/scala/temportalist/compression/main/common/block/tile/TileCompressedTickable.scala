@@ -103,7 +103,7 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 	private def isValidStateToDestroy(vect: Vect, pos: BlockPos, state: IBlockState): Boolean = {
 		pos != this.getPos && vect.length <= this.blockDestroy_radius &&
 				!this.isInDestroyBlacklist(state) &&
-				state.getMaterial != Material.air && !state.getMaterial.isLiquid
+				state.getMaterial != Material.AIR && !state.getMaterial.isLiquid
 	}
 
 	private def isInDestroyBlacklist(state: IBlockState): Boolean = {
