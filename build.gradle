@@ -49,12 +49,12 @@ repositories {
     jcenter()
     maven {
         name "dsiriusArt"
-        url "http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
+        url "http://doubledoordev.net:8082/artifactory/mods"//http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
     }
 }
 
 dependencies {
-    deobfCompile "temportalist.origin:Origin:9.+"
+    deobfCompile "temportalist.origin:Origin:9.0.+"
 }
 
 processResources {
