@@ -50,7 +50,7 @@ minecraft {
 
     replace "required-after:Forge", "required-after:Forge@[${version_forge},)"
     replace "required-after:Origin", "required-after:Origin@[${version_origin},)"
-    replace "@MOD_VERSION", "${version_major}.${version_minor}.${version_patch}"
+    replace "@MOD_VERSION@", "${version_major}.${version_minor}.${version_patch}"
 }
 
 archivesBaseName = "${archiveName}-${project.minecraft.version}"
