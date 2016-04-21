@@ -30,7 +30,7 @@ class BakedCompressed(private val overlays: Array[TextureAtlasSprite]) extends I
 			case extended: IExtendedBlockState =>
 				val sampleStack = extended.getValue(BlockProperties.ITEMSTACK_UN)
 				if (sampleStack == null) {
-					Compression.log("ERROR: " + state.toString + " has null inner stack!")
+					//Compression.log("ERROR: " + state.toString + " has null inner stack!")
 					return new util.ArrayList[BakedQuad]()
 				}
 				val sampleBlock = Block.getBlockFromItem(sampleStack.getItem)

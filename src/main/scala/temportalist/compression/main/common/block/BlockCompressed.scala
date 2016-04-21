@@ -1,11 +1,15 @@
 package temportalist.compression.main.common.block
 
+import java.util
+
+import net.minecraft.block.Block
 import net.minecraft.block.properties.IProperty
 import net.minecraft.block.state.{BlockStateContainer, IBlockState}
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.item.{ItemBlock, ItemStack}
+import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.math.{BlockPos, RayTraceResult}
 import net.minecraft.world.{IBlockAccess, World}
@@ -98,5 +102,24 @@ class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
 			case _ => Compressed.create(new ItemStack(Blocks.STONE))
 		}
 	}
+
+	override def harvestBlock(world: World, player: EntityPlayer, pos: BlockPos, state: IBlockState,
+			tile: TileEntity, stackHarvestedBy: ItemStack): Unit = {
+		super.harvestBlock(world, player, pos, state, tile, stackHarvestedBy)
+		tile match {
+			case tile: TileCompressed =>
+				val stackDrop = Compressed.createWithSize(tile.getStack, tile.getSize)
+				Block.spawnAsEntity(world, pos, stackDrop)
+			case _ =>
+		}
+	}
+
+	override def getDrops(world: IBlockAccess, pos: BlockPos, state: IBlockState,
+			fortune: Int): util.List[ItemStack] = {
+		new util.ArrayList[ItemStack]()
+	}
+
+	override def canSilkHarvest(world: World, pos: BlockPos, state: IBlockState,
+			player: EntityPlayer): Boolean = false
 
 }

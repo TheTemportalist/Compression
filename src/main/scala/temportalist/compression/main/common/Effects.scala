@@ -215,6 +215,7 @@ object Effects {
 	}
 
 	def onEntityUpdateCompressed(world: World, entity: EntityItem, itemStack: ItemStack): Unit = {
+		if (!itemStack.hasTagCompound) return
 		val tiers = Seq(Options.attractionI, Options.attractionII, Options.attractionIII)
 		if (!this.canUseAny(itemStack, tiers:_*)) return
 		val lowestTier = this.getLowestTier(tiers:_*)

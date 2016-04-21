@@ -43,6 +43,7 @@ public class EntityItemCompressed extends EntityItem {
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
+		if (!this.getEntityItem().hasTagCompound()) this.setDead();
 		Effects.onEntityUpdateCompressed(this.getEntityWorld(), this, this.getEntityItem());
 	}
 
