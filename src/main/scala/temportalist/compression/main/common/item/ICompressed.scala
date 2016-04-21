@@ -2,16 +2,17 @@ package temportalist.compression.main.common.item
 
 import java.util
 
+import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.world.World
+import net.minecraftforge.client.settings.KeyModifier
 import net.minecraftforge.fml.relauncher.{Side, SideOnly}
 import temportalist.compression.main.common.Effects
 import temportalist.compression.main.common.entity.EntityItemCompressed
 import temportalist.compression.main.common.init.Compressed
-import temportalist.origin.api.client.Keys
 import temportalist.origin.api.common.lib.Vect
 
 /**
@@ -32,7 +33,7 @@ trait ICompressed extends Item {
 			advanced: Boolean): Unit = {
 		super.addInformation(stack, playerIn, tooltip, advanced)
 
-		if (Keys.isShiftKeyDown) {
+		if (GuiScreen.isShiftKeyDown) {
 			tooltip.add(Compressed.getTier(stack).toString)
 			tooltip.add(Compressed.getSize(stack).toString)
 			tooltip.add(this.getClass.getSimpleName)
