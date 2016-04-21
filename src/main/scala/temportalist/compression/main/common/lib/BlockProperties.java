@@ -55,7 +55,7 @@ public class BlockProperties {
 
 		@Override
 		public String valueToString(ItemStack value) {
-			return Names.getName(value);
+			return Names.getName(value, true, true);
 		}
 
 	};

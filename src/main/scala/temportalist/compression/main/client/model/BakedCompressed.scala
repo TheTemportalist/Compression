@@ -12,6 +12,7 @@ import net.minecraft.util.{BlockRenderLayer, EnumFacing}
 import net.minecraft.util.math.BlockPos
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.property.IExtendedBlockState
+import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.lib.{BlockProperties, EnumTier}
 
 /**
@@ -28,6 +29,10 @@ class BakedCompressed(private val overlays: Array[TextureAtlasSprite]) extends I
 		state match {
 			case extended: IExtendedBlockState =>
 				val sampleStack = extended.getValue(BlockProperties.ITEMSTACK_UN)
+				if (sampleStack == null) {
+					Compression.log("ERROR: " + state.toString + " has null inner stack!")
+					return new util.ArrayList[BakedQuad]()
+				}
 				val sampleBlock = Block.getBlockFromItem(sampleStack.getItem)
 				val sampleState = sampleBlock.getStateFromMeta(sampleStack.getItemDamage)
 				val sampleModel = Minecraft.getMinecraft.getBlockRendererDispatcher.

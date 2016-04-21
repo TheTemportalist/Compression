@@ -3,10 +3,12 @@ package temportalist.compression.main.client.model
 import java.util
 
 import com.google.common.base.Function
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder
-import net.minecraft.client.renderer.block.model.{IBakedModel, SimpleBakedModel}
+import net.minecraft.client.renderer.block.model.{BuiltInModel, IBakedModel, SimpleBakedModel}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.VertexFormat
+import net.minecraft.init.Blocks
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.common.model.{IModelState, TRSRTransformation}
@@ -42,6 +44,11 @@ class ModelCompressed extends IModel {
 			overlayList(i - 1) = sprite
 		}
 
+		/*
+		val bModel = Minecraft.getMinecraft.getBlockRendererDispatcher.
+				getBlockModelShapes.getModelForState(Blocks.STONE.getDefaultState)
+		Compression.log("" + bModel)
+		*/
 
 		new BakedCompressed(overlayList)
 	}
