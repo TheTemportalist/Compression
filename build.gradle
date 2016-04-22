@@ -20,13 +20,18 @@ repositories {
     mavenCentral()
     jcenter()
     maven {
-        name "dsiriusArt"
+        name "ddd"
         url "http://doubledoordev.net:8082/artifactory/mods"//http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
+    }
+    maven {
+        name "dsiriusArt"
+        url "http://box1.dmodoomsirius.me:8081/artifactory/libs-release/"
     }
 }
 
 dependencies {
     deobfCompile "temportalist.origin:Origin:${version_origin_dep}"
+    deobfCompile "mezz.jei:jei_${version_minecraft}:${version_jei}"
 }
 
 ext.getBuildNumber = {
