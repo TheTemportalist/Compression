@@ -29,7 +29,8 @@ class RecipeClassicCompress(private val stackIn: ItemStack, private val tierTarg
 		breakable {
 			for (i <- 0 until inv.getSizeInventory) inv.getStackInSlot(i) match {
 				case stack: ItemStack =>
-					meta = stack.getItemDamage
+					val sampleStack = Compressed.getSampleFromUnknown(stack)
+					meta = sampleStack.getItemDamage
 					break()
 				case _ =>
 			}

@@ -1,12 +1,16 @@
 package temportalist.compression.main.common.recipe
 
+import net.minecraft.init.Blocks
 import net.minecraft.inventory.InventoryCrafting
-import net.minecraft.item.ItemStack
+import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.world.World
+import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.init.Compressed
 import temportalist.compression.main.common.item.ICompressed
 import temportalist.compression.main.common.lib.EnumTier
+
+import scala.util.control.Breaks._
 
 /**
   *
@@ -28,7 +32,23 @@ class RecipeClassicDecompress(private val sample: ItemStack, private val tierTar
 
 	override def getRecipeOutput: ItemStack = this.stackOut
 
-	override def getCraftingResult(inv: InventoryCrafting): ItemStack = this.getRecipeOutput.copy()
+	override def getCraftingResult(inv: InventoryCrafting): ItemStack = {
+		var meta: Int = -1
+		breakable {
+			for (i <- 0 until inv.getSizeInventory) inv.getStackInSlot(i) match {
+				case stack: ItemStack =>
+					val sampleStack = Compressed.getSampleFromUnknown(stack)
+					meta = sampleStack.getItemDamage
+					break()
+				case _ =>
+			}
+		}
+		val stack = this.sample.copy()
+		stack.setItemDamage(meta)
+		val out = if (this.tierTarget != null) Compressed.create(stack, tier = tierTarget) else stack
+		out.stackSize = 9
+		out
+	}
 
 	override def getRemainingItems(inv: InventoryCrafting): Array[ItemStack] = new Array[ItemStack](9)
 
@@ -38,16 +58,12 @@ class RecipeClassicDecompress(private val sample: ItemStack, private val tierTar
 			inv.getStackInSlot(col + row * 3) match {
 				case invStack: ItemStack =>
 					if (foundValidStack) return false
-
-					val isSample = !Compressed.isCompressed(invStack)
-					if (isSample) return false
+					if (!Compressed.isCompressed(invStack)) return false
 
 					val invStackSample = Compressed.getSampleStack(invStack)
 
 					val sameItem = this.sample.getItem == invStackSample.getItem
-					val sameMeta = this.sample.getItemDamage == invStackSample.getItemDamage
-					val sameTag = this.sample.getTagCompound == invStackSample.getTagCompound
-					if (sameItem && sameMeta && sameTag) {
+					if (sameItem) {
 						foundValidStack = Compressed.getTier(invStack) == Compressed.getTier(this.stackIn)
 					}
 				case _ =>

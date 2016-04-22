@@ -1,8 +1,7 @@
 package temportalist.compression.main.common.recipe
 
-import net.minecraft.init.Items
-import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.item.crafting.{CraftingManager, ShapedRecipes}
+import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.init.Compressed
