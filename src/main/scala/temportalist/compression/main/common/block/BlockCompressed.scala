@@ -83,8 +83,12 @@ class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
 			case extended: IExtendedBlockState =>
 				world.getTileEntity(pos) match {
 					case tile: TileCompressed =>
-						return extended.withProperty(ITEMSTACK_UN, tile.getStack.copy()
-						).withProperty(LONG_UN, Long.box(tile.getSize))
+						var tileStack = tile.getStack
+						if (tileStack != null) tileStack = tileStack.copy()
+
+						return extended.
+								withProperty(ITEMSTACK_UN, tileStack).
+								withProperty(LONG_UN, Long.box(tile.getSize))
 					case _ =>
 				}
 			case _ =>
