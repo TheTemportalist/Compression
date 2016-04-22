@@ -68,12 +68,16 @@ object Compressed {
 		this.getTier(itemStack).getName + " Compressed " + itemStack.getTagCompound.getString("display")
 	}
 
+	def getStackName(itemStack: ItemStack): String = {
+		itemStack.getTagCompound.getString("name")
+	}
+
 	def getSampleStack(itemStack: ItemStack): ItemStack = {
-		Names.getItemStack(itemStack.getTagCompound.getString("name"))
+		Names.getItemStack(this.getStackName(itemStack))
 	}
 
 	def getSampleState(itemStack: ItemStack): IBlockState = {
-		Names.getState(itemStack.getTagCompound.getString("name"))
+		Names.getState(this.getStackName(itemStack))
 	}
 
 	def getSize(itemStack: ItemStack): Long = itemStack.getTagCompound.getLong("size")

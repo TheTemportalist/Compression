@@ -37,6 +37,7 @@ trait ICompressed extends Item {
 			tooltip.add(Compressed.getTier(stack).toString)
 			tooltip.add(Compressed.getSize(stack).toString)
 			tooltip.add(this.getClass.getSimpleName)
+			tooltip.add(Compressed.getStackName(stack))
 		}
 
 	}
