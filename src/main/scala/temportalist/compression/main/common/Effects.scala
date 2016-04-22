@@ -67,9 +67,9 @@ object Effects {
 	def getLowestTierMagnet: Int = this.getLowestTier(Options.magnetI, Options.magnetI)
 
 	def iterateOverPlayerInventoryForSample(player: EntityPlayer, sample: ItemStack,
-			onSampleFound: (Int, ItemStack, Boolean) => Boolean): Unit = {
+			onSampleFound: (Int, ItemStack, Boolean) => Boolean, min: Int = 9, max: Int = 36): Unit = {
 		breakable {
-			for (index <- 9 until 36) {
+			for (index <- min until max) {
 				// just the storage part
 				val stackInSlot = player.inventory.getStackInSlot(index)
 				if (stackInSlot != null) {
@@ -82,6 +82,17 @@ object Effects {
 				}
 			}
 		}
+	}
+
+	def appendToInventory(player: EntityPlayer, stack: ItemStack, min: Int = 9, max: Int = 36): Boolean = {
+		for (index <- min until max) {
+			val stackInSlot = player.inventory.getStackInSlot(index)
+			if (stackInSlot == null) {
+				player.inventory.setInventorySlotContents(index, stack)
+				return true
+			}
+		}
+		false
 	}
 
 	@SubscribeEvent
@@ -112,7 +123,7 @@ object Effects {
 					true
 				}
 				else false
-			}: Boolean
+			}: Boolean, min = 0, max = 36 + 4 + 1 // 36 = main, 4 = armor, 1 = offhand
 		)
 
 		if (indexCompressor >= 0) {
@@ -139,7 +150,7 @@ object Effects {
 		val stackList = this.getStackListFromSize(size, sample)
 
 		for (stack <- stackList) {
-			if (!player.inventory.addItemStackToInventory(stack))
+			if (!this.appendToInventory(player, stack))
 				player.dropItem(stack, false, false)
 		}
 
