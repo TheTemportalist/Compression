@@ -81,19 +81,19 @@ class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
 			pos: BlockPos): IBlockState = {
 		state match {
 			case extended: IExtendedBlockState =>
-				world.getTileEntity(pos) match {
+				return world.getTileEntity(pos) match {
 					case tile: TileCompressed =>
 						var tileStack = tile.getStack
 						if (tileStack != null) tileStack = tileStack.copy()
 
-						return extended.
+						extended.
 								withProperty(ITEMSTACK_UN, tileStack).
 								withProperty(LONG_UN, Long.box(tile.getSize))
-					case _ =>
+					case _ => extended
 				}
 			case _ =>
 		}
-		null
+		state
 	}
 
 	override def getPickBlock(state: IBlockState, target: RayTraceResult, world: World,

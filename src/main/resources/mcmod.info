@@ -1,0 +1,16 @@
+[
+{
+  "modid": "compression",
+  "name": "Compression",
+  "description": "Compress all the things",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authors": ["TheTemportalist"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
