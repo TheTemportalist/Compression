@@ -23,6 +23,8 @@ import temportalist.origin.api.common.lib.Vect
   */
 trait ICompressed extends Item {
 
+	this.setHasSubtypes(true)
+
 	override def getItemStackDisplayName(itemStack: ItemStack): String = {
 		if (itemStack.hasTagCompound) Compressed.getDisplayName(itemStack)
 		else super.getItemStackDisplayName(itemStack)

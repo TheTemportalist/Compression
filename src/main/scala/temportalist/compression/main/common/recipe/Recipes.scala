@@ -1,6 +1,6 @@
 package temportalist.compression.main.common.recipe
 
-import net.minecraft.item.crafting.{CraftingManager, ShapedRecipes}
+import net.minecraft.item.crafting.{CraftingManager, IRecipe, ShapedRecipes}
 import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
@@ -8,6 +8,7 @@ import temportalist.compression.main.common.init.Compressed
 import temportalist.compression.main.common.lib.EnumTier
 
 import scala.collection.JavaConversions
+import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
 /**
@@ -28,12 +29,17 @@ object Recipes {
 			Compression.log("Constructing recipes for (isBlock: " +
 					itemStack.getItem.isInstanceOf[ItemBlock] + ") " +
 					itemStack.getDisplayName)
+
+			val stackRecipes = ListBuffer[IRecipe]()
 			for (tier <- EnumTier.values()) {
-				GameRegistry.addRecipe(new RecipeClassicCompress(itemStack, tier))
+				stackRecipes += new RecipeClassicCompress(itemStack, tier)
+
 				if (tier != EnumTier.getTail)
-					GameRegistry.addRecipe(new RecipeClassicDecompress(itemStack, tier))
+					stackRecipes += new RecipeClassicDecompress(itemStack, tier)
 			}
-			GameRegistry.addRecipe(new RecipeClassicDecompress(itemStack, null))
+			stackRecipes += new RecipeClassicDecompress(itemStack, null)
+
+			for (recipe <- stackRecipes) GameRegistry.addRecipe(recipe)
 		}
 	}
 
