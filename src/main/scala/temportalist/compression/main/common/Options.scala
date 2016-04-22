@@ -22,13 +22,13 @@ object Options extends OptionRegister {
 	// attract like-items when in player inventory
 	var magnetI: Int = 3
 	// attract like-items in world
-	var attractionI: Int = 5
+	var attractionI: Int = 3
 	// attract all items when in player inventory
-	var magnetII: Int = 7
+	var magnetII: Int = 4
 	// attract all items in world
-	var attractionII: Int = 9
+	var attractionII: Int = 4
 	// attract all entities when in world as entity
-	var attractionIII: Int = 10
+	var attractionIII: Int = 6
 	// eat world when in world as block
 	var blackHole: Int = 18
 	// enable potential hearts from consumed energy
