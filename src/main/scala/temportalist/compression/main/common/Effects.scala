@@ -245,7 +245,9 @@ object Effects {
 			// Filter: Should the entity passed by pulled
 			(entity: Entity) => {
 				entity match {
-					case player: EntityPlayer => !player.capabilities.isCreativeMode
+					case player: EntityPlayer =>
+						this.canUseAttractionIII(itemStack) &&
+								!player.capabilities.isCreativeMode && !player.isSneaking
 					case entityItem: EntityItem =>
 						this.canUseAttractionIII(itemStack) ||
 								this.canUseAttractionII(itemStack) ||
