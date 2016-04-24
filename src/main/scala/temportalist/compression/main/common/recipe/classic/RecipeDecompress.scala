@@ -46,6 +46,8 @@ class RecipeDecompress extends RecipeClassic {
 		}
 		if (sample == null) return null
 
+		val outTierOrdinal = tier.ordinal() - 1
+		tier = if (outTierOrdinal >= 0) EnumTier.getTier(outTierOrdinal) else null
 		val out = if (tier != null) Compressed.create(sample, tier = tier) else sample.copy
 		out.stackSize = 9
 		out
