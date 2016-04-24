@@ -1,7 +1,8 @@
 package temportalist.compression.main.common.init
 
+import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
-import net.minecraft.item.{ItemBlock, ItemStack}
+import net.minecraft.item.{Item, ItemBlock, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
 import temportalist.compression.main.common.item.{ICompressed, ItemBlockCompressed, ItemCompressed}
 import temportalist.compression.main.common.lib.EnumTier
@@ -40,6 +41,14 @@ object Compressed {
 		itemStack.getItem match {
 			case compressed: ItemCompressed => false
 			case compressed: ItemBlockCompressed => false
+			case item: ItemBlock =>
+				val block = Block.getBlockFromItem(item)
+				val state = block.getStateFromMeta(itemStack.getItemDamage)
+
+				block.isOpaqueCube(state) && block.isFullCube(state) &&
+						block.getMaterial(state).blocksMovement() &&
+						!block.hasTileEntity(state) &&
+						item.getItemStackLimit(itemStack) > 1
 			case _ =>
 
 				itemStack.getItem.getItemStackLimit(itemStack) > 1

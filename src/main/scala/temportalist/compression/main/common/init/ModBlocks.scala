@@ -43,6 +43,7 @@ object ModBlocks extends BlockRegister {
 	  */
 	override def registerCrafting(): Unit = {
 
+		/*
 		Compression.log("Loading compressed recipes for Blocks...")
 
 		for (any <- JavaConversions.asScalaIterator(Block.REGISTRY.iterator())) {
@@ -51,6 +52,7 @@ object ModBlocks extends BlockRegister {
 				Recipes.tryAddRecipes(new ItemStack(any, 1, any.getMetaFromState(state)))
 			}
 		}
+		*/
 
 	}
 

@@ -50,11 +50,13 @@ object ModItems extends ItemRegister {
 
 	override def registerCrafting(): Unit = {
 
+		/*
 		Compression.log("Loading compressed recipes for Items...")
 
 		for (any <- JavaConversions.asScalaIterator(Item.REGISTRY.iterator())) {
 			if (!any.isInstanceOf[ItemBlock]) Recipes.tryAddRecipes(new ItemStack(any))
 		}
+		*/
 
 		// ~~~~~ Armor
 
