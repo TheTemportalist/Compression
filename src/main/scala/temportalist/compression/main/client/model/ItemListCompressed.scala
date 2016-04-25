@@ -65,8 +65,15 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 				val quadList = new util.ArrayList[BakedQuad]()
 				quadList.addAll(sampleModel.getQuads(state, side, rand))
 
-				val overlayModel = new Builder(state, sampleModel, overlays(i), BlockPos.ORIGIN).makeBakedModel()
-				quadList.addAll(overlayModel.getQuads(state, side, rand))
+				try {
+					val overlayModel = new Builder(
+						state, sampleModel, overlays(i), BlockPos.ORIGIN).makeBakedModel()
+					quadList.addAll(overlayModel.getQuads(state, side, rand))
+				}
+				catch {
+					case e: Exception =>
+						e.printStackTrace()
+				}
 
 				quadList
 			}
