@@ -8,11 +8,13 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder
 import net.minecraft.client.renderer.block.model._
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.minecraftforge.client.model.ItemLayerModel
 import temportalist.compression.main.common.init.Compressed
 import temportalist.compression.main.common.lib.EnumTier
 
@@ -44,6 +46,7 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 
 		val size = Compressed.getSize(stack)
 		val i = EnumTier.getTierForSize(size).ordinal()
+		val overlay = overlays(i)
 
 		new IBakedModel {
 
@@ -65,14 +68,16 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 				val quadList = new util.ArrayList[BakedQuad]()
 				quadList.addAll(sampleModel.getQuads(state, side, rand))
 
-				try {
-					val overlayModel = new Builder(
-						state, sampleModel, overlays(i), BlockPos.ORIGIN).makeBakedModel()
-					quadList.addAll(overlayModel.getQuads(state, side, rand))
-				}
-				catch {
-					case e: Exception =>
-						e.printStackTrace()
+				if (overlay != null) {
+					try {
+						val overlayModel = new Builder(
+							state, sampleModel, overlay, BlockPos.ORIGIN).makeBakedModel()
+						quadList.addAll(overlayModel.getQuads(state, side, rand))
+					}
+					catch {
+						case e: Exception =>
+							e.printStackTrace()
+					}
 				}
 
 				quadList
