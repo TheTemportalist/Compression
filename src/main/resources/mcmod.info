@@ -7,9 +7,9 @@
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authors": ["TheTemportalist"],
-  "credits": "",
-  "logoFile": "",
+  "authorList": ["TheTemportalist"],
+  "credits": "Art & Textures; Biochemic",
+  "logoFile": "logo.png",
   "screenshots": [],
   "dependencies": []
 }
