@@ -3,17 +3,14 @@ package temportalist.compression.main.common.init
 import net.minecraft.init.Items
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemArmor.ArmorMaterial
-import net.minecraft.item.{Item, ItemBlock, ItemStack}
+import net.minecraft.item.ItemStack
 import net.minecraft.util.{ResourceLocation, SoundEvent}
 import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.fml.common.registry.GameRegistry
 import temportalist.compression.main.common.Compression
 import temportalist.compression.main.common.item.{ItemCompressed, ItemDenseArmor}
 import temportalist.compression.main.common.lib.EnumTier
-import temportalist.compression.main.common.recipe.Recipes
 import temportalist.origin.foundation.common.registers.ItemRegister
-
-import scala.collection.JavaConversions
 
 /**
   *
@@ -37,10 +34,25 @@ object ModItems extends ItemRegister {
 			EntityEquipmentSlot.CHEST, EntityEquipmentSlot.HEAD)
 
 		val leatherEquipRL = new ResourceLocation("item.armor.equip_leather")
-		this.leatherDense = EnumHelper.addArmorMaterial("DENSELEATHER",
-			Compression.getModId + ":denseleather",
-			50, Array[Int](2, 8, 10, 0), 0,
-			SoundEvent.REGISTRY.getObject(leatherEquipRL))
+		this.leatherDense = EnumHelper.addEnum(EnumHelperTemp.commonTypes,
+			classOf[ArmorMaterial],
+			"DENSELEATHER",
+			/*
+			Array[Class[_]](
+				//classOf[String], classOf[Integer],
+				classOf[Array[Integer]],
+				classOf[Integer], classOf[SoundEvent], classOf[java.lang.Float]
+			),
+			*/
+			Array[AnyRef](
+				Compression.getModId + ":denseleather",
+				Int.box(50),
+				Array[Int](2, 8, 10, 0),
+				Int.box(0),
+				SoundEvent.REGISTRY.getObject(leatherEquipRL),
+				Float.box(0F)
+			):_*
+		)
 
 		this.leatherDenseArmor = new Array[ItemDenseArmor](4)
 		for (slot <- this.armorTypes)
