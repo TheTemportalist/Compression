@@ -3,15 +3,15 @@ package temportalist.compression.main.common.block.tile
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.{Entity, EntityLivingBase, SharedMonsterAttributes}
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.{Entity, EntityLivingBase, SharedMonsterAttributes}
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.{DamageSource, ITickable}
 import net.minecraft.util.math.{AxisAlignedBB, BlockPos}
+import net.minecraft.util.{DamageSource, ITickable}
 import temportalist.compression.main.common.init.ModBlocks
 import temportalist.compression.main.common.item.ItemDenseArmor
 import temportalist.compression.main.common.lib.{EnumTier, Ticks}
-import temportalist.compression.main.common.{Compression, Effects, Options}
+import temportalist.compression.main.common.{Effects, Options}
 import temportalist.origin.api.common.lib.Vect
 
 import scala.collection.JavaConversions
@@ -198,12 +198,12 @@ class TileCompressedTickable extends TileCompressed with ITickable {
 		this.storedEnergy -= heartsToGrant * 10
 	}
 
-	override def writeToNBT(compound: NBTTagCompound): Unit = {
-		super.writeToNBT(compound)
-		compound.setInteger("blockDestroyDelay_till", this.blockDestroyDelay_till)
-		compound.setInteger("checkEnergyBounds_till", this.checkEnergyBounds_till)
-		compound.setDouble("storedEnergy", this.storedEnergy)
-
+	override def writeToNBT(compound: NBTTagCompound): NBTTagCompound = {
+		val tag = super.writeToNBT(compound)
+		tag.setInteger("blockDestroyDelay_till", this.blockDestroyDelay_till)
+		tag.setInteger("checkEnergyBounds_till", this.checkEnergyBounds_till)
+		tag.setDouble("storedEnergy", this.storedEnergy)
+		tag
 	}
 
 	override def readFromNBT(compound: NBTTagCompound): Unit = {

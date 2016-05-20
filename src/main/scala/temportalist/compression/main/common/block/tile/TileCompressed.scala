@@ -31,11 +31,12 @@ class TileCompressed extends TileEntity with ITileSaver {
 
 	def getSize: Long = this.size
 
-	override def writeToNBT(compound: NBTTagCompound): Unit = {
-		super.writeToNBT(compound)
+	override def writeToNBT(compound: NBTTagCompound): NBTTagCompound = {
+		val tag = super.writeToNBT(compound)
 		if (this.itemStack != null)
-			compound.setString("stack", Names.getName(this.itemStack, hasID = true, hasMeta = true))
-		compound.setLong("size", this.size)
+			tag.setString("stack", Names.getName(this.itemStack, hasID = true, hasMeta = true))
+		tag.setLong("size", this.size)
+		tag
 	}
 
 	override def readFromNBT(compound: NBTTagCompound): Unit = {
