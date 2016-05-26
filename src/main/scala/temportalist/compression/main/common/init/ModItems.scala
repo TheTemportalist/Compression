@@ -34,24 +34,14 @@ object ModItems extends ItemRegister {
 			EntityEquipmentSlot.CHEST, EntityEquipmentSlot.HEAD)
 
 		val leatherEquipRL = new ResourceLocation("item.armor.equip_leather")
-		this.leatherDense = EnumHelper.addEnum(EnumHelperTemp.commonTypes,
-			classOf[ArmorMaterial],
+		this.leatherDense = EnumHelper.addArmorMaterial(
 			"DENSELEATHER",
-			/*
-			Array[Class[_]](
-				//classOf[String], classOf[Integer],
-				classOf[Array[Integer]],
-				classOf[Integer], classOf[SoundEvent], classOf[java.lang.Float]
-			),
-			*/
-			Array[AnyRef](
-				Compression.getModId + ":denseleather",
-				Int.box(50),
-				Array[Int](2, 8, 10, 0),
-				Int.box(0),
-				SoundEvent.REGISTRY.getObject(leatherEquipRL),
-				Float.box(0F)
-			):_*
+			Compression.getModId + ":denseleather",
+			50,
+			Array[Int](2, 8, 10, 0),
+			0,
+			SoundEvent.REGISTRY.getObject(leatherEquipRL),
+			0
 		)
 
 		this.leatherDenseArmor = new Array[ItemDenseArmor](4)
