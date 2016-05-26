@@ -3,6 +3,7 @@ package temportalist.compression.main.common.block.tile
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
+import temportalist.compression.main.common.Compression
 import temportalist.origin.api.common.helper.Names
 import temportalist.origin.api.common.tile.ITileSaver
 
@@ -31,18 +32,26 @@ class TileCompressed extends TileEntity with ITileSaver {
 
 	def getSize: Long = this.size
 
-	override def writeToNBT(compound: NBTTagCompound): NBTTagCompound = {
-		val tag = super.writeToNBT(compound)
+	override def getUpdateTag: NBTTagCompound = {
+		this.writeToNBT(new NBTTagCompound)
+	}
+
+	override def writeToNBT(nbt: NBTTagCompound): NBTTagCompound = {
+		val tag = super.writeToNBT(nbt)
 		if (this.itemStack != null)
 			tag.setString("stack", Names.getName(this.itemStack, hasID = true, hasMeta = true))
 		tag.setLong("size", this.size)
+		Compression.log("writeNBT " + this.itemStack)
 		tag
 	}
 
-	override def readFromNBT(compound: NBTTagCompound): Unit = {
-		super.readFromNBT(compound)
-		this.itemStack = Names.getItemStack(compound.getString("stack"))
-		this.size = compound.getLong("size")
+	override def readFromNBT(nbt: NBTTagCompound): Unit = {
+		super.readFromNBT(nbt)
+		Compression.log("" + nbt)
+		if (nbt.hasKey("stack"))
+			this.itemStack = Names.getItemStack(nbt.getString("stack"))
+		this.size = nbt.getLong("size")
+		Compression.log("readnbt " + this.itemStack)
 	}
 
 }
