@@ -2,8 +2,9 @@ package temportalist.compression.main.common.init
 
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
-import net.minecraft.item.{Item, ItemBlock, ItemStack}
+import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
+import temportalist.compression.main.common.Options
 import temportalist.compression.main.common.item.{ICompressed, ItemBlockCompressed, ItemCompressed}
 import temportalist.compression.main.common.lib.EnumTier
 import temportalist.origin.api.common.helper.Names
@@ -42,17 +43,23 @@ object Compressed {
 			case compressed: ItemCompressed => false
 			case compressed: ItemBlockCompressed => false
 			case item: ItemBlock =>
+				if (this.isInBlacklist(itemStack)) return false
 				val block = Block.getBlockFromItem(item)
 				val state = block.getStateFromMeta(itemStack.getItemDamage)
 
-				block.isOpaqueCube(state) && block.isFullCube(state) &&
-						block.getMaterial(state).blocksMovement() &&
+				state.isOpaqueCube && state.isFullCube &&
+						state.getMaterial.blocksMovement() &&
 						!block.hasTileEntity(state) &&
 						item.getItemStackLimit(itemStack) > 1
 			case _ =>
-
+				if (this.isInBlacklist(itemStack)) return false
 				itemStack.getItem.getItemStackLimit(itemStack) > 1
 		}
+	}
+
+	def isInBlacklist(stack: ItemStack): Boolean = {
+		Options.blackList.contains(Names.getName(stack, hasID = true, hasMeta = false)) ||
+				Options.blackList.contains(Names.getName(stack, hasID = true, hasMeta = true))
 	}
 
 	def isCompressed(itemStack: ItemStack): Boolean = itemStack.getItem.isInstanceOf[ICompressed]

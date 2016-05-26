@@ -34,6 +34,8 @@ object Options extends OptionRegister {
 	// enable potential hearts from consumed energy
 	var blackHolePotentialEnergy: Boolean = true
 
+	var blackList = Array[String]()
+
 	override def register(): Unit = {
 
 		val compressed = "compressed effects"
@@ -61,6 +63,11 @@ object Options extends OptionRegister {
 		this.blackHolePotentialEnergy = this.getAndComment(compressed, "Potential Energy",
 			"When a blackhole-tier block consumes matter, create potential energy for extral health",
 			this.blackHolePotentialEnergy)
+
+		this.blackList = this.getAndComment("general", "blacklist",
+			"Add item names here which should NOT be compressed. " +
+					"Format MUST by either \'modid:name\' or \'modid:name:metadata\'.",
+			this.blackList)
 
 	}
 
