@@ -68,10 +68,15 @@ def createVersion() {
     proc.in.eachLine { line -> branch = line }
     proc.err.eachLine { line -> println line }
     proc.waitFor()
-    if (branch.startsWith("master"))
-        return "${version_major}.${version_minor}.${version_patch}"
-    else
-        return "${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
+    println("Building on branch " + branch)
+    def version = "${version_major}.${version_minor}.${version_patch}"
+    if (project.hasProperty("build_type")) {
+        if ("${build_type}" == "dev") version += "." + getBuildNumber()
+    }
+    else if (!branch.startsWith("master"))
+        version += "." + getBuildNumber()
+    println("Bulding with version " + version)
+    return version
 }
 
 archivesBaseName = "${archiveName}-${project.minecraft.version}"
