@@ -62,8 +62,20 @@ minecraft {
     replace "@MOD_VERSION@", "${version_major}.${version_minor}.${version_patch}"
 }
 
+def createVersion() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    if (branch.startsWith("master"))
+        return "${version_major}.${version_minor}.${version_patch}"
+    else
+        return "${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
+}
+
 archivesBaseName = "${archiveName}-${project.minecraft.version}"
-version = "${version_major}.${version_minor}.${version_patch}." + getBuildNumber()
+version = createVersion()
 
 processResources {
     inputs.property "version", project.version
