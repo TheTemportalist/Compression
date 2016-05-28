@@ -32,7 +32,7 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 
 	override def handleItemState(originalModel: IBakedModel, stack: ItemStack, world: World,
 			entity: EntityLivingBase): IBakedModel = {
-		if (!stack.hasTagCompound) return this.getMissingModel
+		if (!stack.hasTagCompound) return originalModel
 
 		val sampleStack = Compressed.getSampleStack(stack)
 		val isBlock = stack.getItem.isInstanceOf[ItemBlock]
@@ -43,6 +43,8 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 						getModelForState(Compressed.getSampleState(stack))
 			else
 				Minecraft.getMinecraft.getRenderItem.getItemModelMesher.getItemModel(sampleStack)
+
+		if (sampleModel == null) return originalModel
 
 		val size = Compressed.getSize(stack)
 		val i = EnumTier.getTierForSize(size).ordinal()
