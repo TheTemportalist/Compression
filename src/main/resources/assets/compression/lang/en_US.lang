@@ -2,3 +2,4 @@ item.compression:ItemDenseArmor_head.name=Dense Leather Cap
 item.compression:ItemDenseArmor_chest.name=Dense Leather Tunic
 item.compression:ItemDenseArmor_legs.name=Dense Leather Pants
 item.compression:ItemDenseArmor_feet.name=Dense Leather Boots
+itemGroup.compression.general=Compression

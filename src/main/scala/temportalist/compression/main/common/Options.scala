@@ -1,5 +1,6 @@
 package temportalist.compression.main.common
 
+import temportalist.compression.main.common.init.TabCompressed
 import temportalist.origin.foundation.common.registers.OptionRegister
 
 /**
@@ -34,6 +35,7 @@ object Options extends OptionRegister {
 	// enable potential hearts from consumed energy
 	var blackHolePotentialEnergy: Boolean = true
 
+	var showTab = false
 	var blackList = Array[String]()
 
 	override def register(): Unit = {
@@ -63,6 +65,12 @@ object Options extends OptionRegister {
 		this.blackHolePotentialEnergy = this.getAndComment(compressed, "Potential Energy",
 			"When a blackhole-tier block consumes matter, create potential energy for extral health",
 			this.blackHolePotentialEnergy)
+
+		this.showTab = this.getAndComment("general", "show tab",
+			"Show the tab for all compressed (18 versions) of all compressable blocks and items",
+			this.showTab
+		)
+		TabCompressed.createTab()
 
 		this.blackList = this.getAndComment("general", "blacklist",
 			"Add item names here which should NOT be compressed. " +

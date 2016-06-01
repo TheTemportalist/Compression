@@ -5,19 +5,21 @@ import java.util
 import net.minecraft.block.Block
 import net.minecraft.block.properties.IProperty
 import net.minecraft.block.state.{BlockStateContainer, IBlockState}
+import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
-import net.minecraft.item.{ItemBlock, ItemStack}
+import net.minecraft.item.{Item, ItemBlock, ItemStack}
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.math.{BlockPos, RayTraceResult}
 import net.minecraft.world.{IBlockAccess, World}
 import net.minecraftforge.common.property.{ExtendedBlockState, IExtendedBlockState, IUnlistedProperty}
 import temportalist.compression.main.common.block.tile.{TileCompressed, TileCompressedTickable}
-import temportalist.compression.main.common.init.{Compressed, ModBlocks}
+import temportalist.compression.main.common.init.{Compressed, ModBlocks, TabCompressed}
 import temportalist.compression.main.common.item.ItemBlockCompressed
 import temportalist.compression.main.common.lib.BlockProperties.{ITEMSTACK_UN, LONG_UN}
+import temportalist.compression.main.common.lib.EnumTier
 import temportalist.compression.main.common.{Compression, Effects}
 import temportalist.origin.api.common.block.BlockTile
 
@@ -28,6 +30,8 @@ import temportalist.origin.api.common.block.BlockTile
   * @author TheTemportalist
   */
 class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
+
+	TabCompressed.add(this)
 
 	override def createItemBlock(): ItemBlock = {
 		ModBlocks.blockItem = new ItemBlockCompressed(this)
@@ -125,5 +129,19 @@ class BlockCompressed extends BlockTile(Compression, classOf[TileCompressed]) {
 
 	override def canSilkHarvest(world: World, pos: BlockPos, state: IBlockState,
 			player: EntityPlayer): Boolean = false
+
+	override def getSubBlocks(itemIn: Item, tab: CreativeTabs, list: util.List[ItemStack]): Unit = {
+		for {
+			sample <- Seq[ItemStack](
+				new ItemStack(Blocks.COBBLESTONE),
+				new ItemStack(Blocks.GRAVEL),
+				new ItemStack(Blocks.SAND),
+				new ItemStack(Blocks.DIRT)
+			)
+			tier <- EnumTier.values()
+		} {
+			list.add(Compressed.create(sample, tier = tier))
+		}
+	}
 
 }
