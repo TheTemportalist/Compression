@@ -3,7 +3,6 @@ package temportalist.compression.main.common.block.tile
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import temportalist.compression.main.common.Compression
 import temportalist.origin.api.common.helper.Names
 import temportalist.origin.api.common.tile.ITileSaver
 
@@ -41,17 +40,14 @@ class TileCompressed extends TileEntity with ITileSaver {
 		if (this.itemStack != null)
 			tag.setString("stack", Names.getName(this.itemStack, hasID = true, hasMeta = true))
 		tag.setLong("size", this.size)
-		Compression.log("writeNBT " + this.itemStack)
 		tag
 	}
 
 	override def readFromNBT(nbt: NBTTagCompound): Unit = {
 		super.readFromNBT(nbt)
-		Compression.log("" + nbt)
 		if (nbt.hasKey("stack"))
 			this.itemStack = Names.getItemStack(nbt.getString("stack"))
 		this.size = nbt.getLong("size")
-		Compression.log("readnbt " + this.itemStack)
 	}
 
 }
