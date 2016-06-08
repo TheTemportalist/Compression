@@ -5,7 +5,7 @@ import net.minecraft.block.state.IBlockState
 import net.minecraft.item.{ItemBlock, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
 import temportalist.compression.main.common.Options
-import temportalist.compression.main.common.item.{ICompressed, ItemBlockCompressed, ItemCompressed}
+import temportalist.compression.main.common.item.ICompressed
 import temportalist.compression.main.common.lib.EnumTier
 import temportalist.origin.api.common.helper.Names
 
@@ -17,7 +17,8 @@ import temportalist.origin.api.common.helper.Names
   */
 object Compressed {
 
-	def create(itemStack: ItemStack, withSize: Boolean = false, tier: EnumTier = null): ItemStack = {
+	def create(itemStack: ItemStack, withSize: Boolean = false,
+			tier: EnumTier = null): ItemStack = {
 		val isBlock = itemStack.getItem.isInstanceOf[ItemBlock]
 		val compressed = new ItemStack(if (isBlock) ModBlocks.blockItem else ModItems.item, 1, 0)
 		val tagCom = new NBTTagCompound
@@ -40,14 +41,15 @@ object Compressed {
 
 	def canCompressItem(itemStack: ItemStack): Boolean = {
 		itemStack.getItem match {
-			case compressed: ItemCompressed => false
-			case compressed: ItemBlockCompressed => false
+			case compressed: ICompressed => false
 			case item: ItemBlock =>
 				if (this.isInBlacklist(itemStack)) return false
 				val block = Block.getBlockFromItem(item)
 				val state = block.getStateFromMeta(itemStack.getItemDamage)
 
-				state.isOpaqueCube && state.isFullCube &&
+				block.isVisuallyOpaque &&
+						state.isOpaqueCube &&
+						state.isFullCube &&
 						state.getMaterial.blocksMovement() &&
 						!block.hasTileEntity(state) &&
 						item.getItemStackLimit(itemStack) > 1
@@ -81,7 +83,8 @@ object Compressed {
 	}
 
 	def getDisplayName(itemStack: ItemStack): String = {
-		this.getTier(itemStack).getName + " Compressed " + itemStack.getTagCompound.getString("display")
+		this.getTier(itemStack).getName + " Compressed " +
+				itemStack.getTagCompound.getString("display")
 	}
 
 	def getStackName(itemStack: ItemStack): String = {

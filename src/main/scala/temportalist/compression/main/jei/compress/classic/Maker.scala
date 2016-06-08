@@ -1,6 +1,7 @@
 package temportalist.compression.main.jei.compress.classic
 
 import mezz.jei.api.IModRegistry
+import temportalist.compression.main.common.init.Compressed
 import temportalist.compression.main.common.lib.EnumTier
 
 import scala.collection.JavaConversions
@@ -20,8 +21,10 @@ object Maker {
 		val allItems = registry.getItemRegistry.getItemList
 		val buffer = JavaConversions.asScalaBuffer(allItems)
 		for (sample <- buffer) {
-			for (tier <- EnumTier.values()) {
-				list += new Wrapper(sample, tier)
+			if (Compressed.canCompressItem(sample)) {
+				for (tier <- EnumTier.values()) {
+					list += new Wrapper(sample, tier)
+				}
 			}
 		}
 

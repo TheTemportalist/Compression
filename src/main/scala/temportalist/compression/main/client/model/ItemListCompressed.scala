@@ -71,11 +71,15 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 				val quadList = new util.ArrayList[BakedQuad]()
 
 				try {
-					quadList.addAll(sampleModel.getQuads(state, side, rand))
+
+					var quads = sampleModel.getQuads(state, side, rand)
+					if (quads != null) quadList.addAll(quads)
+
 					if (overlay != null) {
 						val overlayModel = new Builder(
 							state, sampleModel, overlay, BlockPos.ORIGIN).makeBakedModel()
-						quadList.addAll(overlayModel.getQuads(state, side, rand))
+						quads = overlayModel.getQuads(state, side, rand)
+						if (quads != null) quadList.addAll(quads)
 					}
 				}
 				catch {
@@ -83,9 +87,9 @@ class ItemListCompressed(private val overlays: Array[TextureAtlasSprite])
 						Compression.log("Error merging render models. " +
 								"Please report this to https://github.com/TheTemportalist/Compression/issues. " +
 								"As a temporary fix, you can consider adding \'" +
-								Names.getName(stack, hasID = true, hasMeta = false) +
+								Names.getName(sampleStack, hasID = true, hasMeta = false) +
 								"\' or \'" +
-								Names.getName(stack, hasID = true, hasMeta = true) +
+								Names.getName(sampleStack, hasID = true, hasMeta = true) +
 								"\' to the blacklist configuration option.")
 						e.printStackTrace()
 				}
