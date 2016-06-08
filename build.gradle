@@ -6,12 +6,19 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
+        maven {
+            // for cursegradle
+            url = "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        // for cursegradle
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.7"
     }
 }
 
+apply plugin: 'com.matthewprenger.cursegradle'
 apply plugin: 'scala'
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -97,6 +104,19 @@ processResources {
 
 }
 
+sourceSets {
+	main.compileClasspath += api.compileClasspath;
+	main.compileClasspath += api.output;
+}
+
+task sourcesJar(type: Jar) {
+	from sourceSets.api.scala;
+	from sourceSets.main.scala;
+	classifier = 'sources'
+}
+
+tasks.build.dependsOn sourcesJar
+
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
@@ -151,5 +171,19 @@ uploadArchives {
     }
 }
 
-
 idea.module.inheritOutputDirs = true
+
+curseforge {
+    if (project.hasProperty("tempCurseAPI"))
+        apiKey = tempCurseAPI
+    project {
+        id = curseID
+        releaseType = curseBuildType
+        changelog = "Update recipe filter for compatibility with JEI"
+        addGameVersion version_minecraft
+        addArtifact sourcesJar
+		relations {
+			requiredLibrary 'origin'
+		}
+    }
+}
