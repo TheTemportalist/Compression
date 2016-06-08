@@ -78,9 +78,8 @@ def createVersion() {
     println("Building on branch " + branch)
     def version = "${version_major}.${version_minor}.${version_patch}"
     if (project.hasProperty("build_type")) {
-        if ("${build_type}" == "dev") version += "." + getBuildNumber()
-    }
-    else if (!branch.startsWith("master"))
+		if (build_type == "dev") version += "." + getBuildNumber()
+    } else if (!branch.startsWith("master"))
         version += "." + getBuildNumber()
     println("Bulding with version " + version)
     return version
