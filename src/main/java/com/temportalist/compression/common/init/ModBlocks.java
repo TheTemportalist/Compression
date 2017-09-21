@@ -11,22 +11,22 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class ModBlocks {
 
     @GameRegistry.ObjectHolder("compression:compressed")
-    public BlockCompressed compressed;
+    public static BlockCompressed compressed;
 
     public void initPre() {
 
-        this.compressed = new BlockCompressed();
-        this.compressed.setCreativeTab(Compression.main.tabCompression);
+        ModBlocks.compressed = new BlockCompressed();
+        ModBlocks.compressed.setCreativeTab(Compression.main.tabCompression);
 
     }
 
     public void registerBlocks(IForgeRegistry<Block> registry) {
-        this.compressed.registerBlock(registry);
+        ModBlocks.compressed.registerBlock(registry);
 
     }
 
     public void registerItems(IForgeRegistry<Item> registry) {
-        this.compressed.registerItem(registry);
+        ModBlocks.compressed.registerItem(registry);
 
     }
 

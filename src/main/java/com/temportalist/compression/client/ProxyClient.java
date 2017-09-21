@@ -1,6 +1,7 @@
 package com.temportalist.compression.client;
 
 import com.temportalist.compression.common.ProxyCommon;
+import com.temportalist.compression.common.init.ModBlocks;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -17,6 +18,7 @@ public class ProxyClient extends ProxyCommon {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
+        ModBlocks.compressed.initModel();
     }
 
 }

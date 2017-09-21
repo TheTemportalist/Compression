@@ -20,7 +20,7 @@ public class BlockBase extends Block {
         this.registryName = new ResourceLocation(Compression.MOD_ID, name);
 
         this.setUnlocalizedName(this.registryName.getResourceDomain() + "." + this.registryName.getResourcePath());
-        this.setRegistryName(this.registryName);
+        this.setRegistryName(name);
 
         this.item = new ItemBlock(this);
 
@@ -37,7 +37,7 @@ public class BlockBase extends Block {
     }
 
     public void registerItem(IForgeRegistry<Item> registry) {
-        registry.register(this.item.setRegistryName(this.registryName));
+        registry.register(this.item.setRegistryName(this.getRegistryName()));
     }
 
 }

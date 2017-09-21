@@ -41,12 +41,12 @@ public class ProxyCommon implements IProxy {
     }
 
     @SubscribeEvent
-    public void registerBlocks(RegistryEvent.Register<Block> event) {
+    public static void registerBlocks(RegistryEvent.Register<Block> event) {
         Compression.main.blocks.registerBlocks(event.getRegistry());
     }
 
     @SubscribeEvent
-    public void registerItems(RegistryEvent.Register<Item> event) {
+    public static void registerItems(RegistryEvent.Register<Item> event) {
         Compression.main.blocks.registerItems(event.getRegistry());
     }
 
