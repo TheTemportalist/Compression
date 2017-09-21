@@ -1,0 +1,23 @@
+{
+	"forge_marker": 1,
+	"defaults": {
+		"model": "builtin/generated",
+		"transform": "forge:default-item"
+	},
+	"variants": {
+		"part": {
+			"head":		{ "textures": {
+				"layer0": "compression:items/dense_head"
+			} },
+			"chest":	{ "textures": {
+				"layer0": "compression:items/dense_chest"
+			} },
+			"legs":		{ "textures": {
+				"layer0": "compression:items/dense_legs"
+			} },
+			"feet":		{ "textures": {
+				"layer0": "compression:items/dense_feet"
+			} }
+		}
+	}
+}
