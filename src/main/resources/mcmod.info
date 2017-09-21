@@ -2,14 +2,14 @@
 {
   "modid": "compression",
   "name": "Compression",
-  "description": "",
+  "description": "Compress all the things",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["TheTemportalist"],
-  "credits": "",
-  "logoFile": "",
+  "credits": "Art & Textures; Biochemic",
+  "logoFile": "logo.png",
   "screenshots": [],
   "dependencies": []
 }

@@ -12,7 +12,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 
 version = "1.0"
-group = "com.thetemportalist.compression" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "com.temportalist.compression" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "compression"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
