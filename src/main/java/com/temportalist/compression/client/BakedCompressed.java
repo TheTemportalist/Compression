@@ -16,11 +16,15 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
+import javax.vecmath.Matrix4f;
 import java.util.List;
+import com.google.common.collect.ImmutableMap;
 
 public class BakedCompressed implements IBakedModel {
 
@@ -30,6 +34,9 @@ public class BakedCompressed implements IBakedModel {
     public BakedCompressed(TextureAtlasSprite[] overlays) {
         this.overlays = overlays;
         this.overrideList = new ItemListCompressed(overlays);
+
+        new ImmutableMap.Builder<ItemCameraTransforms.TransformType, TRSRTransformation>();
+
     }
 
     @Override
@@ -85,7 +92,11 @@ public class BakedCompressed implements IBakedModel {
     }
 
     @Override
-    public ItemCameraTransforms getItemCameraTransforms() {
-        return ItemCameraTransforms.DEFAULT;
+    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
+        //net.minecraftforge.client.model.PerspectiveMapWrapper.handlePerspective(this,)
+        // https://github.com/SlimeKnights/Mantle/blob/1.12/src/main/java/slimeknights/mantle/client/model/BlockItemModelWrapper.java
+        // https://github.com/SlimeKnights/Mantle/blob/3e33e262d979f81fc552c753ceed8626ca2b4dd0/src/main/java/slimeknights/mantle/client/ModelHelper.java
+        return null;
     }
+
 }

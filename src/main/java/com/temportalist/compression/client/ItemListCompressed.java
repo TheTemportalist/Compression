@@ -61,7 +61,7 @@ public class ItemListCompressed extends ItemOverrideList {
 
             @Override
             public boolean isBuiltInRenderer() {
-                return sampleModel.isBuiltInRenderer();
+                return false;
             }
 
             @Override
