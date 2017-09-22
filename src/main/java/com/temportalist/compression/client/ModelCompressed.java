@@ -40,7 +40,7 @@ public class ModelCompressed implements IModel {
     @Override
     public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         TextureAtlasSprite[] overlayList = new TextureAtlasSprite[18];
-        for (int i = 0; i < overlayList.length; i++) {
+        for (int i = 1; i <= overlayList.length; i++) {
             overlayList[i - 1] = bakedTextureGetter.apply(new ResourceLocation(
                     Compression.MOD_ID, "overlays/overlay_" + i
             ));

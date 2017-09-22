@@ -22,8 +22,12 @@ public class BlockBase extends Block {
         this.setUnlocalizedName(this.registryName.getResourceDomain() + "." + this.registryName.getResourcePath());
         this.setRegistryName(name);
 
-        this.item = new ItemBlock(this);
+        this.item = this.createItemBlock();
 
+    }
+
+    public ItemBlock createItemBlock() {
+        return new ItemBlock(this);
     }
 
     @Override

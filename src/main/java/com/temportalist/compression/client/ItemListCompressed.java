@@ -2,6 +2,7 @@ package com.temportalist.compression.client;
 
 import com.google.common.collect.Lists;
 import com.temportalist.compression.common.Compression;
+import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -19,7 +20,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder
+import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder;
 
 public class ItemListCompressed extends ItemOverrideList {
 
@@ -38,16 +39,16 @@ public class ItemListCompressed extends ItemOverrideList {
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity) {
         if (!stack.hasTagCompound()) return originalModel;
 
-        ItemStack sampleStack = Compressed.getSampleStack(stack);
+        ItemStack sampleStack = CompressedStack.createSampleStack(stack);
         boolean isBlock = stack.getItem() instanceof ItemBlock;
 
         IBakedModel sampleModel = isBlock ?
-                Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(Compressed.getSampleState(stack)) :
+                Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(CompressedStack.createSampleState(stack)) :
                 Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(sampleStack);
 
         if (sampleModel == null) return originalModel;
 
-        int size = Compressed.getSize(stack);
+        long size = CompressedStack.getSize(stack);
         int i = EnumTier.getTierForSize(size).ordinal();
         TextureAtlasSprite overlay = overlays[i];
 

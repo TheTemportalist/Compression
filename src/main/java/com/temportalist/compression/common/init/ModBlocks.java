@@ -2,6 +2,7 @@ package com.temportalist.compression.common.init;
 
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.blocks.BlockCompressed;
+import com.temportalist.compression.common.blocks.TileCompressed;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -14,6 +15,8 @@ public class ModBlocks {
     public static BlockCompressed compressed;
 
     public void initPre() {
+
+        GameRegistry.registerTileEntity(TileCompressed.class, "Compressed");
 
         ModBlocks.compressed = new BlockCompressed();
         ModBlocks.compressed.setCreativeTab(Compression.main.tabCompression);
