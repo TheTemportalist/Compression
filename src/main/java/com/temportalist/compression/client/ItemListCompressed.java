@@ -1,5 +1,6 @@
 package com.temportalist.compression.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.init.CompressedStack;
@@ -8,6 +9,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.EntityLivingBase;
@@ -18,9 +20,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import javax.vecmath.Matrix4f;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
+import net.minecraftforge.common.model.TRSRTransformation;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ItemListCompressed extends ItemOverrideList {
 
@@ -45,8 +51,6 @@ public class ItemListCompressed extends ItemOverrideList {
         IBakedModel sampleModel = isBlock ?
                 Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(CompressedStack.createSampleState(stack)) :
                 Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(sampleStack);
-
-        if (sampleModel == null) return originalModel;
 
         long size = CompressedStack.getSize(stack);
         int i = EnumTier.getTierForSize(size).ordinal();
@@ -104,6 +108,15 @@ public class ItemListCompressed extends ItemOverrideList {
                 }
 
                 return quadList;
+            }
+
+            @Override
+            public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
+                ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> map =
+                        isBlock ? TransformHelper.BLOCK : TransformHelper.ITEM;
+                return PerspectiveMapWrapper.handlePerspective(
+                        this, map, cameraTransformType
+                );
             }
 
         };
