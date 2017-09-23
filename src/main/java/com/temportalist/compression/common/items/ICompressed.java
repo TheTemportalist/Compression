@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.items;
 
+import com.temportalist.compression.common.effects.Effects;
 import com.temportalist.compression.common.entity.EntityCompressed;
 import com.temportalist.compression.common.init.CompressedStack;
 import net.minecraft.client.gui.GuiScreen;
@@ -35,6 +36,10 @@ public interface ICompressed {
                 new Vec3d(entity.motionX, entity.motionY, entity.motionZ),
                 stack
         );
+    }
+
+    default void onUpdate(World world, Entity entity, ItemStack stack) {
+        Effects.onUpdateEntityInventory(world, entity, stack);
     }
 
 }

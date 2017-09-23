@@ -1,5 +1,6 @@
 package com.temportalist.compression.common;
 
+import com.temportalist.compression.common.effects.EnumEffects;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
@@ -13,6 +14,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -20,11 +22,16 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.io.File;
+
 @Mod.EventBusSubscriber
 public class ProxyCommon implements IProxy {
 
     @Override
     public void initPre(FMLPreInitializationEvent event) {
+
+        Compression.main.config = new Config(event.getModConfigurationDirectory());
+        Compression.main.config.initPre();
 
         Compression.main.tabCompression = new CreativeTabs(Compression.MOD_ID) {
             @Override

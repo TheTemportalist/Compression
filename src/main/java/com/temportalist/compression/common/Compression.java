@@ -33,6 +33,7 @@ public class Compression
     ModBlocks blocks;
     ModItems items;
     ModEntity entity;
+    Config config;
 
     @EventHandler
     public void initPre(FMLPreInitializationEvent event)

@@ -13,6 +13,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
+
 public class CompressedStack {
 
     /**
@@ -201,7 +206,7 @@ public class CompressedStack {
     public static ItemStack createSampleStack(ItemStack itemStack) {
         return CompressedStack.isCompressed(itemStack) ?
                 CompressedStack.createItemStack(CompressedStack.getStackName(itemStack)) :
-                null;
+                itemStack.copy();
     }
 
     /**
@@ -237,6 +242,77 @@ public class CompressedStack {
         return false;
         //return Options.blackList.contains(registry) ||
         //        Options.blackList.contains(registry + ":" + itemStack.getItemDamage());
+    }
+
+    public static List<ItemStack> createStackList(ItemStack sample, long count) {
+
+        // Determine the starting tier - the max tier that can contain the count, but must reach criteria
+        EnumTier startTier = EnumTier.getHead();
+        // ex: count = 592, startTier = SINGLE(9)
+        // ex: 0) SINGLE != DUODEVDECUPLE = true, fits = true
+        // ex: 1) DOUBLE != DUODEVDECUPLE = true, fits = true
+        // ex: 2) TRIPLE != DUODEVDECUPLE = true, fits = false
+        boolean fits = true;
+        while (startTier != EnumTier.getTail() && fits) {
+            // ex: 0) next = DOUBLE
+            // ex: 1) next = TRIPLE
+            EnumTier next = startTier.getNext();
+            // ex: 0) 81 < 592 = true
+            // ex: 1) 729 < 592 = false
+            fits = next.getSizeMax() < count;
+            if (fits) {
+                // 0) startTier = next = DOUBLE
+                startTier = startTier.getNext();
+            }
+        }
+        // ex: so singleTier = DOUBLE, which is the largest the tier can get without going over count
+
+        EnumMap<EnumTier, Integer> counts = new EnumMap<>(EnumTier.class);
+
+        // compile the list of tier stacks, according to a starting tier determined
+        // ex: count = 7470, startTier = QUADRUPLE
+        // ex: 0) QUADRUPLE != null
+        // ex: 1) TRIPLE != null
+        // ex: 2) DOUBLE != null
+        // ex: 3) SINGLE != null
+        // ex: 4) null == null
+        while (startTier != null) {
+            // ex: 0) quantity = 7470 / 6561 = 1, mod = 7470 / 6561 = 909
+            // ex: 1) quantity = 909 / 729 = 1, mod = 909 / 729 = 180
+            // ex: 2) quantity = 180 / 81 = 2, 180 = 909 / 81 = 18
+            // ex: 3) quantity = 18 / 9 = 2, 180 = 18 / 9 = 0
+            long quantity = count /= startTier.getSizeMax();
+            long mod = count % startTier.getSizeMax();
+            // Save the quantity for this tier to the map
+            // ex: 0) QUADRUPLE => 1
+            // ex: 1) TRIPLE => 1
+            // ex: 2) DOUBLE => 2
+            // ex: 3) SINGLE => 2
+            counts.put(startTier, (int) quantity);
+            // Prep the next iteration with the remaining amount
+            // ex: 0) count = 909
+            // ex: 1) count = 180
+            // ex: 2) count = 18
+            // ex: 3) count = 0
+            count = mod;
+            // Decrement the tier
+            // ex: 0) startTier = TRIPLE
+            // ex: 1) startTier = DOUBLE
+            // ex: 2) startTier = SINGLE
+            // ex: 3) startTier = null
+            startTier = EnumTier.getTier(startTier.ordinal() - 1);
+        }
+        // so counts: QUADRUPLE => 1, TRIPLE => 1, DOUBLE => 2, SINGLE => 2
+
+        List<ItemStack> stacks = new ArrayList<>();
+
+        counts.forEach((EnumTier tier, Integer quantity) -> {
+            ItemStack stack = CompressedStack.create(sample, tier);
+            stack.setCount(quantity);
+            stacks.add(stack);
+        });
+
+        return stacks;
     }
 
 }

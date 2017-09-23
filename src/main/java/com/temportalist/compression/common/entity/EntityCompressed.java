@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.entity;
 
+import com.temportalist.compression.common.effects.Effects;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
@@ -37,7 +38,7 @@ public class EntityCompressed extends EntityItem {
     public void onUpdate() {
         super.onUpdate();
         if (!this.getItem().hasTagCompound()) this.setDead();
-
+        Effects.onUpdateEntityItem(this, this.getEntityWorld(), this.getItem());
     }
 
 }

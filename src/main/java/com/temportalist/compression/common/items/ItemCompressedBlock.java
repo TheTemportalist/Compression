@@ -40,4 +40,9 @@ public class ItemCompressedBlock extends ItemBlock implements ICompressed {
         return this.createEntityCompressed(world, location, itemstack);
     }
 
+    @Override
+    public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+        this.onUpdate(worldIn, entityIn, stack);
+    }
+
 }

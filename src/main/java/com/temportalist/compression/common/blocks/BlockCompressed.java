@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.blocks;
 
+import com.temportalist.compression.common.effects.Effects;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.items.ItemCompressedBlock;
 import com.temportalist.compression.common.lib.BlockProperties;
@@ -101,6 +102,11 @@ public class BlockCompressed extends BlockBase {
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         if (!stack.hasTagCompound()) return;
+
+        if (Effects.doTickCompressedBlock(stack)) {
+            worldIn.removeTileEntity(pos);
+            worldIn.setTileEntity(pos, new TileCompressedTickable());
+        }
 
         // Get the tile entity
         TileEntity tile = worldIn.getTileEntity(pos);

@@ -6,7 +6,6 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
@@ -57,6 +56,11 @@ public class ItemCompressed extends ItemBase implements ICompressed {
     @Override
     public Entity createEntity(World world, Entity location, ItemStack itemstack) {
         return this.createEntityCompressed(world, location, itemstack);
+    }
+
+    @Override
+    public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+        this.onUpdate(worldIn, entityIn, stack);
     }
 
 }

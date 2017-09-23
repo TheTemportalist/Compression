@@ -71,11 +71,15 @@ public enum EnumTier {
 		return EnumTier.DUODEVDECUPLE;
 	}
 
-	public static EnumTier getTierForSize(long size) {
-		if (size < 0) return null;
-		int ordinal = 0;
-		while (size > EnumTier.values()[ordinal].getSizeMax()) ordinal++;
-		return EnumTier.values()[ordinal];
+	public static int compare(EnumTier a, EnumTier b) {
+		if (a == null && b==null) return 0;
+		else if (a != null && b == null) return 1;
+		else if (a == null) return -1;
+		else return a.compareTo(b);
+	}
+
+	public boolean lte(EnumTier b) {
+		return EnumTier.compare(this, b) >= 0;
 	}
 
 }
