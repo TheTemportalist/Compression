@@ -21,9 +21,13 @@ public class ProxyClient extends ProxyCommon {
     public void initPre(FMLPreInitializationEvent e) {
         super.initPre(e);
 
+    }
+
+    @SubscribeEvent
+    public static void registerModels(ModelRegistryEvent event) {
+
         ModelLoaderRegistry.registerLoader(new ModelLoaderCompressed());
 
-        //ModelLoader.setCustomModelResourceLocation(ModItems.compressed, 0, ModelLoaderCompressed.fakeRL);
         ModelLoader.setCustomModelResourceLocation(ModBlocks.compressed.item, 0, ModelLoaderCompressed.fakeRL);
         ModelLoader.setCustomStateMapper(ModBlocks.compressed, new StateMapperBase() {
 
@@ -33,11 +37,7 @@ public class ProxyClient extends ProxyCommon {
             }
 
         });
-
-    }
-
-    @SubscribeEvent
-    public static void registerModels(ModelRegistryEvent event) {
+        ModelLoader.setCustomModelResourceLocation(ModItems.compressed, 0, ModelLoaderCompressed.fakeRL);
 
     }
 

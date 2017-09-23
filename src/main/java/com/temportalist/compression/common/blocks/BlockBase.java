@@ -32,7 +32,7 @@ public class BlockBase extends Block {
 
     @Override
     public Block setCreativeTab(CreativeTabs tab) {
-        this.item.setCreativeTab(tab);
+        //this.item.setCreativeTab(tab);
         return super.setCreativeTab(tab);
     }
 

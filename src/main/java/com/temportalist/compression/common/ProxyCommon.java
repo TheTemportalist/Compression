@@ -1,11 +1,18 @@
 package com.temportalist.compression.common;
 
+import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.init.ModBlocks;
+import com.temportalist.compression.common.init.ModEntity;
+import com.temportalist.compression.common.init.ModItems;
+import com.temportalist.compression.common.lib.EnumTier;
+import com.temportalist.compression.common.recipes.Recipes;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -22,12 +29,19 @@ public class ProxyCommon implements IProxy {
         Compression.main.tabCompression = new CreativeTabs(Compression.MOD_ID) {
             @Override
             public ItemStack getTabIconItem() {
-                return new ItemStack(Items.APPLE);
+                return CompressedStack.create(new ItemStack(Blocks.COBBLESTONE), EnumTier.QUADRUPLE);
             }
         };
 
         Compression.main.blocks = new ModBlocks();
         Compression.main.blocks.initPre();
+
+        Compression.main.items = new ModItems();
+        Compression.main.items.initPre();
+
+        Compression.main.entity = new ModEntity();
+        Compression.main.entity.initPre();
+
     }
 
     @Override
@@ -48,6 +62,7 @@ public class ProxyCommon implements IProxy {
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         Compression.main.blocks.registerItems(event.getRegistry());
+        Compression.main.items.registerItems(event.getRegistry());
     }
 
 }

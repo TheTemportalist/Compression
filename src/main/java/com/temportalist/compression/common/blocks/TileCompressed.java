@@ -1,8 +1,8 @@
 package com.temportalist.compression.common.blocks;
 
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -12,21 +12,21 @@ import javax.annotation.Nullable;
 
 public class TileCompressed extends TileEntity {
 
-    private ItemStack itemStack;
-    private long size;
+    private ItemStack sampleStack;
+    private EnumTier tier;
 
     public void setTypeFrom(ItemStack stackCompressed) {
-        this.itemStack = CompressedStack.createSampleStack(stackCompressed);
-        this.size = CompressedStack.getSize(stackCompressed);
+        this.sampleStack = CompressedStack.createSampleStack(stackCompressed);
+        this.tier = CompressedStack.getTier(stackCompressed);
         this.markDirty();
     }
 
-    public ItemStack getItemStack() {
-        return this.itemStack;
+    public ItemStack getSampleStack() {
+        return this.sampleStack;
     }
 
-    public long getSize() {
-        return size;
+    public EnumTier getTier() {
+        return tier;
     }
 
     @Override
@@ -50,10 +50,10 @@ public class TileCompressed extends TileEntity {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         NBTTagCompound tagCom = super.writeToNBT(compound);
-        if (this.itemStack != null) {
-            tagCom.setString("stack", CompressedStack.getNameOf(this.itemStack, true, true));
+        if (this.sampleStack != null) {
+            tagCom.setString("stack", CompressedStack.getNameOf(this.sampleStack, true, true));
         }
-        tagCom.setLong("size", this.size);
+        tagCom.setInteger("tier", this.tier.ordinal());
         return tagCom;
     }
 
@@ -61,9 +61,9 @@ public class TileCompressed extends TileEntity {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         if (compound.hasKey("stack")) {
-            this.itemStack = CompressedStack.createItemStack(compound.getString("stack"));
+            this.sampleStack = CompressedStack.createItemStack(compound.getString("stack"));
         }
-        this.size = compound.getLong("size");
+        this.tier = EnumTier.getTier(compound.getInteger("tier"));
     }
 
 }

@@ -4,6 +4,7 @@ import com.temportalist.compression.common.items.ICompressed;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -14,33 +15,208 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class CompressedStack {
 
-    public static ItemStack create(ItemStack itemStack, boolean withSize, EnumTier tier) {
+    /**
+     * Returns if the stack is a Compressed Stack
+     * @param itemStack the ItemStack to check
+     * @return true if the stack is qualified as "Compressed"
+     */
+    public static boolean isCompressed(ItemStack itemStack) {
+        return itemStack.getItem() instanceof ICompressed;
+    }
+
+    /**
+     * Create a Compressed ItemStack (ItemStack containing an ICompressed Item) from a sample stack
+     * @param itemStack The sample ItemStack containing the non/un-compressed item
+     * @param tier The Enumtier of the compressed ItemStack
+     * @return an ItemStack, null if the itemStack is a compressed stack
+     */
+    public static ItemStack create(ItemStack itemStack, EnumTier tier) {
+        // Do not create if the stack is already compressed
+        if (CompressedStack.isCompressed(itemStack)) return null;
+        // Check if itemstack is an item or block
         boolean isBlock = itemStack.getItem() instanceof ItemBlock;
+
+        // Create the compressed stack
         ItemStack compressed = new ItemStack(isBlock ? ModBlocks.compressed.item : ModItems.compressed, 1, 0);
 
+        // Create the nbt data for the stack
         NBTTagCompound tagCom = new NBTTagCompound();
-        tagCom.setString("name", itemStack.getItem().getRegistryName().toString());
+        // The registry name, formattted as modid:name
+        tagCom.setString("name", CompressedStack.getNameOf(itemStack, true, true));
+        // The display name of the inner stack, used in rending the text on hover
         tagCom.setString("display", itemStack.getItem().getItemStackDisplayName(itemStack));
-
-        long size = withSize ? itemStack.getCount() : 1;
-        if (tier != null) {
-            size = tier.getSizeMax();
-        }
-        tagCom.setLong("size", size);
-
+        // The tier/size of the stack
+        tagCom.setInteger("tier", tier.ordinal());
         compressed.setTagCompound(tagCom);
 
+        // Return
         return compressed;
     }
 
-    public static ItemStack createWithSize(ItemStack itemStack, long size) {
-        ItemStack stack = CompressedStack.create(itemStack, false, EnumTier.SINGLE);
-        stack.getTagCompound().setLong("size", size);
-        return stack;
+    /**
+     * Get the fully qualified display name for a compressed stack
+     * @param itemStack The ItemStack to translate
+     * @return "<Tier Name> Compressed <Item Name>" if stack is a Compressed Stack,
+     *      the {@link Item#getItemStackDisplayName(ItemStack)} otherwise
+     */
+    public static String getDisplayNameFor(ItemStack itemStack) {
+        if (!CompressedStack.isCompressed(itemStack)) return itemStack.getItem().getItemStackDisplayName(itemStack);
+        else {
+            return CompressedStack.getTier(itemStack).getName() + " Compressed " + itemStack.getTagCompound().getString("display");
+        }
+    }
+
+    /**
+     * Get the name of the item in a Compressed ItemStack
+     * @param itemStack The ItemStack
+     * @return The name of the inner sample stack of the Compressed ItemStack, else the {@link ItemStack#getUnlocalizedName()}
+     */
+    public static String getStackName(ItemStack itemStack) {
+        return CompressedStack.isCompressed(itemStack) ? itemStack.getTagCompound().getString("name") : itemStack.getUnlocalizedName();
+    }
+
+    /**
+     * Get the tier of the Compressed ItemStack
+     * @param itemStack The ItemStack
+     * @return The {@link EnumTier} of the Compressed ItemStack, else null
+     */
+    public static EnumTier getTier(ItemStack itemStack) {
+        return CompressedStack.isCompressed(itemStack) ? EnumTier.getTier(itemStack.getTagCompound().getInteger("tier")) : null;
+    }
+
+    /**
+     * Returns the data name of an ItemStack
+     * @param itemStack The ItemStack to stringify
+     * @param withModid If the name should include the modid
+     * @param withMeta If the name should include the metadata
+     * @return A String representing the ItemStack in the form of: "<modid>:<name>:<meta>"
+     */
+    public static String getNameOf(ItemStack itemStack, boolean withModid, boolean withMeta) {
+        // Get the registry name of the item
+        ResourceLocation registry = itemStack.getItem().getRegistryName();
+        // Create a name var
+        String name = "";
+        // Load in the modid
+        if (withModid) {
+            name += registry.getResourceDomain() + ":";
+        }
+        // Load in the name
+        name += registry.getResourcePath();
+        // Load in the metadata
+        if (withMeta) {
+            name += ":" + itemStack.getItemDamage();
+        }
+        // Return
+        return name;
+    }
+
+    /**
+     * Returns a set of qualifiers (modid, name, and metadata) of an Item name
+     * (usually generated with {@link CompressedStack#getNameOf(ItemStack, boolean, boolean)})
+     * @param name The name to destringify
+     * @return A {@link Tuple} of {@link ResourceLocation} and an integer (representing modid:name and metadata respectively)
+     */
+    private static Tuple<ResourceLocation, Integer> getQualifiers(String name) {
+
+        String modid = "", nameOut;
+        // Cache the default metadata value
+        int meta = OreDictionary.WILDCARD_VALUE;
+
+        // Check to see if the name has the specified format, else return no modid no metadata
+        if (!name.matches("(.*):(.*)")) nameOut = name;
+        else {
+            // Cache the length of the stringified name
+            int endNameIndex = name.length();
+            // Check to see if the name matches the full format modid:name:meta
+            if (name.matches("(.*):(.*):(.*)")) {
+                // Save the end of the modid:name portion
+                endNameIndex = name.lastIndexOf(':');
+                // Get the metadata from the name
+                meta = Integer.parseInt(name.substring(endNameIndex + 1, name.length()));
+            }
+
+            // Get the modid portion (the string from start till first ':'
+            modid = name.substring(0, name.indexOf(':'));
+            // Get the name portion, the area in the middle
+            nameOut = name.substring(name.indexOf(':') + 1, endNameIndex);
+        }
+
+        // Return
+        return new Tuple<>(new ResourceLocation(modid, nameOut), meta);
+    }
+
+    /**
+     * Constructs an ItemStack from the specified name, generated by {@link CompressedStack#getNameOf(ItemStack, boolean, boolean)}
+     * @param name The qualified name in the format of "[<modid>:]<name>[:<meta>]"
+     * @return The ItemStack containing 1 item of the specified type, or null if the modid:name was not found
+     */
+    public static ItemStack createItemStack(String name) {
+        // Gets the qualifying members of the name
+        Tuple<ResourceLocation, Integer> qualifiers = CompressedStack.getQualifiers(name);
+
+        // Search for the registry name of the item
+        Block block = Block.REGISTRY.getObject(qualifiers.getFirst());
+        Item item = Item.REGISTRY.getObject(qualifiers.getFirst());
+
+        // If valid block and block can be in an inventory
+        if (block != Blocks.AIR && Item.getItemFromBlock(block) != null) {
+            return new ItemStack(block, 1, qualifiers.getSecond());
+        }
+        // If valid item
+        else if (item != null) {
+            return new ItemStack(item, 1, qualifiers.getSecond());
+        }
+        // Not a valid name
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Constructs an IBlockState from the specified name, generated by {@link CompressedStack#getNameOf(ItemStack, boolean, boolean)}
+     * @param name The qualified name in the format of "[<modid>:]<name>[:<meta>]"
+     * @return The IBlockState of the specified type, or null if the modid:name was not found
+     */
+    public static IBlockState createState(String name) {
+        // Gets the qualifying members of the name
+        Tuple<ResourceLocation, Integer> qualifiers = CompressedStack.getQualifiers(name);
+
+        // Search for the registry name of the block
+        Block block = Block.REGISTRY.getObject(qualifiers.getFirst());
+        // If valid block
+        if (block != null) {
+            return block.getStateFromMeta(qualifiers.getSecond());
+        }
+        // Not a valid name
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Create a sample of the inner stack of a Compressed ItemStack
+     * @param itemStack The Compressed ItemStack
+     * @return an ItemStack containing 1 item of the specified type, null if itemStack is not compressed
+     */
+    public static ItemStack createSampleStack(ItemStack itemStack) {
+        return CompressedStack.isCompressed(itemStack) ?
+                CompressedStack.createItemStack(CompressedStack.getStackName(itemStack)) :
+                null;
+    }
+
+    /**
+     * Create a sample of the inner block of a Compressed ItemStack
+     * @param itemStack The Compressed ItemStack
+     * @return an IBlockState of the specified type, null if itemStack is not compressed
+     */
+    public static IBlockState createSampleState(ItemStack itemStack) {
+        return CompressedStack.isCompressed(itemStack) ?
+                CompressedStack.createState(CompressedStack.getStackName(itemStack)) :
+                null;
     }
 
     public static boolean canCompressItem(ItemStack itemStack) {
-        if (CompressedStack.isCompressed(itemStack)) {
+        if (CompressedStack.isCompressed(itemStack) || itemStack == ItemStack.EMPTY) {
             return false;
         }
         else if (itemStack.getItem() instanceof ItemBlock) {
@@ -58,116 +234,9 @@ public class CompressedStack {
 
     public static boolean isInBlackList(ItemStack itemStack) {
         String registry = itemStack.getItem().getRegistryName().toString();
-        return true;
+        return false;
         //return Options.blackList.contains(registry) ||
         //        Options.blackList.contains(registry + ":" + itemStack.getItemDamage());
     }
-
-    public static boolean isCompressed(ItemStack itemStack) {
-        return itemStack.getItem() instanceof ICompressed;
-    }
-
-    public static String getCompressedStackName(ItemStack itemStack) {
-        return itemStack.getTagCompound().getString("name");
-    }
-
-    public static ItemStack createSampleStack(ItemStack itemStack) {
-        return CompressedStack.createItemStack(CompressedStack.getCompressedStackName(itemStack));
-    }
-
-    public static IBlockState createSampleState(ItemStack itemStack) {
-        return CompressedStack.createState(CompressedStack.getCompressedStackName(itemStack));
-    }
-
-    public static long getSize(ItemStack itemStack) {
-        return itemStack.getTagCompound().getLong("size");
-    }
-
-    public static String getNameOf(ItemStack itemStack, boolean withModid, boolean withMeta) {
-        ResourceLocation registry = itemStack.getItem().getRegistryName();
-        String name = "";
-        if (withModid) {
-            name += registry.getResourceDomain() + ":";
-        }
-        name += registry.getResourcePath();
-        if (withMeta) {
-            name += ":" + itemStack.getItemDamage();
-        }
-        return name;
-    }
-
-    private static Tuple<ResourceLocation, Integer> getQualifiers(String name) {
-        if (!name.matches("(.*):(.*)")) return null;
-        int endNameIndex = name.length();
-        int meta = OreDictionary.WILDCARD_VALUE;
-        if (name.matches("(.*):(.*):(.*)")) {
-            endNameIndex = name.lastIndexOf(':');
-            meta = Integer.parseInt(name.substring(endNameIndex + 1, name.length()));
-        }
-        String modid = name.substring(0, name.indexOf(':'));
-        String itemName = name.substring(name.indexOf(':') + 1, endNameIndex);
-        return new Tuple<>(new ResourceLocation(modid, itemName), meta);
-    }
-
-    public static ItemStack createItemStack(String name) {
-        Tuple<ResourceLocation, Integer> qualifiers = CompressedStack.getQualifiers(name);
-        if (qualifiers == null) return null;
-
-        Block block = Block.REGISTRY.getObject(qualifiers.getFirst());
-        Item item = Item.REGISTRY.getObject(qualifiers.getFirst());
-
-        if (block != null && Item.getItemFromBlock(block) != null) {
-            return new ItemStack(block, 1, qualifiers.getSecond());
-        }
-        else if (item != null) {
-            return new ItemStack(item, 1, qualifiers.getSecond());
-        }
-        else {
-            return null;
-        }
-    }
-
-    public static IBlockState createState(String name) {
-        Tuple<ResourceLocation, Integer> qualifiers = CompressedStack.getQualifiers(name);
-        if (qualifiers == null) return null;
-
-        Block block = Block.REGISTRY.getObject(qualifiers.getFirst());
-        if (block != null) {
-            return block.getStateFromMeta(qualifiers.getSecond());
-        }
-        else {
-            return null;
-        }
-    }
-
-    public static String getDisplayNameFor(ItemStack itemStack) {
-        return CompressedStack.getTier(itemStack).getName() + " Compressed " + itemStack.getTagCompound().getString("display");
-    }
-
-    public static EnumTier getTier(ItemStack stack) {
-        return EnumTier.getTierForSize(CompressedStack.getSize(stack));
-    }
-
-    /*
-
-    def getSampleFromUnknown(itemStack: ItemStack): ItemStack = {
-        if (this.isCompressed(itemStack)) {
-            if (itemStack.hasTagCompound) this.createSampleStack(itemStack)
-            else null
-        }
-        else {
-            val stack = itemStack.copy()
-            stack.stackSize = 1
-            stack
-        }
-    }
-
-    def getTotalSizeForUnknown(itemStack: ItemStack): Long = {
-        itemStack.stackSize * (if (this.isCompressed(itemStack)) this.getSize(itemStack) else 1)
-    }
-
-    def getSize(itemStack: ItemStack): Long = itemStack.getTagCompound.getLong("size")
-
-    */
 
 }

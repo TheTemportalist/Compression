@@ -63,7 +63,7 @@ public class BakedCompressed implements IBakedModel {
                     layerModel = sampleModel;
                     break;
                 case TRANSLUCENT:
-                    int i = EnumTier.getTierForSize(extended.getValue(BlockProperties.LONG_UN)).ordinal();
+                    int i = EnumTier.getTier(extended.getValue(BlockProperties.TIER_UN)).ordinal();
                     layerModel = new Builder(sampleState, sampleModel, overlays[i], BlockPos.ORIGIN).makeBakedModel();
                     break;
                 default:
@@ -89,14 +89,5 @@ public class BakedCompressed implements IBakedModel {
     public TextureAtlasSprite getParticleTexture() {
         return this.overlays[this.overlays.length - 1];
     }
-
-    /*
-    @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-        return PerspectiveMapWrapper.handlePerspective(this, TransformHelper.DEFAULT_ITEM_STATE, cameraTransformType);
-        // https://github.com/SlimeKnights/Mantle/blob/1.12/src/main/java/slimeknights/mantle/client/model/BlockItemModelWrapper.java
-        // https://github.com/SlimeKnights/Mantle/blob/3e33e262d979f81fc552c753ceed8626ca2b4dd0/src/main/java/slimeknights/mantle/client/ModelHelper.java
-    }
-    */
 
 }

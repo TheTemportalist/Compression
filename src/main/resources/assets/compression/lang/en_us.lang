@@ -1,5 +1,5 @@
 
-itemGroup.compression.general=Compression
+itemGroup.compression=Compression
 
 item.compression:ItemDenseArmor_head.name=Dense Leather Cap
 item.compression:ItemDenseArmor_chest.name=Dense Leather Tunic

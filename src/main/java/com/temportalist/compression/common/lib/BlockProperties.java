@@ -1,5 +1,7 @@
 package com.temportalist.compression.common.lib;
 
+import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
@@ -9,6 +11,39 @@ import net.minecraftforge.common.property.IUnlistedProperty;
  * @author TheTemportalist
  */
 public class BlockProperties {
+
+    public static class UnlistedInteger implements IUnlistedProperty<Integer> {
+
+        private String name;
+        private int min, max;
+
+        public UnlistedInteger(String name, int min, int max) {
+            this.name = name;
+            this.min = min;
+            this.max = max;
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public boolean isValid(Integer value) {
+            return value >= min && value <= max;
+        }
+
+        @Override
+        public Class<Integer> getType() {
+            return Integer.class;
+        }
+
+        @Override
+        public String valueToString(Integer value) {
+            return String.valueOf(value);
+        }
+
+    }
 
     public static final IUnlistedProperty<Long> LONG_UN = new IUnlistedProperty<Long>() {
 
@@ -57,5 +92,7 @@ public class BlockProperties {
         }
 
     };
+
+    public static final IUnlistedProperty<Integer> TIER_UN = new UnlistedInteger("EnumTier", EnumTier.getHead().ordinal(), EnumTier.getTail().ordinal());
 
 }

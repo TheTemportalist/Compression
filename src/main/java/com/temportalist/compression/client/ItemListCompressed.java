@@ -52,8 +52,7 @@ public class ItemListCompressed extends ItemOverrideList {
                 Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(CompressedStack.createSampleState(stack)) :
                 Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(sampleStack);
 
-        long size = CompressedStack.getSize(stack);
-        int i = EnumTier.getTierForSize(size).ordinal();
+        int i = CompressedStack.getTier(stack).ordinal();
         TextureAtlasSprite overlay = overlays[i];
 
         return new IBakedModel() {

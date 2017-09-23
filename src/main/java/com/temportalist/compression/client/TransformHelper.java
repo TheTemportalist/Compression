@@ -32,10 +32,10 @@ public class TransformHelper {
     }
 
     private static ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> generateItemTransform() {
-        final TRSRTransformation thirdperson = get(0, 3, 1, 0, 0, 0, 0.55f);
-        final TRSRTransformation firstperson = get(1.13f, 3.2f, 1.13f, 0, -90, 25, 0.68f);
+        final TRSRTransformation thirdperson = get(3.6f, 6.6f, 4.6f, 0, 0, 0, 0.55f);
+        final TRSRTransformation firstperson = get(14.9f, 3.9f, 6.2f, 0, -90, 25, 0.68f);
         final ImmutableMap.Builder<ItemCameraTransforms.TransformType, TRSRTransformation> transform = new ImmutableMap.Builder<>();
-        transform.put(ItemCameraTransforms.TransformType.GROUND, get(0, 2, 0, 0, 0, 0, 0.5f));
+        transform.put(ItemCameraTransforms.TransformType.GROUND, get(4, 6, 4, 0, 0, 0, 0.5f));
         transform.put(ItemCameraTransforms.TransformType.HEAD, get(0, 13, 7, 0, 180, 0, 1));
         transform.put(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, thirdperson);
         transform.put(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND, leftify(thirdperson));

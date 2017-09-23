@@ -1,9 +1,16 @@
 package com.temportalist.compression.common.items;
 
-import com.temportalist.compression.common.init.CompressedStack;
 import net.minecraft.block.Block;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class ItemCompressedBlock extends ItemBlock implements ICompressed {
 
@@ -13,8 +20,24 @@ public class ItemCompressedBlock extends ItemBlock implements ICompressed {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        if (stack.hasTagCompound()) return CompressedStack.getDisplayNameFor(stack);
-        else return super.getItemStackDisplayName(stack);
+        return this.getDisplayName(stack);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        this.addInfo(stack, tooltip);
+    }
+
+    @Override
+    public boolean hasCustomEntity(ItemStack stack) {
+        return this.hasEntityCompressed();
+    }
+
+    @Nullable
+    @Override
+    public Entity createEntity(World world, Entity location, ItemStack itemstack) {
+        return this.createEntityCompressed(world, location, itemstack);
     }
 
 }

@@ -1,6 +1,8 @@
 package com.temportalist.compression.common;
 
 import com.temportalist.compression.common.init.ModBlocks;
+import com.temportalist.compression.common.init.ModEntity;
+import com.temportalist.compression.common.init.ModItems;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -29,6 +31,8 @@ public class Compression
     public CreativeTabs tabCompression;
 
     ModBlocks blocks;
+    ModItems items;
+    ModEntity entity;
 
     @EventHandler
     public void initPre(FMLPreInitializationEvent event)

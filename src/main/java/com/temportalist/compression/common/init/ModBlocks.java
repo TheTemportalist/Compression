@@ -11,7 +11,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModBlocks {
 
-    @GameRegistry.ObjectHolder("compression:compressed")
+    @GameRegistry.ObjectHolder("compression:compressedBlock")
     public static BlockCompressed compressed;
 
     public void initPre() {
