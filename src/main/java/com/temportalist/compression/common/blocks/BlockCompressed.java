@@ -17,10 +17,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -31,6 +30,7 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 public class BlockCompressed extends BlockBase {
 
@@ -72,6 +72,53 @@ public class BlockCompressed extends BlockBase {
     }
     //*/
 
+    @Override
+    public boolean hasTileEntity(IBlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return new TileCompressed();
+    }
+
+    public boolean onTileLoaded(World world, BlockPos pos, TileCompressed tile) {
+        if (EnumEffect.BLACK_HOLE.canDoEffect(tile.getTier())) {
+            NBTTagCompound tagCom = new NBTTagCompound();
+            tile.writeToNBT(tagCom);
+            world.removeTileEntity(pos);
+            world.setTileEntity(pos, new TileCompressedTickable());
+            world.getTileEntity(pos).readFromNBT(tagCom);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+        if (!stack.hasTagCompound()) return;
+
+        // Get the tile entity
+        TileEntity tileEntity = worldIn.getTileEntity(pos);
+        // Check if valid tile
+        if (tileEntity != null && tileEntity instanceof TileCompressed) {
+            // Get the tile
+            TileCompressed tile = (TileCompressed)tileEntity;
+
+            // Set the type
+            tile.setTypeFrom(stack); // stack is assumed to be a Compressed ItemStack (which this block is)
+
+            // Check for ticking tile
+            this.onTileLoaded(worldIn, pos, tile);
+
+            EnumTier tier = CompressedStack.getTier(stack);
+            this.updateBlockStats(worldIn, pos, tier, stack, 0);
+
+        }
+
+    }
+
     // Return the extended state for rendering
     @Override
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
@@ -86,37 +133,6 @@ public class BlockCompressed extends BlockBase {
         }
 
         return super.getExtendedState(state, world, pos);
-    }
-
-    @Override
-    public boolean hasTileEntity(IBlockState state) {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileCompressed();
-    }
-
-    @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        if (!stack.hasTagCompound()) return;
-
-        // Get the tile entity
-        TileEntity tile = worldIn.getTileEntity(pos);
-        // Check if valid tile
-        if (tile != null && tile instanceof TileCompressed) {
-            // Get the tile
-            TileCompressed tileCompressed = (TileCompressed)tile;
-            // Set the type
-            tileCompressed.setTypeFrom(stack); // stack is assumed to be a Compressed ItemStack (which this block is)
-
-            EnumTier tier = CompressedStack.getTier(stack);
-            this.updateBlockStats(worldIn, pos, tier, stack, 0);
-
-        }
-
     }
 
     public void updateBlockStats(World worldIn, BlockPos pos, EnumTier tier, ItemStack stack, float energy) {

@@ -1,6 +1,7 @@
 package com.temportalist.compression.common.blocks;
 
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.lib.BlockProperties;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.item.ItemStack;
@@ -8,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.property.IExtendedBlockState;
 
 import javax.annotation.Nullable;
@@ -66,6 +68,12 @@ public class TileCompressed extends TileEntity {
             this.sampleStack = CompressedStack.createItemStack(compound.getString("stack"));
         }
         this.tier = EnumTier.getTier(compound.getInteger("tier"));
+    }
+
+    @Override
+    public void onLoad() {
+        // Tile Entity is loading, check if we need to be ticking
+        ModBlocks.compressed.onTileLoaded(this.getWorld(), this.getPos(), this);
     }
 
     public IExtendedBlockState writeExtendedBlockState(IExtendedBlockState in) {

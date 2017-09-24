@@ -1,5 +1,6 @@
 package com.temportalist.compression.common.blocks;
 
+import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.effects.Effects;
 import com.temportalist.compression.common.effects.EnumEffect;
 import com.temportalist.compression.common.init.ModBlocks;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -66,30 +68,47 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
     // The ticker structures to track timing
     private Ticker tickerDestroyBlocks, tickerDamageEntities;
     // The bounding boxes for attracting entities
-    private AxisAlignedBB aoeAttract, aoeDamage;
+    private AxisAlignedBB aoeAttract, aoeDamage, aoeAttractInner;
     // The amount of energy that has been accumulated
     private float energyAmount;
+    private float growthFactor;
 
     // The radius from this blocks that the black hole can consume
     private final int radiusBlockDestroy = 5;
     // The radius from this block that the block can pull entities
     private final float radiusAttractEntities = 10;
     // The radius from this block that the block can damage entities
-    private final float radiusDamage = 1.5f;
+    private final float radiusDamage = 2f;
+    // The base factor for the amount of energy that must be required to grow (baseFactor^growthFactor <= energyAmount)
+    private final int baseFactor = 10;
+    private final int growthFactorMin = 1;
+    private final float chanceOfGrowth = 0.1f;
 
     public TileCompressedTickable() {
-        this.center = new Vec3d(this.getPos()).add(new Vec3d(0.5, 0.5, 0.5));
         this.tickerDestroyBlocks = this.createTickerDestroyBlocks();
         this.tickerDamageEntities = this.createTickerDamageEntities();
-        this.aoeAttract = new AxisAlignedBB(this.getPos()).grow(this.radiusAttractEntities);
-        this.aoeDamage = new AxisAlignedBB(this.getPos()).grow(this.radiusDamage);
         this.energyAmount = 0;
+        this.growthFactor = this.growthFactorMin;
+    }
+
+    @Override
+    public void onLoad() {
+        // Do not do super check
+        this.center = new Vec3d(this.getPos()).add(new Vec3d(0.5, 0.5, 0.5));
+        this.createAreasOfEffect();
+        this.aoeAttractInner = this.aoeDamage;
+    }
+
+    private void createAreasOfEffect() {
+        this.aoeAttract = new AxisAlignedBB(this.getPos()).grow(this.radiusAttractEntities).grow(growthFactor);
+        this.aoeDamage = new AxisAlignedBB(this.getPos()).grow(this.radiusDamage).grow(growthFactor);
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         NBTTagCompound tagCom = super.writeToNBT(compound);
         tagCom.setFloat("energyAmount", this.energyAmount);
+        tagCom.setFloat("growthFactor", this.growthFactor);
         return tagCom;
     }
 
@@ -97,6 +116,7 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         this.energyAmount = compound.getFloat("energyAmount");
+        this.growthFactor = compound.getFloat("growthFactor");
     }
 
     public float getEnergyAmount() {
@@ -113,7 +133,9 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
 
         // Update ticking effects
         this.tickerDestroyBlocks.update(this.getWorld().rand);
-        this.tickerDamageEntities.update(this.getWorld().rand);
+        if (!this.world.isRemote) {
+            this.tickerDamageEntities.update(this.getWorld().rand);
+        }
 
         // Attract local entities
         this.attractEntities();
@@ -122,43 +144,58 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
 
     private Ticker createTickerDestroyBlocks() {
 
-        final int maxLoops = 100;
-
         int delayBase = 20 * 20; // 20 seconds
         int deviation = 2 * 20; // 2 seconds
         return new Ticker(delayBase, delayBase + deviation) {
 
             @Override
             public void doEffect() {
-                int loops = 0;
+
+                // Take a snapshot of the area
+                BlockPos posOrigin = getPos();
+                int r = radiusBlockDestroy + (int)growthFactor, x, y, z;
+                int maxR = r * r;
                 BlockPos pos;
                 IBlockState state;
-                do {
-                    pos = this.getRandBlockPos().add(getPos());
-                    state = getWorld().getBlockState(pos);
-                    loops++;
-                } while (loops < maxLoops && !canBeDestroyed(state, pos));
+                List<BlockPos> validPositions = new ArrayList<>();
+                for (x = -r; x <= r; x++)
+                    for (y = -r; y <= r; y++)
+                        for (z = -r; z <= r; z++) {
+                            // Get the position with set offset
+                            pos = posOrigin.add(x, y, z);
+                            // Check distance (make a sphere)
+                            if (posOrigin.distanceSq(pos) <= maxR) {
+                                // Get the state
+                                state = world.getBlockState(pos);
+                                // Check if the block can be destroyed
+                                if (canBeDestroyed(state, pos)) {
+                                    // Add to list of possible targets
+                                    validPositions.add(pos);
+                                }
+                            }
+                        }
 
-                if (canBeDestroyed(state, pos)) {
-                    consume(state, pos);
+                // Remove a random block
+                if (validPositions.size() > 0) {
+                    pos = validPositions.get(getWorld().rand.nextInt(validPositions.size()));
+                    consume(world.getBlockState(pos), pos);
                     getWorld().setBlockToAir(pos);
                 }
+                else if (EnumEffect.POTENTIAL_ENERGY.canDoEffect(getTier())) {
+                    // Chance for growth radius
+                    // Energy Amount must be a factor of 10 above the present growth factor
+                    // ex: if growthFactor = 1, grow can occur fi energyAmount >= 10
+                    // same with gF = 2, eA = 100
+                    if (energyAmount >= Math.pow(baseFactor, growthFactor)) {
+                        if (getWorld().rand.nextFloat() * 100 <= chanceOfGrowth) {
+                            growthFactor++;
+                            createAreasOfEffect();
+                            markDirty();
+                        }
+                    }
 
-            }
+                }
 
-            int getRandBlockCoord() {
-                return getWorld().rand.nextInt(radiusBlockDestroy);
-            }
-
-            BlockPos getRandBlockPos() {
-                //return BlockPos.ORIGIN.add(0, 1, 0);
-                ////*
-                return new BlockPos(
-                        this.getRandBlockCoord(),
-                        this.getRandBlockCoord(),
-                        this.getRandBlockCoord()
-                );
-                //*/
             }
 
         };
@@ -178,6 +215,7 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
                         consume(((EntityItem) entity).getItem());
                     } else if (entity instanceof EntityLivingBase) {
                         EntityLivingBase living = (EntityLivingBase) entity;
+                        if (living instanceof EntityPlayer && ((EntityPlayer)living).isCreative()) continue;
                         if (living.attackEntityFrom(DamageSource.OUT_OF_WORLD, 1)) {
                             if (living.getHealth() <= 0) {
                                 consume(living);
@@ -193,7 +231,8 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
     public boolean canBeDestroyed(IBlockState state, BlockPos pos) {
         boolean thisPos = pos == this.getPos();
         boolean validDist = pos.distanceSq(this.getPos()) <= this.radiusBlockDestroy * this.radiusBlockDestroy;
-        boolean validMaterial = state.getMaterial() != Material.AIR && !state.getMaterial().isLiquid();
+        boolean validMaterial = state.getMaterial() != Material.AIR && !state.getMaterial().isLiquid() &&
+                state.getBlockHardness(this.getWorld(), pos) >= 0;
         boolean validTile = !state.getBlock().hasTileEntity(state) && getWorld().getTileEntity(pos) == null;
 
         return !thisPos && validDist && validMaterial && validTile;
@@ -225,7 +264,7 @@ public class TileCompressedTickable extends TileCompressed implements ITickable 
         List<Entity> entities = this.getWorld().getEntitiesWithinAABB(Entity.class, this.aoeAttract,
                 (Entity entity) -> {
                     if (entity instanceof EntityPlayer && ((EntityPlayer) entity).isCreative()) return false;
-                    else return entity != null && !entity.getEntityBoundingBox().intersects(this.aoeDamage);
+                    else return entity != null && !entity.getEntityBoundingBox().intersects(this.aoeAttractInner);
                 }
         );
         for (Entity entity : entities) {
