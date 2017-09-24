@@ -1,12 +1,14 @@
 package com.temportalist.compression.common.blocks;
 
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.lib.BlockProperties;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.property.IExtendedBlockState;
 
 import javax.annotation.Nullable;
 
@@ -64,6 +66,12 @@ public class TileCompressed extends TileEntity {
             this.sampleStack = CompressedStack.createItemStack(compound.getString("stack"));
         }
         this.tier = EnumTier.getTier(compound.getInteger("tier"));
+    }
+
+    public IExtendedBlockState writeExtendedBlockState(IExtendedBlockState in) {
+        return in
+                .withProperty(BlockProperties.ITEMSTACK_UN, this.sampleStack)
+                .withProperty(BlockProperties.TIER_UN, this.tier == null ? -1 : this.tier.ordinal());
     }
 
 }

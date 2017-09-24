@@ -1,6 +1,7 @@
 package com.temportalist.compression.common.blocks;
 
 import com.temportalist.compression.common.effects.Effects;
+import com.temportalist.compression.common.effects.EnumEffect;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.items.ItemCompressedBlock;
 import com.temportalist.compression.common.lib.BlockProperties;
@@ -18,6 +19,8 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -32,7 +35,7 @@ import javax.annotation.Nullable;
 public class BlockCompressed extends BlockBase {
 
     public BlockCompressed() {
-        super(Material.AIR, "compressedBlock");
+        super(Material.GROUND, "compressedBlock");
     }
 
     @Override
@@ -40,6 +43,7 @@ public class BlockCompressed extends BlockBase {
         return new ItemCompressedBlock(this);
     }
 
+    // Called at init to create a default state
     @Override
     protected BlockStateContainer createBlockState() {
         return new ExtendedBlockState(this,
@@ -52,40 +56,36 @@ public class BlockCompressed extends BlockBase {
         );
     }
 
+    /*
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+        IBlockState state = this.getDefaultState();
         // Check to see if the state is valid
         if (state instanceof IExtendedBlockState) {
-            // Get the tile entity
-            TileEntity tile = world.getTileEntity(pos);
-            // Check to see if the tile is valid
-            if (tile != null && tile instanceof TileCompressed) {
-                // Get the tile
-                TileCompressed tileCompressed = (TileCompressed)tile;
-                // Get the ItemStack of the tile
-                ItemStack tileStack = tileCompressed.getSampleStack() != null ? tileCompressed.getSampleStack().copy() : null;
-                // Return the proper state with ItemStack and tier
-                return ((IExtendedBlockState)state)
-                        .withProperty(BlockProperties.ITEMSTACK_UN, tileStack)
-                        .withProperty(BlockProperties.TIER_UN, tileCompressed.getTier().ordinal());
-            }
+            ItemStack stack = placer.getHeldItem(hand);
+            // Return the proper state with ItemStack and tier
+            return ((IExtendedBlockState)state)
+                    .withProperty(BlockProperties.ITEMSTACK_UN, CompressedStack.createSampleStack(stack))
+                    .withProperty(BlockProperties.TIER_UN, CompressedStack.getTier(stack).ordinal());
         }
-        // Return the bad state
         return state;
     }
+    //*/
 
+    // Return the extended state for rendering
     @Override
-    public Material getMaterial(IBlockState state) {
-        // Check to see if the state is valid
-        if (state instanceof IExtendedBlockState) {
-            IBlockState sampleState = CompressedStack.createState(
-                    CompressedStack.getStackName(
-                            ((IExtendedBlockState) state).getValue(BlockProperties.ITEMSTACK_UN)
-                    )
-            );
-            if (sampleState != null) return sampleState.getMaterial();
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        IExtendedBlockState extended = (IExtendedBlockState)state;
+
+        // Get the tile entity
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if (tileEntity != null && tileEntity instanceof TileCompressed) {
+            // Get the tile
+            TileCompressed tile = (TileCompressed)tileEntity;
+            return tile.writeExtendedBlockState(extended);
         }
-        return Material.AIR;
+
+        return super.getExtendedState(state, world, pos);
     }
 
     @Override
@@ -103,11 +103,6 @@ public class BlockCompressed extends BlockBase {
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         if (!stack.hasTagCompound()) return;
 
-        if (Effects.doTickCompressedBlock(stack)) {
-            worldIn.removeTileEntity(pos);
-            worldIn.setTileEntity(pos, new TileCompressedTickable());
-        }
-
         // Get the tile entity
         TileEntity tile = worldIn.getTileEntity(pos);
         // Check if valid tile
@@ -118,25 +113,41 @@ public class BlockCompressed extends BlockBase {
             tileCompressed.setTypeFrom(stack); // stack is assumed to be a Compressed ItemStack (which this block is)
 
             EnumTier tier = CompressedStack.getTier(stack);
-            int multiplier = tier.ordinal() + 1;
-            IBlockState sampleState = CompressedStack.createSampleState(stack);
-
-            // Check state valid
-            if (sampleState != null) {
-                // Get block
-                Block block = sampleState.getBlock();
-                // Set information about block
-                String tool = block.getHarvestTool(sampleState);
-                if (tool != null) {
-                    this.setHarvestLevel(tool, block.getHarvestLevel(sampleState));
-                }
-                this.setHardness(sampleState.getBlockHardness(worldIn, pos) * multiplier);
-                this.setLightLevel(sampleState.getLightValue(worldIn, pos) * multiplier);
-                this.setLightOpacity(sampleState.getLightOpacity(worldIn, pos) * multiplier);
-            }
+            this.updateBlockStats(worldIn, pos, tier, stack, 0);
 
         }
 
+    }
+
+    public void updateBlockStats(World worldIn, BlockPos pos, EnumTier tier, ItemStack stack, float energy) {
+
+        float multiplier = tier.ordinal() + 1 + energy / 100f;
+        IBlockState sampleState = CompressedStack.createSampleState(stack);
+
+        // Check state valid
+        if (sampleState != null) {
+            // Get block
+            Block block = sampleState.getBlock();
+            // Set information about block
+            String tool = block.getHarvestTool(sampleState);
+            if (tool != null) {
+                this.setHarvestLevel(tool, block.getHarvestLevel(sampleState));
+            }
+            this.setHardness(sampleState.getBlockHardness(worldIn, pos) * multiplier);
+            this.setLightLevel(sampleState.getLightValue(worldIn, pos) * multiplier);
+            this.setLightOpacity((int)(sampleState.getLightOpacity(worldIn, pos) * multiplier));
+        }
+
+    }
+
+    @Override
+    public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
+        TileEntity tileEntity = worldIn.getTileEntity(pos);
+        if (tileEntity != null && tileEntity instanceof TileCompressedTickable) {
+            TileCompressedTickable tile = (TileCompressedTickable)tileEntity;
+            float energy = tile.getEnergyAmount();
+
+        }
     }
 
     @Override

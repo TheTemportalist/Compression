@@ -75,11 +75,15 @@ public enum EnumTier {
 		if (a == null && b==null) return 0;
 		else if (a != null && b == null) return 1;
 		else if (a == null) return -1;
-		else return a.compareTo(b);
+		else return a.compareTo(b); // if a > b: +x else a < b: -x
 	}
 
 	public boolean lte(EnumTier b) {
-		return EnumTier.compare(this, b) >= 0;
+		return EnumTier.compare(this, b) <= 0;
+	}
+
+	public boolean lt(EnumTier b) {
+		return EnumTier.compare(this, b) < 0;
 	}
 
 }

@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
-import com.temportalist.compression.common.effects.EnumEffects;
+import com.temportalist.compression.common.effects.EnumEffect;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -29,7 +29,7 @@ public class Config {
 
     public void initPre() {
 
-        for (EnumEffects effect : EnumEffects.values()) {
+        for (EnumEffect effect : EnumEffect.values()) {
             effect.getConfig(this, "general");
         }
 

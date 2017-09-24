@@ -5,7 +5,7 @@ import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.item.ItemStack;
 
-public enum EnumEffects {
+public enum EnumEffect {
 
     // compress like-items on player inventory entry
     COMPRESSOR("Compressor", "Compress like-items as they enter the player's inventory when in the player's inventory", EnumTier.DOUBLE),
@@ -32,14 +32,14 @@ public enum EnumEffects {
     private EnumTier value;
     private boolean enabled;
 
-    EnumEffects(String name, String desc, EnumTier tier) {
+    EnumEffect(String name, String desc, EnumTier tier) {
         this.configName = name;
         this.description = desc;
         this.defaultTier = tier;
         this.defaultEnabled = true;
     }
 
-    EnumEffects(String name, String desc, boolean enabled) {
+    EnumEffect(String name, String desc, boolean enabled) {
         this.configName = name;
         this.description = desc;
         this.defaultTier = null;
@@ -70,8 +70,21 @@ public enum EnumEffects {
     }
 
     public boolean canDoEffect(ItemStack stack) {
+        return this.canDoEffect(CompressedStack.getTier(stack));
+    }
+
+    public boolean canDoEffect(EnumTier tier) {
         if (this.getTier() == null) return this.enabled;
-        else return this.getTier().lte(CompressedStack.getTier(stack));
+        else return this.getTier().lte(tier);
+    }
+
+    public static EnumEffect getLowestTier(EnumEffect... effects) {
+        EnumEffect effect = null;
+        for (EnumEffect effectIter : effects) {
+            if (effect == null || effectIter.getTier().lt(effect.getTier()))
+                effect = effectIter;
+        }
+        return effect;
     }
 
 }

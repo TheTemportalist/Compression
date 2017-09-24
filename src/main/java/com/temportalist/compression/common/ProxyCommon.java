@@ -1,28 +1,21 @@
 package com.temportalist.compression.common;
 
-import com.temportalist.compression.common.effects.EnumEffects;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
 import com.temportalist.compression.common.init.ModItems;
 import com.temportalist.compression.common.lib.EnumTier;
-import com.temportalist.compression.common.recipes.Recipes;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
-import java.io.File;
 
 @Mod.EventBusSubscriber
 public class ProxyCommon implements IProxy {

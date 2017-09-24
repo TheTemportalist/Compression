@@ -26,7 +26,7 @@ public class CompressedStack {
      * @return true if the stack is qualified as "Compressed"
      */
     public static boolean isCompressed(ItemStack itemStack) {
-        return itemStack.getItem() instanceof ICompressed;
+        return itemStack != null && itemStack != ItemStack.EMPTY && itemStack.getItem() instanceof ICompressed;
     }
 
     /**
@@ -262,7 +262,7 @@ public class CompressedStack {
             fits = next.getSizeMax() < count;
             if (fits) {
                 // 0) startTier = next = DOUBLE
-                startTier = startTier.getNext();
+                startTier = next;
             }
         }
         // ex: so singleTier = DOUBLE, which is the largest the tier can get without going over count
@@ -281,7 +281,7 @@ public class CompressedStack {
             // ex: 1) quantity = 909 / 729 = 1, mod = 909 / 729 = 180
             // ex: 2) quantity = 180 / 81 = 2, 180 = 909 / 81 = 18
             // ex: 3) quantity = 18 / 9 = 2, 180 = 18 / 9 = 0
-            long quantity = count /= startTier.getSizeMax();
+            long quantity = count / startTier.getSizeMax();
             long mod = count % startTier.getSizeMax();
             // Save the quantity for this tier to the map
             // ex: 0) QUADRUPLE => 1
@@ -311,6 +311,11 @@ public class CompressedStack {
             stack.setCount(quantity);
             stacks.add(stack);
         });
+        if (count > 0) {
+            ItemStack left = sample.copy();
+            left.setCount((int)count);
+            stacks.add(left);
+        }
 
         return stacks;
     }
