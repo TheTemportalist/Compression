@@ -90,11 +90,13 @@ public class Recipes {
     static class RecipeCompress extends RecipeClassic {
 
         public boolean isValidInventoryStack(ItemStack stack, boolean isSample) {
-            return !isSample || CompressedStack.canCompressItem(stack);
+            boolean valid= !isSample;
+            boolean canCompress = CompressedStack.canCompressItem(stack);
+            return valid || canCompress;
         }
 
         public boolean isValidSampleAndTier(ItemStack stack, EnumTier tier) {
-            return tier != EnumTier.getTail();
+            return this.isValidInventoryStack(stack, true) && tier != EnumTier.getTail();
         }
 
         @Nullable

@@ -38,6 +38,8 @@ public class CompressedStack {
     public static ItemStack create(ItemStack itemStack, EnumTier tier) {
         // Do not create if the stack is already compressed
         if (CompressedStack.isCompressed(itemStack)) return null;
+        else if (tier == null) return CompressedStack.createSampleStack(itemStack);
+
         // Check if itemstack is an item or block
         boolean isBlock = itemStack.getItem() instanceof ItemBlock;
 
@@ -48,6 +50,7 @@ public class CompressedStack {
         NBTTagCompound tagCom = new NBTTagCompound();
         // The registry name, formattted as modid:name
         tagCom.setString("name", CompressedStack.getNameOf(itemStack, true, true));
+        if (itemStack.hasTagCompound()) tagCom.setTag("sampleTag", itemStack.getTagCompound());
         // The display name of the inner stack, used in rending the text on hover
         tagCom.setString("display", itemStack.getItem().getItemStackDisplayName(itemStack));
         // The tier/size of the stack
@@ -156,6 +159,10 @@ public class CompressedStack {
      * @return The ItemStack containing 1 item of the specified type, or null if the modid:name was not found
      */
     public static ItemStack createItemStack(String name) {
+        return CompressedStack.createItemStack(name, null);
+    }
+
+    public static ItemStack createItemStack(String name, NBTTagCompound tagCom) {
         // Gets the qualifying members of the name
         Tuple<ResourceLocation, Integer> qualifiers = CompressedStack.getQualifiers(name);
 
@@ -163,18 +170,23 @@ public class CompressedStack {
         Block block = Block.REGISTRY.getObject(qualifiers.getFirst());
         Item item = Item.REGISTRY.getObject(qualifiers.getFirst());
 
+        ItemStack out = null;
+
         // If valid block and block can be in an inventory
         if (block != Blocks.AIR && Item.getItemFromBlock(block) != null) {
-            return new ItemStack(block, 1, qualifiers.getSecond());
+            out = new ItemStack(block, 1, qualifiers.getSecond());
         }
         // If valid item
         else if (item != null) {
-            return new ItemStack(item, 1, qualifiers.getSecond());
+            out = new ItemStack(item, 1, qualifiers.getSecond());
         }
         // Not a valid name
-        else {
-            return null;
+
+        if (out != null) {
+            out.setTagCompound(tagCom);
         }
+
+        return out;
     }
 
     /**
@@ -205,7 +217,8 @@ public class CompressedStack {
      */
     public static ItemStack createSampleStack(ItemStack itemStack) {
         return CompressedStack.isCompressed(itemStack) ?
-                CompressedStack.createItemStack(CompressedStack.getStackName(itemStack)) :
+                CompressedStack.createItemStack(CompressedStack.getStackName(itemStack),
+                        itemStack.getTagCompound().hasKey("sampleTag") ? itemStack.getTagCompound().getCompoundTag("sampleTag") : null) :
                 itemStack.copy();
     }
 
@@ -233,7 +246,7 @@ public class CompressedStack {
         }
         else {
             if (CompressedStack.isInBlackList(itemStack)) return false;
-            return itemStack.getItem().getItemStackLimit(itemStack) > 1;
+            return itemStack.getItem().getItemStackLimit(itemStack) > 1 && !itemStack.hasTagCompound();
         }
     }
 

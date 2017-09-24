@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 
 public class BakedCompressed implements IBakedModel {
 
-    TextureAtlasSprite[] overlays;
-    ItemOverrideList overrideList;
+    private TextureAtlasSprite[] overlays;
+    private ItemOverrideList overrideList;
 
     public BakedCompressed(TextureAtlasSprite[] overlays) {
         this.overlays = overlays;

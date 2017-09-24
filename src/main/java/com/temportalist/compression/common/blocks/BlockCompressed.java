@@ -56,22 +56,6 @@ public class BlockCompressed extends BlockBase {
         );
     }
 
-    /*
-    @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        IBlockState state = this.getDefaultState();
-        // Check to see if the state is valid
-        if (state instanceof IExtendedBlockState) {
-            ItemStack stack = placer.getHeldItem(hand);
-            // Return the proper state with ItemStack and tier
-            return ((IExtendedBlockState)state)
-                    .withProperty(BlockProperties.ITEMSTACK_UN, CompressedStack.createSampleStack(stack))
-                    .withProperty(BlockProperties.TIER_UN, CompressedStack.getTier(stack).ordinal());
-        }
-        return state;
-    }
-    //*/
-
     @Override
     public boolean hasTileEntity(IBlockState state) {
         return true;
