@@ -58,7 +58,10 @@ public class BakedCompressed implements IBakedModel {
             IBakedModel sampleModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(sampleState);
 
             IBakedModel layerModel;
-            switch (MinecraftForgeClient.getRenderLayer()) {
+            BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
+            if (layer == null) layerModel = sampleModel;
+            else
+            switch (layer) {
                 case SOLID:
                     layerModel = sampleModel;
                     break;

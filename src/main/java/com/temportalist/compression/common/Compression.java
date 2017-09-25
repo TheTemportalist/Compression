@@ -16,7 +16,7 @@ public class Compression
 
     public static final String MOD_ID = "compression";
     static final String MOD_NAME = "Compression";
-    static final String MOD_VERSION = "1.0";
+    static final String MOD_VERSION = "1.2.1";
     private static final String proxyClient = "com.temportalist.compression.client.ProxyClient";
     private static final String proxyServer = "com.temportalist.compression.server.ProxyServer";
 
