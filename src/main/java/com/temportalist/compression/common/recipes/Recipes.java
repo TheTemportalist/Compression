@@ -1,9 +1,7 @@
 package com.temportalist.compression.common.recipes;
 
-import com.sun.istack.internal.NotNull;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.init.CompressedStack;
-import com.temportalist.compression.common.init.ModItems;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -152,7 +150,6 @@ public class Recipes {
         }
 
         @Override
-        @NotNull
         public ItemStack getCraftingResult(InventoryCrafting inv) {
             Tuple<ItemStack, EnumTier> sampleTier = this.getStackAndTier(inv);
 
@@ -188,7 +185,6 @@ public class Recipes {
         }
 
         @Override
-        @NotNull
         public ItemStack getCraftingResult(InventoryCrafting inv) {
             ItemStack sample = null;
             EnumTier tier = null;

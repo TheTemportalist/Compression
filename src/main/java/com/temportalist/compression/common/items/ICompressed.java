@@ -21,8 +21,7 @@ public interface ICompressed {
     default void addInfo(ItemStack stack, List<String> tooltip) {
         if (GuiScreen.isShiftKeyDown()) {
             tooltip.add(CompressedStack.getStackName(stack));
-            tooltip.add(CompressedStack.getTier(stack).toString());
-            tooltip.add(this.getClass().getSimpleName());
+            tooltip.add(Long.toString(CompressedStack.getTier(stack).getSizeMax()));
         }
     }
 
