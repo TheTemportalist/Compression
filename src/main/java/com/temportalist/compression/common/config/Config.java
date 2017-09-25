@@ -1,20 +1,29 @@
-package com.temportalist.compression.common;
+package com.temportalist.compression.common.config;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
+import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.effects.EnumEffect;
+import com.temportalist.compression.common.threads.Threads;
+import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.client.config.IConfigElement;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.File;
+import java.util.List;
 
 @Mod.EventBusSubscriber
 public class Config {
+
+    public static final String CATEGORY_THREADS = "threads";
 
     @SubscribeEvent
     public static void onConfigurationChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
@@ -22,23 +31,38 @@ public class Config {
     }
 
     private Configuration mcConfig;
+    public Threads.Blacklist blacklist;
 
     public Config(File directory) {
         this.mcConfig = new Configuration(new File(directory.getPath(), "compression.cfg"));
     }
 
-    public void initPre() {
-
-        for (EnumEffect effect : EnumEffect.values()) {
-            effect.getConfig(this, "general");
+    public void onChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event.getModID() == Compression.MOD_ID ) {
+            this.syncConfig();
+            if (this.mcConfig.hasChanged()) {
+                this.mcConfig.save();
+            }
         }
-
     }
 
-    public void onChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (event.getModID() == Compression.MOD_ID && this.mcConfig.hasChanged()) {
-            this.mcConfig.save();
+    public void initPre() {
+        this.blacklist = new Threads.Blacklist();
+        this.syncConfig();
+    }
+
+    public void syncConfig() {
+
+        for (EnumEffect effect : EnumEffect.values()) {
+            effect.getConfig(this, Configuration.CATEGORY_GENERAL);
         }
+
+        for (Threads.Config threadConfig : Threads.Config.values()) {
+            threadConfig.getConfig(this, Config.CATEGORY_THREADS);
+        }
+
+        Threads.fetch();
+
     }
 
     public <T> Property get(String category, String name, String comment, T value) {
@@ -67,6 +91,13 @@ public class Config {
         } else {
             return null;
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void populateConfigElements(List<IConfigElement> elements) {
+        elements.add(new ConfigElement(this.mcConfig.getCategory(
+                Configuration.CATEGORY_GENERAL
+        )));
     }
 
 }

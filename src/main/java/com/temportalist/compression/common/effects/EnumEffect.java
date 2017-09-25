@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.effects;
 
-import com.temportalist.compression.common.Config;
+import com.temportalist.compression.common.config.Config;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.item.ItemStack;

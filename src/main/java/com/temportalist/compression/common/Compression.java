@@ -1,5 +1,6 @@
 package com.temportalist.compression.common;
 
+import com.temportalist.compression.common.config.Config;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
 import com.temportalist.compression.common.init.ModItems;
@@ -10,15 +11,19 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Compression.MOD_ID, name = Compression.MOD_NAME, version = Compression.MOD_VERSION)
+@Mod(
+        modid = Compression.MOD_ID, name = Compression.MOD_NAME, version = Compression.MOD_VERSION,
+        guiFactory = Compression.guiFactory
+)
 public class Compression
 {
 
     public static final String MOD_ID = "compression";
-    static final String MOD_NAME = "Compression";
-    static final String MOD_VERSION = "1.2.1";
+    public static final String MOD_NAME = "Compression";
+    public static final String MOD_VERSION = "1.2.1";
     private static final String proxyClient = "com.temportalist.compression.client.ProxyClient";
     private static final String proxyServer = "com.temportalist.compression.server.ProxyServer";
+    public static final String guiFactory = "com.temportalist.compression.client.config.FactoryConfig";
 
     public static Logger LOGGER;
 
@@ -30,10 +35,10 @@ public class Compression
 
     public CreativeTabs tabCompression;
 
-    ModBlocks blocks;
-    ModItems items;
-    ModEntity entity;
-    Config config;
+    public ModBlocks blocks;
+    public ModItems items;
+    public ModEntity entity;
+    public Config config;
 
     @EventHandler
     public void initPre(FMLPreInitializationEvent event)

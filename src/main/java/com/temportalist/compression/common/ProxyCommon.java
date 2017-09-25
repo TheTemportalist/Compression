@@ -1,5 +1,6 @@
 package com.temportalist.compression.common;
 
+import com.temportalist.compression.common.config.Config;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
