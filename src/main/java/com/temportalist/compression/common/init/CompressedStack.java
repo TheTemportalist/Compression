@@ -1,5 +1,7 @@
 package com.temportalist.compression.common.init;
 
+import com.google.gson.Gson;
+import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.items.ICompressed;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.block.Block;
@@ -234,19 +236,25 @@ public class CompressedStack {
     }
 
     public static boolean canCompressItem(ItemStack itemStack) {
-        if (CompressedStack.isCompressed(itemStack) || itemStack == ItemStack.EMPTY) {
+        try {
+            if (CompressedStack.isCompressed(itemStack) || itemStack == ItemStack.EMPTY) {
+                return false;
+            }
+            else if (itemStack.getItem() instanceof ItemBlock) {
+                if (CompressedStack.isInBlackList(itemStack)) return false;
+                Block block = Block.getBlockFromItem(itemStack.getItem());
+                IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
+                return state.getMaterial().isOpaque() && state.isFullCube() && !state.canProvidePower() &&
+                        !block.hasTileEntity(state) && itemStack.getItem().getItemStackLimit(itemStack) > 1;
+            }
+            else {
+                if (CompressedStack.isInBlackList(itemStack)) return false;
+                return itemStack.getItem().getItemStackLimit(itemStack) > 1 && !itemStack.hasTagCompound();
+            }
+        }
+        catch (Exception e) {
+            Compression.LOGGER.error(e);
             return false;
-        }
-        else if (itemStack.getItem() instanceof ItemBlock) {
-            if (CompressedStack.isInBlackList(itemStack)) return false;
-            Block block = Block.getBlockFromItem(itemStack.getItem());
-            IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
-            return state.getMaterial().isOpaque() && state.isFullCube() && !state.canProvidePower() &&
-                    !block.hasTileEntity(state) && itemStack.getItem().getItemStackLimit(itemStack) > 1;
-        }
-        else {
-            if (CompressedStack.isInBlackList(itemStack)) return false;
-            return itemStack.getItem().getItemStackLimit(itemStack) > 1 && !itemStack.hasTagCompound();
         }
     }
 
