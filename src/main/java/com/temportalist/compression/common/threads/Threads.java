@@ -2,11 +2,13 @@ package com.temportalist.compression.common.threads;
 
 import com.google.gson.Gson;
 import com.temportalist.compression.common.Compression;
+import net.minecraftforge.common.config.Property;
+import org.apache.commons.io.IOUtils;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.util.List;
+import java.nio.charset.Charset;
 import java.util.function.Consumer;
 
 public class Threads {
@@ -21,33 +23,42 @@ public class Threads {
         );
 
         private final String name, desc;
-        private boolean shouldFetch;
+        private Property property;
         private final String url;
-        private final Consumer<Reader> onLoad;
+        private final Consumer<String> onLoad;
 
-        Config(String name, String description, String url, Consumer<Reader> onLoad) {
+        Config(String name, String description, String url, Consumer<String> onLoad) {
             this.name = name;
             this.desc = description;
-            this.shouldFetch = false;
             this.url = url;
             this.onLoad = onLoad;
         }
 
         public void getConfig(com.temportalist.compression.common.config.Config config, String category) {
-            this.shouldFetch = config.get(category, this.name, this.desc, true).getBoolean();
+            this.property = config.get(category, this.name, this.desc, true);
+        }
+
+        public boolean shouldFetch() {
+            return this.property.getBoolean();
         }
 
         public void tryFetch() {
-            if (!this.shouldFetch) return;
-            this.shouldFetch = false;
+            if (!this.shouldFetch()) return;
+            this.property.set(false);
 
             new Thread( () -> {
+                String content;
                 try {
                     Reader fileIn = new InputStreamReader(new URL(this.url).openStream());
-                    this.onLoad.accept(fileIn);
+                    content = IOUtils.toString(new URL(this.url), Charset.defaultCharset());
                     fileIn.close();
+
+                    if (!content.isEmpty()) {
+                        this.onLoad.accept(content);
+                    }
                 }
                 catch (Exception e) {
+                    Compression.LOGGER.error(e);
                     Compression.LOGGER.error(e);
                 }
             }).start();
@@ -56,7 +67,7 @@ public class Threads {
 
     }
 
-    public static final Gson GSON = new Gson();
+    static final Gson GSON = new Gson();
 
     public static void fetch() {
         // Should occur AFTER configuration load
@@ -68,13 +79,21 @@ public class Threads {
     }
 
     public static class Blacklist {
-        private String[] items;
-        private String[] blocks;
+        public String[] items;
+        public String[] blocks;
     }
 
-    public static void loadBlacklist(Reader file) {
-        Compression.main.config.blacklist = GSON.fromJson(file, Blacklist.class);
-        Compression.LOGGER.info("Loaded Blacklist configuration");
+    static void loadBlacklist(String file) {
+        try {
+            Compression.main.config.setBlacklist(GSON.fromJson(file, Blacklist.class));
+
+            Compression.LOGGER.info("Loaded Blacklist configuration");
+        }
+        catch (Exception e) {
+            Compression.LOGGER.error("Encountered an error loading blacklist from remote");
+            Compression.LOGGER.error(e);
+            Compression.LOGGER.error(file);
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 package com.temportalist.compression.common.init;
 
-import com.google.gson.Gson;
+import com.google.common.collect.Lists;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.items.ICompressed;
 import com.temportalist.compression.common.lib.EnumTier;
@@ -259,10 +259,13 @@ public class CompressedStack {
     }
 
     public static boolean isInBlackList(ItemStack itemStack) {
-        String registry = itemStack.getItem().getRegistryName().toString();
-        return false;
-        //return Options.blackList.contains(registry) ||
-        //        Options.blackList.contains(registry + ":" + itemStack.getItemDamage());
+        return Compression.main.config.blacklist.containsAny(
+                itemStack.getItem() instanceof ItemBlock,
+                getNameOf(itemStack, true, true),
+                getNameOf(itemStack, true, false),
+                getNameOf(itemStack, false, true),
+                getNameOf(itemStack, false, false)
+        );
     }
 
     public static List<ItemStack> createStackList(ItemStack sample, long count) {
