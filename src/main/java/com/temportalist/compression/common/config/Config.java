@@ -44,7 +44,7 @@ public class Config {
 
         void merge(Threads.Blacklist blacklist) {
             this.items.addAll(Arrays.asList(blacklist.items));
-            this.items.addAll(Arrays.asList(blacklist.blocks));
+            this.blocks.addAll(Arrays.asList(blacklist.blocks));
             Compression.main.config.save();
         }
 
@@ -137,8 +137,8 @@ public class Config {
     public void save() {
         if (this.mcConfig.hasChanged()) {
             this.mcConfig.save();
-            this.blacklist.save();
         }
+        this.blacklist.save();
     }
 
     public void setBlacklist(Threads.Blacklist blacklist) {
