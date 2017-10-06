@@ -1,5 +1,7 @@
 {
-  "items": [],
+  "items": [
+    "stevescarts:modulecomponents"
+  ],
   "blocks": [
     "minecraft:furnace"
   ]
