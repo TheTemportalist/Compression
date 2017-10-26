@@ -6,11 +6,9 @@ import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Tuple;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -20,7 +18,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -60,7 +60,7 @@ public class Effects {
             // tier stays null
         }
 
-        int indexCompressor = Effects.matchItemStack(player, entityStackSample,
+        int indexCompressor = Effects.matchItemStack(player, entityStackSample, true,
                 (Tuple<ItemStack, Integer> invStack, Boolean isCompressed) ->
                         isCompressed && canUseAny(invStack.getFirst(), EnumEffect.COMPRESSOR)
         );
@@ -80,9 +80,15 @@ public class Effects {
         return sameItem && sameDamage && sameTag;
     }
 
-    public static int matchItemStack(EntityPlayer player, ItemStack sampleIn, @Nullable BiFunction<Tuple<ItemStack, Integer>, Boolean, Boolean> onFound) {
-        int slotMin = 0, slotMax = 36 + 4 + 1; // 36 = main, 4 = armor, 1 = offhand
+    public static int matchItemStack(EntityPlayer player, ItemStack sampleIn, boolean includeHotbar,
+                                     @Nullable BiFunction<Tuple<ItemStack, Integer>, Boolean, Boolean> onFound) {
+        int slotMin = 0, slotMax =
+                        player.inventory.mainInventory.size() +
+                        player.inventory.armorInventory.size() +
+                        player.inventory.offHandInventory.size();
+
         for (int slot = slotMin; slot < slotMax; slot++) {
+            if (!includeHotbar && InventoryPlayer.isHotbar(slot)) continue;
             ItemStack stackInSlot = player.inventory.getStackInSlot(slot);
             if (stackInSlot != ItemStack.EMPTY) {
                 boolean isCompressed = CompressedStack.isCompressed(stackInSlot);
@@ -101,7 +107,7 @@ public class Effects {
 
         ArrayList<ItemStack> alikeStacks = new ArrayList<>();
 
-        Effects.matchItemStack(player, stackIn,
+        Effects.matchItemStack(player, stackIn, false,
                 (Tuple<ItemStack, Integer> invStack, Boolean isCompressed) -> {
                     alikeStacks.add(player.inventory.removeStackFromSlot(invStack.getSecond()));
                     return false;
@@ -117,13 +123,26 @@ public class Effects {
         List<ItemStack> stackList = CompressedStack.createStackList(
                 CompressedStack.createSampleStack(stackIn), totalCount
         );
+        int slot;
         for (ItemStack stack : stackList) {
-            if (!player.inventory.addItemStackToInventory(stack)) {
+            slot = Effects.getFirstEmptyStackNonHotbar(player.inventory);
+            if (!player.inventory.add(slot, stack)) {
                 player.dropItem(stack, true, false);
             }
         }
 
         player.inventory.markDirty();
+    }
+
+    public static int getFirstEmptyStackNonHotbar(InventoryPlayer player) {
+        for (int i = InventoryPlayer.getHotbarSize(); i < player.mainInventory.size(); ++i)
+        {
+            if ((player.mainInventory.get(i)).isEmpty())
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static void attractEntities(AxisAlignedBB boundingBox, float radius, World world, Entity entity,
