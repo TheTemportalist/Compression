@@ -53,7 +53,7 @@ public class CompressedStack {
         // The registry name, formattted as modid:name
         tagCom.setString("name", CompressedStack.getNameOf(itemStack, true, true));
         tagCom.setTag("sample", CompressedStack.serializeSample(itemStack));
-        if (itemStack.hasTagCompound()) tagCom.setTag("sampleTag", itemStack.getTagCompound());
+        //if (itemStack.hasTagCompound()) tagCom.setTag("sampleTag", itemStack.getTagCompound());
         // The display name of the inner stack, used in rending the text on hover
         tagCom.setString("display", itemStack.getItem().getItemStackDisplayName(itemStack));
         // The tier/size of the stack
@@ -158,7 +158,9 @@ public class CompressedStack {
 
     public static NBTTagCompound serializeSample(ItemStack stack)
     {
-        return stack.serializeNBT();
+        NBTTagCompound serialized = stack.serializeNBT();
+        serialized.setByte("Count", (byte)1);
+        return serialized;
     }
 
     public static ItemStack deserializeSample(NBTTagCompound tag)
