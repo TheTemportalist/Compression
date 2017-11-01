@@ -46,13 +46,15 @@ public class ItemListCompressed extends ItemOverrideList {
         if (!stack.hasTagCompound()) return originalModel;
 
         ItemStack sampleStack = CompressedStack.createSampleStack(stack);
+        IBlockState sampleState = CompressedStack.createSampleState(stack);
         boolean isBlock = stack.getItem() instanceof ItemBlock;
 
-        IBakedModel sampleModel = isBlock ?
-                Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(CompressedStack.createSampleState(stack)) :
+        IBakedModel sampleModel = //isBlock ?
+                //Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelForState(CompressedStack.createSampleState(stack)) :
                 Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(sampleStack);
 
-        int i = CompressedStack.getTier(stack).ordinal();
+        EnumTier tier = CompressedStack.getTier(stack);
+        int i = tier.ordinal();
         TextureAtlasSprite overlay = overlays[i];
 
         return new IBakedModel() {
@@ -87,11 +89,11 @@ public class ItemListCompressed extends ItemOverrideList {
                 ArrayList<BakedQuad> quadList = new ArrayList<>();
 
                 try {
-                    List<BakedQuad> quads = sampleModel.getQuads(state, side, rand);
+                    List<BakedQuad> quads = sampleModel.getQuads(sampleState, side, rand);
                     if (quads != null) quadList.addAll(quads);
                     if (overlay != null) {
-                        IBakedModel overlayModel = new Builder(state, sampleModel, overlay, BlockPos.ORIGIN).makeBakedModel();
-                        quads = overlayModel.getQuads(state, side, rand);
+                        IBakedModel overlayModel = new Builder(sampleState, sampleModel, overlay, BlockPos.ORIGIN).makeBakedModel();
+                        quads = overlayModel.getQuads(sampleState, side, rand);
                         if (quads != null) quadList.addAll(quads);
                     }
                 }

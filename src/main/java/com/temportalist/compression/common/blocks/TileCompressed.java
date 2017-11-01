@@ -55,7 +55,7 @@ public class TileCompressed extends TileEntity {
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         NBTTagCompound tagCom = super.writeToNBT(compound);
         if (this.sampleStack != null) {
-            tagCom.setString("stack", CompressedStack.getNameOf(this.sampleStack, true, true));
+            tagCom.setTag("stack", CompressedStack.serializeSample(this.sampleStack));//CompressedStack.getNameOf(this.sampleStack, true, true));
         }
         tagCom.setInteger("tier", this.tier.ordinal());
         return tagCom;
@@ -65,7 +65,7 @@ public class TileCompressed extends TileEntity {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         if (compound.hasKey("stack")) {
-            this.sampleStack = CompressedStack.createItemStack(compound.getString("stack"));
+            this.sampleStack = CompressedStack.deserializeSample(compound.getCompoundTag("stack"));//CompressedStack.createItemStack(compound.getString("stack"));
         }
         this.tier = EnumTier.getTier(compound.getInteger("tier"));
     }
