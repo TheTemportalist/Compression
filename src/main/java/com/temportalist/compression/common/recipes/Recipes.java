@@ -1,6 +1,5 @@
 package com.temportalist.compression.common.recipes;
 
-import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.init.Blocks;
@@ -24,8 +23,8 @@ public class Recipes {
 
     @SubscribeEvent
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event) {
-        event.getRegistry().register(new RecipeCompress().setRegistryName(new ResourceLocation(Compression.MOD_ID, "compress")));
-        event.getRegistry().register(new RecipeDeCompress().setRegistryName(new ResourceLocation(Compression.MOD_ID, "decompress")));
+        //event.getRegistry().register(new RecipeCompress().setRegistryName(new ResourceLocation(Compression.MOD_ID, "compress")));
+        //event.getRegistry().register(new RecipeDeCompress().setRegistryName(new ResourceLocation(Compression.MOD_ID, "decompress")));
     }
 
     static abstract class RecipeBase implements IRecipe {
@@ -81,85 +80,6 @@ public class Recipes {
         @Override
         public ItemStack getRecipeOutput() {
             return CompressedStack.create(new ItemStack(Blocks.COBBLESTONE), EnumTier.SINGLE);
-        }
-
-    }
-
-    static class RecipeCompress extends RecipeClassic {
-
-        public boolean isValidInventoryStack(ItemStack stack, boolean isSample) {
-            boolean valid= !isSample;
-            boolean canCompress = CompressedStack.canCompressItem(stack);
-            return valid || canCompress;
-        }
-
-        public boolean isValidSampleAndTier(ItemStack stack, EnumTier tier) {
-            return this.isValidInventoryStack(stack, true) && tier != EnumTier.getTail();
-        }
-
-        @Nullable
-        public Tuple<ItemStack, EnumTier> getStackAndTier(InventoryCrafting inv) {
-            ItemStack stackSample = ItemStack.EMPTY;
-            EnumTier tier = null;
-
-            int slot;
-            for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++) {
-                slot = row * 3 + col;
-                ItemStack stackInv = inv.getStackInSlot(slot);
-
-                if (stackInv == ItemStack.EMPTY || stackInv.getItem() == Items.AIR) return null;
-
-                boolean isSample = !CompressedStack.isCompressed(stackInv);
-                ItemStack sampleInv = isSample ? stackInv : CompressedStack.createSampleStack(stackInv);
-                EnumTier tierInv = !isSample ? CompressedStack.getTier(stackInv) : null;
-
-                if (!this.isValidInventoryStack(stackInv, isSample)) return null;
-
-                // Sample is has been found
-                // Tier is found (can be null for uncompressed)
-                if (stackSample != ItemStack.EMPTY) {
-
-                    // Check if the tiers match
-                    if (tier != tierInv) return null;
-
-                    // Check if items match
-                    if (stackSample.getItem() != sampleInv.getItem()) return null;
-
-                    // Check if damage matches
-                    if (stackSample.getItemDamage() != sampleInv.getItemDamage()) return null;
-
-                }
-                else {
-                    stackSample = sampleInv.copy();
-                    tier = tierInv;
-                }
-
-            }
-
-            if (this.isValidSampleAndTier(stackSample, tier)) {
-                return new Tuple<>(stackSample, tier);
-            }
-            else {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean matches(InventoryCrafting inv, World worldIn) {
-            return this.getStackAndTier(inv) != null;
-        }
-
-        @Override
-        public ItemStack getCraftingResult(InventoryCrafting inv) {
-            Tuple<ItemStack, EnumTier> sampleTier = this.getStackAndTier(inv);
-
-            if (sampleTier.getSecond() != null) {
-                return CompressedStack.create(sampleTier.getFirst(), sampleTier.getSecond().getNext());
-            }
-            else {
-                return CompressedStack.create(sampleTier.getFirst(), EnumTier.SINGLE);
-            }
-
         }
 
     }

@@ -7,6 +7,8 @@ import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -15,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.oredict.OreDictionary;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -235,6 +238,63 @@ public class CompressedStack {
                 null;
     }
 
+    public static boolean isValidInventoryStack(ItemStack stack, boolean isSample) {
+        boolean valid= !isSample;
+        boolean canCompress = CompressedStack.canCompressItem(stack);
+        return valid || canCompress;
+    }
+
+    public static boolean isValidSampleAndTier(ItemStack stack, EnumTier tier) {
+        return CompressedStack.isValidInventoryStack(stack, true) && tier != EnumTier.getTail();
+    }
+
+    @Nullable
+    public static Tuple<ItemStack, EnumTier> getStackAndTier(InventoryCrafting inv) {
+        ItemStack stackSample = ItemStack.EMPTY;
+        EnumTier tier = null;
+
+        int slot;
+        for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++) {
+            slot = row * 3 + col;
+            ItemStack stackInv = inv.getStackInSlot(slot);
+
+            if (stackInv == ItemStack.EMPTY || stackInv.getItem() == Items.AIR) return null;
+
+            boolean isSample = !CompressedStack.isCompressed(stackInv);
+            ItemStack sampleInv = isSample ? stackInv : CompressedStack.createSampleStack(stackInv);
+            EnumTier tierInv = !isSample ? CompressedStack.getTier(stackInv) : null;
+
+            if (!CompressedStack.isValidInventoryStack(stackInv, isSample)) return null;
+
+            // Sample is has been found
+            // Tier is found (can be null for uncompressed)
+            if (stackSample != ItemStack.EMPTY) {
+
+                // Check if the tiers match
+                if (tier != tierInv) return null;
+
+                // Check if items match
+                if (stackSample.getItem() != sampleInv.getItem()) return null;
+
+                // Check if damage matches
+                if (stackSample.getItemDamage() != sampleInv.getItemDamage()) return null;
+
+            }
+            else {
+                stackSample = sampleInv.copy();
+                tier = tierInv;
+            }
+
+        }
+
+        if (CompressedStack.isValidSampleAndTier(stackSample, tier)) {
+            return new Tuple<>(stackSample, tier);
+        }
+        else {
+            return null;
+        }
+    }
+
     public static boolean canCompressItem(ItemStack itemStack) {
         try {
             if (CompressedStack.isCompressed(itemStack) || itemStack == ItemStack.EMPTY) {
@@ -255,6 +315,37 @@ public class CompressedStack {
         catch (Exception e) {
             Compression.LOGGER.error(e);
             return false;
+        }
+    }
+
+    public static boolean canCompressedStack(ItemStack stack)
+    {
+        return canCompressItem(createSampleStack(stack)) && (!isCompressed(stack) || getTier(stack) != EnumTier.getTail());
+    }
+
+    public static ItemStack getNextCompression(ItemStack stackInv) {
+        boolean isSample = !CompressedStack.isCompressed(stackInv);
+        ItemStack sampleInv = isSample ? stackInv : CompressedStack.createSampleStack(stackInv);
+        EnumTier tierInv = !isSample ? CompressedStack.getTier(stackInv) : null;
+
+        if (tierInv != null) {
+            return CompressedStack.create(sampleInv, tierInv.getNext());
+        }
+        else {
+            return CompressedStack.create(sampleInv, EnumTier.SINGLE);
+        }
+    }
+
+    public static ItemStack getPrevCompression(ItemStack stackInv) {
+        boolean isSample = !CompressedStack.isCompressed(stackInv);
+        ItemStack sampleInv = isSample ? stackInv : CompressedStack.createSampleStack(stackInv);
+        EnumTier tierInv = !isSample ? CompressedStack.getTier(stackInv) : null;
+
+        if (tierInv != null) {
+            return CompressedStack.create(sampleInv, tierInv.getPrev());
+        }
+        else {
+            return CompressedStack.create(sampleInv, EnumTier.SINGLE);
         }
     }
 
