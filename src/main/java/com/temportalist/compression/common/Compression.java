@@ -4,6 +4,7 @@ import com.temportalist.compression.common.config.Config;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
 import com.temportalist.compression.common.init.ModItems;
+import com.temportalist.compression.common.network.Network;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -33,6 +34,8 @@ public class Compression
     @SidedProxy(clientSide = Compression.proxyClient, serverSide = Compression.proxyServer)
     private static IProxy proxy;
 
+    public Network Network;
+
     public CreativeTabs tabCompression;
 
     public ModBlocks blocks;
@@ -40,10 +43,13 @@ public class Compression
     public ModEntity entity;
     public Config config;
 
+    public static int guidIdCompressor = 0;
+
     @EventHandler
     public void initPre(FMLPreInitializationEvent event)
     {
         Compression.LOGGER = event.getModLog();
+        this.Network = new Network();
         Compression.proxy.initPre(event);
     }
 
