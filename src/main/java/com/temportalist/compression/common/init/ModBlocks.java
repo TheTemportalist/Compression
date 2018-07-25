@@ -13,14 +13,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModBlocks {
 
-    @GameRegistry.ObjectHolder("compression:compressedBlock")
     public static BlockCompressed compressed;
 
-    @GameRegistry.ObjectHolder("compression:compressor")
     public static BlockCompressor compressor;
 
     public void initPre() {
@@ -45,6 +45,12 @@ public class ModBlocks {
     public void registerItems(IForgeRegistry<Item> registry) {
         ModBlocks.compressed.registerItem(registry);
         ModBlocks.compressor.registerItem(registry);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerModels() {
+        ModBlocks.compressed.registerModel();
+        ModBlocks.compressor.registerModel();
     }
 
 }

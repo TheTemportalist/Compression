@@ -3,6 +3,8 @@ package com.temportalist.compression.common.items;
 import com.temportalist.compression.common.Compression;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ItemBase extends Item {
@@ -21,6 +23,11 @@ public class ItemBase extends Item {
 
     public void registerItem(IForgeRegistry<Item> registry) {
         registry.register(this);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        
     }
 
 }

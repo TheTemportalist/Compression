@@ -3,12 +3,9 @@ package com.temportalist.compression.client;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.ContainerCompressor;
 import com.temportalist.compression.common.blocks.TileCompressor;
-import com.temportalist.compression.common.network.MessageCompressor;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -20,7 +17,6 @@ public class GuiCompressor extends GuiContainer
     /** The player inventory bound to this GUI. */
     private final InventoryPlayer playerInventory;
     private final TileCompressor tileCompressor;
-    private GuiButton btnMode;
 
     public GuiCompressor(InventoryPlayer playerInv, TileCompressor furnaceInv)
     {
@@ -29,28 +25,11 @@ public class GuiCompressor extends GuiContainer
         this.tileCompressor = furnaceInv;
     }
 
-    @Override
-    public void initGui() {
-        super.initGui();
-        this.buttonList.add(this.btnMode = new GuiButton(1, 190, 95, 85, 20, "Compress"));
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button)
-    {
-        if(button.id == 1)
-        {
-            Compression.main.Network.NETWORK.sendToServer(new MessageCompressor(this.tileCompressor.getPos()));
-        }
-    }
-
     /**
      * Draws the screen and all the components in it.
      */
     public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
-        this.btnMode.displayString = (this.tileCompressor.isDecompressing ? "Dec" : "C") + "ompressing";
-
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.renderHoveredToolTip(mouseX, mouseY);
@@ -85,7 +64,6 @@ public class GuiCompressor extends GuiContainer
     {
         int i = this.tileCompressor.getField(0);
         int j = this.tileCompressor.getField(1);
-        //Compression.LOGGER.info("Gui: " + i + "/" + j);
         return j != 0 && i != 0 ? i * pixels / j : 0;
     }
 

@@ -25,6 +25,8 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 
+import static com.temportalist.compression.common.blocks.BlockCompressor.PROPERTY_COMPRESS;
+
 public class TileCompressor extends TileEntityLockable implements ITickable, ICapabilityProvider
 {
 
@@ -32,10 +34,13 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
     private int cookTime;
     private int totalCookTime;
     private String customName;
-    public boolean isDecompressing;
 
     public TileCompressor() {
         this._inventory = new ItemStackHandler(2);
+    }
+
+    public boolean isDecompressing() {
+        return !((BlockCompressor)this.getBlockType()).getStateFromMeta(this.getBlockMetadata()).getValue(PROPERTY_COMPRESS);
     }
 
     /**
@@ -114,7 +119,7 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
      */
     public String getName()
     {
-        return this.hasCustomName() ? this.customName : Compression.MOD_ID + ":container.compressor";
+        return this.hasCustomName() ? this.customName : Compression.MOD_ID + ":container.compressor." + this.getBlockMetadata();
     }
 
     /**
@@ -131,7 +136,6 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
         this._inventory.deserializeNBT(compound.getCompoundTag("inventory"));
         this.cookTime = compound.getInteger("CookTime");
         this.totalCookTime = compound.getInteger("CookTimeTotal");
-        this.isDecompressing = compound.getBoolean("isDecompressing");
 
         if (compound.hasKey("CustomName", 8))
         {
@@ -145,7 +149,6 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
         compound.setTag("inventory", this._inventory.serializeNBT());
         compound.setInteger("CookTime", (short)this.cookTime);
         compound.setInteger("CookTimeTotal", (short)this.totalCookTime);
-        compound.setBoolean("isDecompressing", this.isDecompressing);
 
         if (this.hasCustomName())
         {
@@ -225,7 +228,7 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
 
         int outCount;
 
-        if (!this.isDecompressing)
+        if (!this.isDecompressing())
         {
             outCount = 1;
             if (input.getCount() < 9
@@ -242,7 +245,7 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
             }
         }
 
-        ItemStack nextCompression = this.isDecompressing
+        ItemStack nextCompression = this.isDecompressing()
                 ? CompressedStack.getPrevCompression(input)
                 : CompressedStack.getNextCompression(input);
         if (nextCompression.isEmpty())
@@ -280,10 +283,10 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
         if (this.canProcess())
         {
             ItemStack input = this._inventory.getStackInSlot(0);
-            ItemStack output = this.isDecompressing
+            ItemStack output = this.isDecompressing()
                     ? CompressedStack.getPrevCompression(input)
                     : CompressedStack.getNextCompression(input);
-            output.setCount(this.isDecompressing ? 9 : 1);
+            output.setCount(this.isDecompressing() ? 9 : 1);
             ItemStack outStack = this._inventory.getStackInSlot(1);
 
             if (outStack.isEmpty())
@@ -295,7 +298,7 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
                 outStack.grow(output.getCount());
             }
 
-            input.shrink(this.isDecompressing ? 1 : 9);
+            input.shrink(this.isDecompressing() ? 1 : 9);
         }
     }
 
@@ -348,8 +351,6 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
                 return this.cookTime;
             case 1:
                 return this.totalCookTime;
-            case 2:
-                return this.isDecompressing ? 1 : 0;
             default:
                 return 0;
         }
@@ -365,9 +366,6 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
             case 1:
                 this.totalCookTime = value;
                 break;
-            case 2:
-                this.isDecompressing = value > 0;
-                break;
             default:
                 break;
         }
@@ -375,21 +373,12 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
 
     public int getFieldCount()
     {
-        return 3;
+        return 2;
     }
 
     public void clear()
     {
         this._inventory = new ItemStackHandler(this._inventory.getSlots());
-    }
-
-    public void onChangeMode() {
-        this.isDecompressing = !this.isDecompressing;
-
-        this.world.markBlockRangeForRenderUpdate(pos, pos);
-        this.world.notifyBlockUpdate(pos, this.world.getBlockState(pos), this.world.getBlockState(pos), 3);
-        this.world.scheduleBlockUpdate(pos, this.getBlockType(),0,0);
-        this.markDirty();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.temportalist.compression.common.items;
 
+import com.temportalist.compression.client.ModelLoaderCompressed;
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.init.ModItems;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -9,6 +11,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -19,6 +22,12 @@ public class ItemCompressed extends ItemBase implements ICompressed {
 
     public ItemCompressed() {
         super("compressedItem");
+    }
+
+    @Override
+    public void registerModel()
+    {
+        ModelLoader.setCustomModelResourceLocation(this, 0, ModelLoaderCompressed.fakeRL);
     }
 
     @Override

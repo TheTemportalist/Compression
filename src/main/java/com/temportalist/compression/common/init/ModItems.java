@@ -4,11 +4,12 @@ import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.items.ItemCompressed;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class ModItems {
 
-    @GameRegistry.ObjectHolder("compression:compressedItem")
     public static ItemCompressed compressed;
 
     public void initPre() {
@@ -18,6 +19,11 @@ public class ModItems {
 
     public void registerItems(IForgeRegistry<Item> registry) {
         ModItems.compressed.registerItem(registry);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void registerModels() {
+        ModItems.compressed.registerModel();
     }
 
 }

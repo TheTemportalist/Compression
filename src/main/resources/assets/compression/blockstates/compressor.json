@@ -1,16 +1,31 @@
 {
   "forge_marker": 1,
   "defaults": {
-    "textures": {
-      "all": "blocks/furnace_top"
-    },
-    "model": "cube_all",
+    "model": "cube",
     "uvlock": true
   },
   "variants": {
-    "normal": [{}],
-    "inventory": [{}],
-    "compress=true": [{}],
-    "compress=false": [{}]
+    "compress=true": [{
+      "textures": {
+        "particle": "blocks/furnace_top",
+        "up": "blocks/crafting_table_top",
+        "down": "blocks/furnace_top",
+        "north": "blocks/furnace_side",
+        "east": "blocks/furnace_side",
+        "south": "blocks/furnace_side",
+        "west": "blocks/furnace_side"
+      }
+    }],
+    "compress=false": [{
+      "textures": {
+        "particle": "blocks/furnace_top",
+        "up": "blocks/crafting_table_top",
+        "down": "blocks/furnace_top",
+        "north": "blocks/piston_side",
+        "east": "blocks/piston_side",
+        "south": "blocks/piston_side",
+        "west": "blocks/piston_side"
+      }
+    }]
   }
 }

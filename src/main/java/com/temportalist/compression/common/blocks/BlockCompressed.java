@@ -1,8 +1,10 @@
 package com.temportalist.compression.common.blocks;
 
+import com.temportalist.compression.client.ModelLoaderCompressed;
 import com.temportalist.compression.common.effects.Effects;
 import com.temportalist.compression.common.effects.EnumEffect;
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.items.ItemCompressedBlock;
 import com.temportalist.compression.common.lib.BlockProperties;
 import com.temportalist.compression.common.lib.EnumTier;
@@ -11,10 +13,13 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,9 +30,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -39,7 +47,7 @@ public class BlockCompressed extends BlockBase {
     }
 
     @Override
-    public ItemBlock createItemBlock() {
+    public Item createItemBlock() {
         return new ItemCompressedBlock(this);
     }
 
@@ -54,6 +62,21 @@ public class BlockCompressed extends BlockBase {
                 BlockProperties.ITEMSTACK_UN, BlockProperties.TIER_UN
             }
         );
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void registerModel()
+    {
+        ModelLoader.setCustomModelResourceLocation(this.item, 0, ModelLoaderCompressed.fakeRL);
+        ModelLoader.setCustomStateMapper(this, new StateMapperBase() {
+
+            @Override
+            protected ModelResourceLocation getModelResourceLocation (IBlockState state){
+                return ModelLoaderCompressed.fakeRL;
+            }
+
+        });
     }
 
     @Override

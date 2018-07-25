@@ -6,5 +6,7 @@ item.compression:ItemDenseArmor_chest.name=Dense Leather Tunic
 item.compression:ItemDenseArmor_legs.name=Dense Leather Pants
 item.compression:ItemDenseArmor_feet.name=Dense Leather Boots
 
-tile.compression.compressor.name=Compressor
-compression:container.compressor=Compressor
+tile.compression.compressor.0.name=Compressor
+tile.compression.compressor.1.name=Decompressor
+compression:container.compressor.0=Compressor
+compression:container.compressor.1=Decompressor
