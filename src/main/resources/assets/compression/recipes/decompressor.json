@@ -1,23 +1,29 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "forge:ore_shaped",
   "pattern": [
-    "PIP",
-    "ICI",
-    "PIP"
+    "IPI",
+    "PCP",
+    "IPI"
   ],
   "key": {
     "I": {
-      "item": "minecraft:iron_ingot"
+      "type": "forge:ore_dict",
+      "ore": "ingotIron"
     },
     "P": {
       "item": "minecraft:piston"
     },
     "C": {
-      "item": "compression:compressedBlock"
+      "type": "minecraft:item_nbt",
+      "item": "compression:compressedBlock",
+      "nbt": {
+        "name": "minecraft:cobblestone:0",
+        "tier": 2
+      }
     }
   },
   "result": {
     "item": "compression:compressor",
-    "data": 1
+    "data": 0
   }
 }

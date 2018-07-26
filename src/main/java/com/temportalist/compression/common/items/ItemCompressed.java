@@ -9,6 +9,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
@@ -19,6 +20,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ItemCompressed extends ItemBase implements ICompressed {
+
+    public static final NonNullList<ItemStack> SUBTYPES = NonNullList.create();
 
     public ItemCompressed() {
         super("compressedItem");
@@ -32,17 +35,7 @@ public class ItemCompressed extends ItemBase implements ICompressed {
 
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if (tab != this.getCreativeTab()) return;
-        for (ItemStack stack : new ItemStack[]{
-                new ItemStack(Items.APPLE),
-                new ItemStack(Items.POTATO),
-                new ItemStack(Items.BOOK),
-                new ItemStack(Items.COOKIE)
-        }) {
-            for (EnumTier tier : EnumTier.values()) {
-                items.add(CompressedStack.create(stack, tier));
-            }
-        }
+        items.addAll(SUBTYPES);
     }
 
     @Override
@@ -70,6 +63,13 @@ public class ItemCompressed extends ItemBase implements ICompressed {
     @Override
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         this.onUpdate(worldIn, entityIn, stack);
+    }
+
+    @Nullable
+    @Override
+    public NBTTagCompound getNBTShareTag(ItemStack stack)
+    {
+        return CompressedStack.getMinimizedTag(stack);
     }
 
 }

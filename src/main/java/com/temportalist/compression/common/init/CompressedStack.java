@@ -1,12 +1,10 @@
 package com.temportalist.compression.common.init;
 
-import com.google.common.collect.Lists;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.items.ICompressed;
 import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
@@ -15,23 +13,67 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 
 public class CompressedStack {
 
+    public static String getUniqueSubtypeString(ItemStack compressedStack)
+    {
+        if (compressedStack.getTagCompound() == null) return null;
+        else return String.format("%s:%d",
+            CompressedStack.getNameSample(compressedStack),
+            CompressedStack.getTier(compressedStack).ordinal()
+        );
+    }
+
+    public static NBTTagCompound getMinimizedTag(ItemStack compressedStack) {
+        NBTTagCompound tagCom = new NBTTagCompound();
+        if (!CompressedStack.isCompressed(compressedStack)) return tagCom;
+        if (compressedStack.getTagCompound() == null) return tagCom;
+        tagCom.setString("name", CompressedStack.getNameSample(compressedStack));
+        tagCom.setInteger("tier", getTier(compressedStack).ordinal());
+        return tagCom;
+    }
+
+    public static String getNameSample(ItemStack compressedStack) {
+        NBTTagCompound tagCom = compressedStack.getTagCompound();
+        if (tagCom == null) return null;
+        return tagCom.getString("name");
+    }
+
     /**
-     * Returns if the stack is a Compressed Stack
-     * @param itemStack the ItemStack to check
-     * @return true if the stack is qualified as "Compressed"
+     * Get the tier of the Compressed ItemStack
+     * @param itemStack The ItemStack
+     * @return The {@link EnumTier} of the Compressed ItemStack, else null
      */
-    public static boolean isCompressed(ItemStack itemStack) {
-        return itemStack != null && itemStack != ItemStack.EMPTY && itemStack.getItem() instanceof ICompressed;
+    public static EnumTier getTier(ItemStack itemStack) {
+        if (!CompressedStack.isCompressed(itemStack)) return null;
+        NBTTagCompound tagCom = itemStack.getTagCompound();
+        if (tagCom == null) return null;
+        return EnumTier.getTier(tagCom.getInteger("tier"));
+    }
+
+    public static String getDisplayNameIn(ItemStack compressedStack) {
+        NBTTagCompound tagCom = compressedStack.getTagCompound();
+        if (tagCom == null) return null;
+        if (tagCom.hasKey("display")) return tagCom.getString("display");
+        ItemStack sample = CompressedStack.getSample(compressedStack);
+        return sample.getItem().getItemStackDisplayName(sample);
+    }
+
+    private static ItemStack getSample(ItemStack container)
+    {
+        if (!CompressedStack.isCompressed(container)) return ItemStack.EMPTY;
+        NBTTagCompound tagCom = container.getTagCompound();
+        if (tagCom == null) return ItemStack.EMPTY;
+        if (tagCom.hasKey("sample")) return new ItemStack(tagCom.getCompoundTag("sample"));
+        Tuple<ResourceLocation, Integer> qualifiers = getQualifiers(getNameSample(container));
+        return GameRegistry.makeItemStack(qualifiers.getFirst().toString(), qualifiers.getSecond(), 1, null);
     }
 
     /**
@@ -68,6 +110,15 @@ public class CompressedStack {
     }
 
     /**
+     * Returns if the stack is a Compressed Stack
+     * @param itemStack the ItemStack to check
+     * @return true if the stack is qualified as "Compressed"
+     */
+    public static boolean isCompressed(ItemStack itemStack) {
+        return itemStack != null && itemStack != ItemStack.EMPTY && itemStack.getItem() instanceof ICompressed;
+    }
+
+    /**
      * Get the fully qualified display name for a compressed stack
      * @param itemStack The ItemStack to translate
      * @return "<Tier Name> Compressed <Item Name>" if stack is a Compressed Stack,
@@ -76,7 +127,7 @@ public class CompressedStack {
     public static String getDisplayNameFor(ItemStack itemStack) {
         if (!CompressedStack.isCompressed(itemStack)) return itemStack.getItem().getItemStackDisplayName(itemStack);
         else {
-            return CompressedStack.getTier(itemStack).getName() + " Compressed " + itemStack.getTagCompound().getString("display");
+            return CompressedStack.getTier(itemStack).getName() + " Compressed " + CompressedStack.getDisplayNameIn(itemStack);
         }
     }
 
@@ -86,16 +137,7 @@ public class CompressedStack {
      * @return The name of the inner sample stack of the Compressed ItemStack, else the {@link ItemStack#getUnlocalizedName()}
      */
     public static String getStackName(ItemStack itemStack) {
-        return CompressedStack.isCompressed(itemStack) ? itemStack.getTagCompound().getString("name") : itemStack.getUnlocalizedName();
-    }
-
-    /**
-     * Get the tier of the Compressed ItemStack
-     * @param itemStack The ItemStack
-     * @return The {@link EnumTier} of the Compressed ItemStack, else null
-     */
-    public static EnumTier getTier(ItemStack itemStack) {
-        return CompressedStack.isCompressed(itemStack) ? EnumTier.getTier(itemStack.getTagCompound().getInteger("tier")) : null;
+        return CompressedStack.isCompressed(itemStack) ? getNameSample(itemStack) : itemStack.getUnlocalizedName();
     }
 
     /**
@@ -201,15 +243,10 @@ public class CompressedStack {
      */
     public static ItemStack createSampleStack(ItemStack itemStack) {
         return CompressedStack.isCompressed(itemStack) ?
-                CompressedStack.createSampleFromStack(itemStack) :
+                CompressedStack.getSample(itemStack) :
                 //CompressedStack.createItemStack(CompressedStack.getStackName(itemStack),
                 //        itemStack.getTagCompound().hasKey("sampleTag") ? itemStack.getTagCompound().getCompoundTag("sampleTag") : null) :
                 itemStack.copy();
-    }
-
-    private static ItemStack createSampleFromStack(ItemStack container)
-    {
-        return new ItemStack(container.getTagCompound().getCompoundTag("sample"));
     }
 
     /**
@@ -233,7 +270,6 @@ public class CompressedStack {
         return CompressedStack.isValidInventoryStack(stack, true) && tier != EnumTier.getTail();
     }
 
-    @Nullable
     public static Tuple<ItemStack, EnumTier> getStackAndTier(InventoryCrafting inv) {
         ItemStack stackSample = ItemStack.EMPTY;
         EnumTier tier = null;

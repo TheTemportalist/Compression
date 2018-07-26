@@ -1,10 +1,12 @@
 package com.temportalist.compression.common.items;
 
+import com.temportalist.compression.common.init.CompressedStack;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -44,5 +46,14 @@ public class ItemCompressedBlock extends ItemBlock implements ICompressed {
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         this.onUpdate(worldIn, entityIn, stack);
     }
+
+    @Nullable
+    @Override
+    public NBTTagCompound getNBTShareTag(ItemStack stack)
+    {
+        return CompressedStack.getMinimizedTag(stack);
+    }
+
+
 
 }

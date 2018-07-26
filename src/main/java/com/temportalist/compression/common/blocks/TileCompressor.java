@@ -1,9 +1,8 @@
 package com.temportalist.compression.common.blocks;
 
 import com.temportalist.compression.common.Compression;
-import com.temportalist.compression.common.ContainerCompressor;
+import com.temportalist.compression.common.container.ContainerCompressor;
 import com.temportalist.compression.common.init.CompressedStack;
-import net.minecraft.block.BlockFurnace;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -15,7 +14,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
@@ -114,12 +113,16 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
         }
     }
 
+    public static ResourceLocation GetContainerName(int meta) {
+        return new ResourceLocation(Compression.MOD_ID, "container.compressor." + meta);
+    }
+
     /**
      * Get the name of this object. For players this returns their username
      */
     public String getName()
     {
-        return this.hasCustomName() ? this.customName : Compression.MOD_ID + ":container.compressor." + this.getBlockMetadata();
+        return this.hasCustomName() ? this.customName : TileCompressor.GetContainerName(this.getBlockMetadata()).toString();
     }
 
     /**

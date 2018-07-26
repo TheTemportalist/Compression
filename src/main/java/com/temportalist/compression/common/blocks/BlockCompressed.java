@@ -42,6 +42,8 @@ import java.util.Random;
 
 public class BlockCompressed extends BlockBase {
 
+    public static final NonNullList<ItemStack> SUBTYPES = NonNullList.create();
+
     public BlockCompressed() {
         super(Material.GROUND, "compressedBlock");
     }
@@ -180,17 +182,7 @@ public class BlockCompressed extends BlockBase {
 
     @Override
     public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if (tab != this.getCreativeTabToDisplayOn()) return;
-        for (ItemStack stack : new ItemStack[]{
-                new ItemStack(Blocks.COBBLESTONE),
-                new ItemStack(Blocks.GRAVEL),
-                new ItemStack(Blocks.SAND),
-                new ItemStack(Blocks.DIRT)
-        }) {
-            for (EnumTier tier : EnumTier.values()) {
-                items.add(CompressedStack.create(stack, tier));
-            }
-        }
+        items.addAll(SUBTYPES);
     }
 
     @Override

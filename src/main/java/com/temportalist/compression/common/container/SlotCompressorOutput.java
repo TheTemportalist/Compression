@@ -1,4 +1,4 @@
-package com.temportalist.compression.common;
+package com.temportalist.compression.common.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;

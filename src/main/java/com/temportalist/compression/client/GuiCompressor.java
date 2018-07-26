@@ -1,7 +1,7 @@
 package com.temportalist.compression.client;
 
 import com.temportalist.compression.common.Compression;
-import com.temportalist.compression.common.ContainerCompressor;
+import com.temportalist.compression.common.container.ContainerCompressor;
 import com.temportalist.compression.common.blocks.TileCompressor;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GuiCompressor extends GuiContainer
 {
-    private static final ResourceLocation GUI_TEXTURES = new ResourceLocation(Compression.MOD_ID,"textures/gui/compressor.png");
+    public static final ResourceLocation GUI_TEXTURES = new ResourceLocation(Compression.MOD_ID,"textures/gui/compressor.png");
     /** The player inventory bound to this GUI. */
     private final InventoryPlayer playerInventory;
     private final TileCompressor tileCompressor;

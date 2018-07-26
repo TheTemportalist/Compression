@@ -1,18 +1,27 @@
 package com.temportalist.compression.common;
 
+import com.temportalist.compression.common.blocks.BlockCompressed;
 import com.temportalist.compression.common.blocks.TileCompressor;
 import com.temportalist.compression.common.config.Config;
+import com.temportalist.compression.common.container.ContainerCompressor;
 import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.init.ModBlocks;
 import com.temportalist.compression.common.init.ModEntity;
 import com.temportalist.compression.common.init.ModItems;
+import com.temportalist.compression.common.items.ItemCompressed;
 import com.temportalist.compression.common.lib.EnumTier;
+import com.temportalist.compression.common.recipes.RecipeNToN;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.RegistryEvent;
@@ -22,8 +31,14 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.registries.GameData;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Mod.EventBusSubscriber
 public class ProxyCommon implements IProxy, IGuiHandler {
@@ -53,13 +68,83 @@ public class ProxyCommon implements IProxy, IGuiHandler {
     }
 
     @Override
-    public void init(FMLInitializationEvent event) {
+    public void init(FMLInitializationEvent event)
+    {
+
+        ForgeRegistries.RECIPES.getValue(new ResourceLocation(Compression.MOD_ID, "decompressor"));
+        GameRegistry.addShapedRecipe(
+                new ResourceLocation(Compression.MOD_ID, "decompressor"), null,
+                new ItemStack(ModBlocks.compressor, 1, 1),
+                "PIP",
+                "ICI",
+                "PIP",
+                'I', Items.IRON_INGOT,
+                'P', Blocks.PISTON,
+                'C', CompressedStack.create(new ItemStack(Blocks.COAL_BLOCK), EnumTier.DOUBLE)
+        );
 
     }
 
     @Override
-    public void initPost(FMLPostInitializationEvent event){
+    public void initPost(FMLPostInitializationEvent event)
+    {
+        NonNullList<ItemStack> itemSubTypes = NonNullList.create();
+        NonNullList<ItemStack> blockSubTypes = NonNullList.create();
+        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        {
+            Item item = entry.getValue();
+            if (item instanceof ItemBlock)
+            {
+                item.getSubItems(CreativeTabs.SEARCH, blockSubTypes);
+            }
+            else {
+                item.getSubItems(CreativeTabs.SEARCH, itemSubTypes);
+            }
+        }
+        Compression.LOGGER.info("[Compression] Loaded " + itemSubTypes.size() + " item subtypes.");
+        Compression.LOGGER.info("[Compression] Loaded " + blockSubTypes.size() + " block subtypes.");
 
+        for (ItemStack stack : itemSubTypes)
+        {
+            if (!CompressedStack.canCompressedStack(stack)) continue;
+            ProxyCommon.registerRecipesFor(stack, ItemCompressed.SUBTYPES);
+        }
+        Compression.LOGGER.info("[Compression] Loaded " + ItemCompressed.SUBTYPES.size() + " item subtypes variants ("
+                + itemSubTypes.size() + " * " + EnumTier.values().length + " tiers).");
+
+        for (ItemStack stack : blockSubTypes)
+        {
+            if (!CompressedStack.canCompressedStack(stack)) continue;
+            ProxyCommon.registerRecipesFor(stack, BlockCompressed.SUBTYPES);
+        }
+        Compression.LOGGER.info("[Compression] Loaded " + BlockCompressed.SUBTYPES.size() + " block subtypes variants ("
+                + blockSubTypes.size() + " * " + EnumTier.values().length + " tiers).");
+    }
+
+    private static void registerRecipesFor(ItemStack stack, NonNullList<ItemStack> compressedStacks)
+    {
+        String stackName = CompressedStack.getNameOf(stack, true, true);
+        ItemStack prevStack = stack;
+        EnumTier prevTier = null;
+        for (EnumTier tier : EnumTier.values()) {
+            ItemStack compressedStack = CompressedStack.create(stack, tier);
+
+            // add to subtypes
+            compressedStacks.add(compressedStack);
+
+            String prevTierStr = prevTier == null ? "NULL" : prevTier.getName();
+            String prevToTier = String.format("%s>%s", prevTierStr, tier.getName());
+            String tierToPrev = String.format("%s<%s", tier.getName(), prevTierStr);
+
+            // add compress recipe
+            RecipeNToN.createNToOne(new ResourceLocation(stackName, prevToTier), prevStack, compressedStack, 9);
+            // add decompress recipe
+            RecipeNToN.createOneToN(new ResourceLocation(stackName, tierToPrev), compressedStack, prevStack, 9);
+
+            // mark previous
+            prevStack = compressedStack;
+            prevTier = tier;
+        }
     }
 
     @SubscribeEvent

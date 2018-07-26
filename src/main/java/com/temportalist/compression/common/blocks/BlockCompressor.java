@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.init.ModBlocks;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
@@ -36,6 +37,8 @@ public class BlockCompressor extends BlockBase {
         public ItemBlockCompressor(Block block)
         {
             super(block);
+            this.setHasSubtypes(true);
+            this.setMaxDamage(0);
         }
 
         @Override
@@ -53,11 +56,12 @@ public class BlockCompressor extends BlockBase {
     }
 
     public BlockCompressor() {
-        super(Material.IRON, "compressor");
+        super(Material.GROUND, "compressor");
         this.setDefaultState(
                 this.getBlockState().getBaseState()
                         .withProperty(PROPERTY_COMPRESS, Boolean.valueOf(true))
         );
+        this.setHardness(1.0F).setResistance(2.0F);
     }
 
     @Override
@@ -98,6 +102,12 @@ public class BlockCompressor extends BlockBase {
     }
 
     @Override
+    public int damageDropped(IBlockState state)
+    {
+        return this.getMetaFromState(state);
+    }
+
+    @Override
     public boolean hasTileEntity(IBlockState state) {
         return true;
     }
@@ -112,9 +122,9 @@ public class BlockCompressor extends BlockBase {
     {
         TileEntity tileentity = worldIn.getTileEntity(pos);
 
-        if (tileentity instanceof TileEntityFurnace)
+        if (tileentity instanceof TileCompressor)
         {
-            InventoryHelper.dropInventoryItems(worldIn, pos, (TileEntityFurnace)tileentity);
+            InventoryHelper.dropInventoryItems(worldIn, pos, (TileCompressor)tileentity);
             worldIn.updateComparatorOutputLevel(pos, this);
         }
 

@@ -1,7 +1,6 @@
-package com.temportalist.compression.common;
+package com.temportalist.compression.common.container;
 
 import com.temportalist.compression.common.init.CompressedStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.*;
