@@ -22,7 +22,7 @@ public class Compression
 
     public static final String MOD_ID = "compression";
     public static final String MOD_NAME = "Compression";
-    public static final String MOD_VERSION = "1.2.3";
+    public static final String MOD_VERSION = "1.4.1";
     private static final String proxyClient = "com.temportalist.compression.client.ProxyClient";
     private static final String proxyServer = "com.temportalist.compression.server.ProxyServer";
     public static final String guiFactory = "com.temportalist.compression.client.config.FactoryConfig";

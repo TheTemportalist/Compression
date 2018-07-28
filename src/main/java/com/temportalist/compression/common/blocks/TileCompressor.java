@@ -3,6 +3,7 @@ package com.temportalist.compression.common.blocks;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.container.ContainerCompressor;
 import com.temportalist.compression.common.init.CompressedStack;
+import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -170,20 +171,6 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
     }
 
     /**
-     * Furnace isBurning
-     */
-    public boolean isBurning()
-    {
-        return true;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static boolean isBurning(IInventory inventory)
-    {
-        return inventory.getField(0) > 0;
-    }
-
-    /**
      * Like the old updateEntity(), except more generic.
      */
     public void update()
@@ -218,7 +205,17 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
 
     public int getCookTime(ItemStack stack)
     {
-        return 200;
+        if (stack == ItemStack.EMPTY) return 0;
+
+        EnumTier currentTier = CompressedStack.getTier(stack);
+        if (this.isDecompressing())
+        {
+            return currentTier == null ? 0 : currentTier.getTicksToDecompressFrom();
+        }
+        else {
+            EnumTier targetTier = currentTier == null ? EnumTier.SINGLE : currentTier.getNext();
+            return targetTier == null ? 0 : targetTier.getTicksToCompressTo();
+        }
     }
 
     /**

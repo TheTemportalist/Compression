@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.effects.EnumEffect;
+import com.temportalist.compression.common.lib.EnumTier;
 import com.temportalist.compression.common.threads.Threads;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
@@ -99,8 +100,12 @@ public class Config {
         Compression.main.config.onChanged(event);
     }
 
+    public static String CATEGORY_TIERS = "tiers";
+
     private Configuration mcConfig;
     public Blacklist blacklist;
+    public int TicksToCompress = 20;
+    public int TicksToDecompress = 20;
 
     public Config(File directory) {
         this.mcConfig = new Configuration(new File(directory.getPath(), "compression.cfg"));
@@ -120,6 +125,11 @@ public class Config {
     }
 
     public void syncConfig() {
+
+        for (EnumTier tier : EnumTier.values())
+        {
+            tier.getConfig(this, CATEGORY_TIERS);
+        }
 
         for (EnumEffect effect : EnumEffect.values()) {
             effect.getConfig(this, Configuration.CATEGORY_GENERAL);
