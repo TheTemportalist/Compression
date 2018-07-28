@@ -242,11 +242,12 @@ public class CompressedStack {
      * @return an ItemStack containing 1 item of the specified type, null if itemStack is not compressed
      */
     public static ItemStack createSampleStack(ItemStack itemStack) {
-        return CompressedStack.isCompressed(itemStack) ?
-                CompressedStack.getSample(itemStack) :
-                //CompressedStack.createItemStack(CompressedStack.getStackName(itemStack),
-                //        itemStack.getTagCompound().hasKey("sampleTag") ? itemStack.getTagCompound().getCompoundTag("sampleTag") : null) :
-                itemStack.copy();
+        if (CompressedStack.isCompressed(itemStack)) return CompressedStack.getSample(itemStack);
+        else {
+            ItemStack sample = itemStack.copy();
+            sample.setCount(1);
+            return sample;
+        }
     }
 
     /**

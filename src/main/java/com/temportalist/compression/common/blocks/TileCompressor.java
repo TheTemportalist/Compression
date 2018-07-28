@@ -259,11 +259,12 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
             return true;
         }
 
+        ItemStack sampleOut = CompressedStack.createSampleStack(outStack);
+        ItemStack sampleNext = CompressedStack.createSampleStack(nextCompression);
+
+
         // Sample stacks match (same type of compressed)
-        if (!ItemStack.areItemStacksEqual(
-                CompressedStack.createSampleStack(nextCompression),
-                CompressedStack.createSampleStack(outStack)
-        )) return false;
+        if (!ItemStack.areItemStacksEqual(sampleOut, sampleNext)) return false;
 
         // Tiers match
         if (CompressedStack.getTier(nextCompression) != CompressedStack.getTier(outStack)) return false;
