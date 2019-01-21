@@ -12,7 +12,6 @@ import com.temportalist.compression.common.items.ItemCompressed;
 import com.temportalist.compression.common.lib.EnumTier;
 import com.temportalist.compression.common.recipes.RecipeNToN;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -33,9 +32,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.ShapedOreRecipe;
-import net.minecraftforge.registries.GameData;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -88,37 +84,51 @@ public class ProxyCommon implements IProxy, IGuiHandler {
     @Override
     public void initPost(FMLPostInitializationEvent event)
     {
-        NonNullList<ItemStack> itemSubTypes = NonNullList.create();
-        NonNullList<ItemStack> blockSubTypes = NonNullList.create();
+
+        Compression.main.config.compressableItems = NonNullList.create();
+        Compression.main.config.compressableBlocks = NonNullList.create();
+
         for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            Item item = entry.getValue();
-            if (item instanceof ItemBlock)
-            {
-                item.getSubItems(CreativeTabs.SEARCH, blockSubTypes);
-            }
-            else {
-                item.getSubItems(CreativeTabs.SEARCH, itemSubTypes);
-            }
-        }
-        Compression.LOGGER.info("[Compression] Loaded " + itemSubTypes.size() + " item subtypes.");
-        Compression.LOGGER.info("[Compression] Loaded " + blockSubTypes.size() + " block subtypes.");
+            Item entryItem = entry.getValue();
 
-        for (ItemStack stack : itemSubTypes)
+            NonNullList<ItemStack> entrySubtypes = NonNullList.create();
+            entryItem.getSubItems(CreativeTabs.SEARCH, entrySubtypes);
+
+            for (ItemStack itemStack : entrySubtypes)
+            {
+                if (!CompressedStack.canCompressStack(itemStack)) continue;
+                if (entryItem instanceof ItemBlock)
+                {
+                    Compression.main.config.compressableBlocks.add(itemStack);
+                }
+                else {
+                    Compression.main.config.compressableItems.add(itemStack);
+                }
+            }
+
+        }
+
+        Compression.LOGGER.info("[Compression] Loaded "
+                + Compression.main.config.compressableItems.size() + " item subtypes.");
+        Compression.LOGGER.info("[Compression] Loaded "
+                + Compression.main.config.compressableBlocks.size() + " block subtypes.");
+
+        for (ItemStack stack : Compression.main.config.compressableItems)
         {
-            if (!CompressedStack.canCompressedStack(stack)) continue;
             ProxyCommon.registerRecipesFor(stack, ItemCompressed.SUBTYPES);
         }
         Compression.LOGGER.info("[Compression] Loaded " + ItemCompressed.SUBTYPES.size() + " item subtypes variants ("
-                + itemSubTypes.size() + " * " + EnumTier.values().length + " tiers).");
+                + Compression.main.config.compressableItems.size() + " * " + EnumTier.values().length + " tiers).");
 
-        for (ItemStack stack : blockSubTypes)
+        for (ItemStack stack : Compression.main.config.compressableBlocks)
         {
-            if (!CompressedStack.canCompressedStack(stack)) continue;
             ProxyCommon.registerRecipesFor(stack, BlockCompressed.SUBTYPES);
         }
         Compression.LOGGER.info("[Compression] Loaded " + BlockCompressed.SUBTYPES.size() + " block subtypes variants ("
-                + blockSubTypes.size() + " * " + EnumTier.values().length + " tiers).");
+                + Compression.main.config.compressableBlocks.size() + " * " + EnumTier.values().length + " tiers).");
+
+        Compression.main.config.save();
     }
 
     private static void registerRecipesFor(ItemStack stack, NonNullList<ItemStack> compressedStacks)

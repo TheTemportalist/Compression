@@ -7,7 +7,6 @@ import com.temportalist.compression.common.lib.EnumTier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -18,8 +17,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
@@ -232,7 +229,7 @@ public class TileCompressor extends TileEntityLockable implements ITickable, ICa
         {
             outCount = 1;
             if (input.getCount() < 9
-                    || !CompressedStack.canCompressedStack(input))
+                    || !CompressedStack.canCompressStack(input))
             {
                 return false;
             }

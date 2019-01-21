@@ -8,8 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.temportalist.compression.common.Compression;
 import com.temportalist.compression.common.effects.EnumEffect;
+import com.temportalist.compression.common.init.CompressedStack;
 import com.temportalist.compression.common.lib.EnumTier;
 import com.temportalist.compression.common.threads.Threads;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -21,10 +24,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Mod.EventBusSubscriber
 public class Config {
@@ -32,18 +32,19 @@ public class Config {
     static final String CATEGORY_THREADS = "threads";
     static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    public static class Blacklist {
+    public static class GreyList
+    {
 
         private File file;
         private Set<String> items, blocks;
 
-        Blacklist(File file) {
+        GreyList(File file) {
             this.file = file;
             this.items = new HashSet<>();
             this.blocks = new HashSet<>();
         }
 
-        void merge(Threads.Blacklist blacklist) {
+        void merge(Threads.GreyList blacklist) {
             this.items.addAll(Arrays.asList(blacklist.items));
             this.blocks.addAll(Arrays.asList(blacklist.blocks));
             Compression.main.config.save();
@@ -61,15 +62,18 @@ public class Config {
             return this.containsAny(false, names) || this.containsAny(true, names);
         }
 
-        void read() {
+        public void clear()
+        {
             this.items.clear();
             this.blocks.clear();
+        }
 
+        void read() {
             try {
                 Reader fileIn = new FileReader(this.file);
-                Threads.Blacklist blacklist = GSON.fromJson(fileIn, Threads.Blacklist.class);
+                Threads.GreyList list = GSON.fromJson(fileIn, Threads.GreyList.class);
                 fileIn.close();
-                this.merge(blacklist);
+                this.merge(list);
             }
             catch (Exception e) {
                 //e.printStackTrace();
@@ -79,18 +83,24 @@ public class Config {
 
         void save() {
             try {
-                Threads.Blacklist list = new Threads.Blacklist();
+                Threads.GreyList list = new Threads.GreyList();
                 list.items = this.items.toArray(new String[]{});
                 list.blocks = this.blocks.toArray(new String[]{});
-                String text = GSON.toJson(list, Threads.Blacklist.class);
+                String text = GSON.toJson(list, Threads.GreyList.class);
                 Writer fileOut = new FileWriter(this.file);
                 fileOut.write(text);
                 fileOut.close();
             }
             catch (Exception e) {
-                Compression.LOGGER.error("Could not write to blacklist file");
+                Compression.LOGGER.error("Could not write to greylist file");
                 Compression.LOGGER.error(e);
             }
+        }
+
+        public void addAll(Collection<? extends String> items, Collection<? extends String> blocks)
+        {
+            this.items.addAll(items);
+            this.blocks.addAll(blocks);
         }
 
     }
@@ -103,14 +113,22 @@ public class Config {
     public static String CATEGORY_TIERS = "tiers";
 
     private Configuration mcConfig;
-    public Blacklist blacklist;
-    public int TicksToCompress = 20;
-    public int TicksToDecompress = 20;
+    public GreyList blacklist, whitelist;
+    public boolean blacklistEnabled, whitelistEnabled;
+
+    public NonNullList<ItemStack> compressableItems, compressableBlocks;
+
+    public GreyList compressables;
 
     public Config(File directory) {
         this.mcConfig = new Configuration(new File(directory.getPath(), "compression.cfg"));
-        this.blacklist = new Blacklist(new File(directory.getPath(), "compression-blacklist.json"));
-
+        this.blacklist = new GreyList(new File(directory.getPath(), "compression-blacklist.json"));
+        this.whitelist = new GreyList(new File(directory.getPath(), "compression-whitelist.json"));
+        this.compressableItems = NonNullList.create();
+        this.compressableBlocks = NonNullList.create();
+        this.compressables = new GreyList(new File(directory.getPath(), "compression-valid.json"));
+        this.blacklistEnabled = true;
+        this.whitelistEnabled = false;
     }
 
     public void onChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
@@ -126,6 +144,16 @@ public class Config {
 
     public void syncConfig() {
 
+        this.blacklistEnabled = this.get(Configuration.CATEGORY_GENERAL, "blacklistEnabled",
+                "Enable the blacklsit (compression-blacklist.json)",
+                this.blacklistEnabled
+        ).getBoolean(true);
+
+        this.whitelistEnabled = this.get(Configuration.CATEGORY_GENERAL, "whitelistEnabled",
+                "Enable the whitelist (compression-whitelist.json)",
+                this.whitelistEnabled
+        ).getBoolean(false);
+
         for (EnumTier tier : EnumTier.values())
         {
             tier.getConfig(this, CATEGORY_TIERS);
@@ -140,6 +168,28 @@ public class Config {
         }
 
         this.blacklist.read();
+        this.whitelist.read();
+
+        Compression.LOGGER.info("[Compression] whitelist");
+        for (String str : this.whitelist.blocks)
+        {
+            Compression.LOGGER.info(str);
+        }
+        for (String str : this.whitelist.items)
+        {
+            Compression.LOGGER.info(str);
+        }
+
+        Compression.LOGGER.info("[Compression] blacklist");
+        for (String str : this.blacklist.blocks)
+        {
+            Compression.LOGGER.info(str);
+        }
+        for (String str : this.blacklist.items)
+        {
+            Compression.LOGGER.info(str);
+        }
+
         Threads.fetch();
 
     }
@@ -148,10 +198,34 @@ public class Config {
         if (this.mcConfig.hasChanged()) {
             this.mcConfig.save();
         }
-        this.blacklist.save();
+        if (!this.blacklist.file.exists())
+            this.blacklist.save();
+        if (!this.whitelist.file.exists())
+            this.whitelist.save();
+
+        if (this.compressableItems != null && this.compressableBlocks != null)
+        {
+            this.compressables.clear();
+
+            NonNullList<String> itemNames = NonNullList.create();
+            for (ItemStack stack : this.compressableItems)
+            {
+                String name = CompressedStack.getNameOf(stack, true, true);
+                if (name != null) itemNames.add(name);
+            }
+            NonNullList<String> blockNames = NonNullList.create();
+            for (ItemStack stack : this.compressableBlocks)
+            {
+                String name = CompressedStack.getNameOf(stack, true, true);
+                if (name != null) blockNames.add(name);
+            }
+            this.compressables.addAll(itemNames, blockNames);
+
+            this.compressables.save();
+        }
     }
 
-    public void setBlacklist(Threads.Blacklist blacklist) {
+    public void setBlacklist(Threads.GreyList blacklist) {
         this.blacklist.merge(blacklist);
     }
 

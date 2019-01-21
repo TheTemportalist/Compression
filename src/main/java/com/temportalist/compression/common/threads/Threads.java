@@ -78,16 +78,17 @@ public class Threads {
 
     }
 
-    public static class Blacklist {
+    public static class GreyList
+    {
         public String[] items;
         public String[] blocks;
     }
 
     static void loadBlacklist(String file) {
         try {
-            Compression.main.config.setBlacklist(GSON.fromJson(file, Blacklist.class));
+            Compression.main.config.setBlacklist(GSON.fromJson(file, GreyList.class));
 
-            Compression.LOGGER.info("Loaded Blacklist configuration");
+            Compression.LOGGER.info("Loaded GreyList configuration");
         }
         catch (Exception e) {
             Compression.LOGGER.error("Encountered an error loading blacklist from remote");

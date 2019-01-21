@@ -322,16 +322,18 @@ public class CompressedStack {
             if (CompressedStack.isCompressed(itemStack) || itemStack == ItemStack.EMPTY) {
                 return false;
             }
-            else if (itemStack.getItem() instanceof ItemBlock) {
-                if (CompressedStack.isInBlackList(itemStack)) return false;
+            else if (itemStack.getItem() instanceof ItemBlock && CompressedStack.isValidInGreylist(itemStack)) {
                 Block block = Block.getBlockFromItem(itemStack.getItem());
                 IBlockState state = block.getStateFromMeta(itemStack.getItemDamage());
                 return state.getMaterial().isOpaque() && state.isFullCube() && !state.canProvidePower() &&
                         !block.hasTileEntity(state) && itemStack.getItem().getItemStackLimit(itemStack) > 1;
             }
-            else {
-                if (CompressedStack.isInBlackList(itemStack)) return false;
+            else if (CompressedStack.isValidInGreylist(itemStack)) {
                 return itemStack.getItem().getItemStackLimit(itemStack) > 1 && !itemStack.hasTagCompound();
+            }
+            else
+            {
+                return false;
             }
         }
         catch (Exception e) {
@@ -340,7 +342,7 @@ public class CompressedStack {
         }
     }
 
-    public static boolean canCompressedStack(ItemStack stack)
+    public static boolean canCompressStack(ItemStack stack)
     {
         return canCompressItem(createSampleStack(stack)) && (!isCompressed(stack) || getTier(stack) != EnumTier.getTail());
     }
@@ -371,8 +373,34 @@ public class CompressedStack {
         }
     }
 
-    public static boolean isInBlackList(ItemStack itemStack) {
+    static boolean isValidInGreylist(ItemStack itemStack)
+    {
+        if (Compression.main.config.whitelistEnabled)
+        {
+            return CompressedStack.isInWhiteList(itemStack);
+        }
+        else if (Compression.main.config.blacklistEnabled)
+        {
+            return !CompressedStack.isInBlackList(itemStack);
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    static boolean isInBlackList(ItemStack itemStack) {
         return Compression.main.config.blacklist.containsAny(
+                        itemStack.getItem() instanceof ItemBlock,
+                        getNameOf(itemStack, true, true),
+                        getNameOf(itemStack, true, false),
+                        getNameOf(itemStack, false, true),
+                        getNameOf(itemStack, false, false)
+                );
+    }
+
+    static boolean isInWhiteList(ItemStack itemStack) {
+        return Compression.main.config.whitelist.containsAny(
                 itemStack.getItem() instanceof ItemBlock,
                 getNameOf(itemStack, true, true),
                 getNameOf(itemStack, true, false),
