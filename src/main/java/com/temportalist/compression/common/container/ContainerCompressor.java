@@ -97,70 +97,35 @@ public class ContainerCompressor extends Container
      */
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index)
     {
-        ItemStack slotStackCopy = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack())
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slotObject = this.inventorySlots.get(index);
+        if(slotObject!=null&&slotObject.getHasStack())
         {
-            ItemStack slotStack = slot.getStack();
-            slotStackCopy = slotStack.copy();
-
-            if (index == slotOut) // out
+            ItemStack itemstack1 = slotObject.getStack();
+            itemstack = itemstack1.copy();
+            int slotCount = 2;
+            if(index < slotCount)
             {
-                if (!this.mergeItemStack(slotStack, slotOut, slotOut + slotInvMainCount + slotInvHotbarCount, true))
-                {
-                    return ItemStack.EMPTY;
-                }
-
-                slot.onSlotChange(slotStack, slotStackCopy);
-            }
-            else if (index != slotIn) // player
-            {
-                if (CompressedStack.canCompressItem(slotStack))
-                {
-                    if (!this.mergeItemStack(slotStack, slotIn, slotOut, false))
-                    {
-                        return ItemStack.EMPTY;
-                    }
-                }
-                else if (index > slotOut && index < slotOut + slotInvMainCount)
-                {
-                    if (!this.mergeItemStack(slotStack,
-                            slotOut + slotInvMainCount,
-                            slotOut + slotInvMainCount + slotInvHotbarCount,
-                            false))
-                    {
-                        return ItemStack.EMPTY;
-                    }
-                }
-                else if (index >= slotOut + slotInvMainCount && index < slotOut + slotInvMainCount + slotInvHotbarCount &&
-                        !this.mergeItemStack(slotStack, slotOut, slotOut + slotInvMainCount, false))
+                if(!this.mergeItemStack(itemstack1, slotCount, this.inventorySlots.size(), true))
                 {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(slotStack, slotOut + 1, slotOut + slotInvMainCount + slotInvHotbarCount, false))
+            else if(!this.mergeItemStack(itemstack1, 0, slotCount, false))
             {
                 return ItemStack.EMPTY;
             }
 
-            if (slotStack.isEmpty())
+            if(itemstack1.isEmpty())
             {
-                slot.putStack(ItemStack.EMPTY);
+                slotObject.putStack(ItemStack.EMPTY);
             }
             else
             {
-                slot.onSlotChanged();
+                slotObject.onSlotChanged();
             }
-
-            if (slotStack.getCount() == slotStackCopy.getCount())
-            {
-                return ItemStack.EMPTY;
-            }
-
-            slot.onTake(playerIn, slotStack);
         }
 
-        return slotStackCopy;
+        return itemstack;
     }
 }
